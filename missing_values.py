@@ -1,47 +1,43 @@
+"""Function for detecting missing values."""
 import pandas as pd
-import numpy as np
 
-
-def NHIS_heuristic(series):
-    series_mv = pd.Series(0, index=series.index, name=series.name)
-
-    # _, n_cols = df.shape
-
-    # assert n_cols == 1
-
-    val_max = series.max()
-
-    if val_max < 10:  # Type 1 column
-        series_mv[series == 7] = 2  # Type 2 missing values
-        series_mv[series == 8] = 2  # Type 2 missing values
-        series_mv[series == 9] = 2  # Type 2 missing values
-
-    if val_max < 100:
-        series_mv[series == 97] = 2  # Type 2 missing values
-        series_mv[series == 98] = 2  # Type 2 missing values
-        series_mv[series == 99] = 2  # Type 2 missing values
-
-    series_mv[series.isna()] = 1  # Type 1 missing values
-
-    return series_mv
-
+from database import NHIS
+from heuristic import NHIS as NHIS_heuristic
 
 
 def get_missing_values(df, heuristic):
-    n_observations, n_features = df.shape
-    columns = []
+    """Determine the type of missing value present in the given data frame.
 
-    for index in range(n_features):
-        print(type(df.iloc[:, index]))
-        columns.append(heuristic(df.iloc[:, index]))
+    Parameters
+    ----------
+    df : pandas.DataFrame
+        The dataframe storing the input table from which to determine the type
+        of missing values.
+    heuristic : function with pandas.Series -> pandas.Series signature
+        The heuristic according to which are determined the type of missing
+        values. Given a column of df stored as a pandas.Series, the heuristic
+        returns a pandas.Series storing the type of missing values encountered.
 
+    Returns
+    -------
+    pandas.DataFrame
+        A data frame with same index and columns as the input one but storing
+        the type of missing values encountered (0: Not a missing value,
+        1: Not applicable, 2: Not available).
+
+    """
+    # Compute the Series storing the types of missing values
+    columns = [heuristic(df.iloc[:, index]) for index in range(df.shape[1])]
+    # Concat the Series into a data frame
     df_mv = pd.concat(columns, axis=1, sort=False)
+
     return df_mv
 
 
 if __name__ == '__main__':
-    data_folder = 'NHIS2017/data/'
-    filename = data_folder + 'family/familyxx.csv'
-    df = pd.read_csv(filename)
-
-    print(get_missing_values(df, NHIS_heuristic))
+    print(get_missing_values(NHIS['family'], NHIS_heuristic))
+    print(get_missing_values(NHIS['child'], NHIS_heuristic))
+    print(get_missing_values(NHIS['adult'], NHIS_heuristic))
+    print(get_missing_values(NHIS['person'], NHIS_heuristic))
+    print(get_missing_values(NHIS['injury'], NHIS_heuristic))
+    print(get_missing_values(NHIS['household'], NHIS_heuristic))
