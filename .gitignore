@@ -1,3 +1,5 @@
 NHIS2017
 venv
 .vscode
+__pycache__
+cache_*
