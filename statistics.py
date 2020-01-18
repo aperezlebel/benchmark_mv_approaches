@@ -17,6 +17,7 @@ def describe_missing_values(df_mv, show=False):
     n_values = n_rows*n_cols
     df_mv1 = df_mv == 1
     df_mv2 = df_mv == 2
+    df_mv_bool = df_mv != 0
 
     # Number of missing values in the DB
     n_mv1 = df_mv1.values.sum()
@@ -72,57 +73,55 @@ def describe_missing_values(df_mv, show=False):
         ax.set(ylabel='', xlabel=f'Number of values (Total {n_values})')
         sns.despine(left=True, bottom=True)
 
-    # 2: Statistics feature-wise
-    n_mv1_fw = df_mv1.sum().to_frame('N MV1')  # Number of MV 1 by feature
-    n_mv2_fw = df_mv2.sum().to_frame('N MV2')  # Number of MV 2 by feature
+    # 2: Number of features with missing values
+    # For each feature, tells if it contains MV of type 1
+    df_f_w_mv1 = df_mv1.any().rename('MV1')
+    # For each feature, tells if it contains MV of type 2
+    df_f_w_mv2 = df_mv2.any().rename('MV2')
+    # Concat previous series
+    df_f_w_mv = pd.concat([df_f_w_mv1, df_f_w_mv2], axis=1)
 
-    n_mv_fw = pd.concat([n_mv1_fw, n_mv2_fw], axis=1)
-    n_mv_fw['N MV'] = n_mv_fw['N MV1'] + n_mv_fw['N MV2']
-    n_mv_fw['F MV1'] = 100*n_mv_fw['N MV1']/n_rows
-    n_mv_fw['F MV2'] = 100*n_mv_fw['N MV2']/n_rows
-    n_mv_fw['F MV'] = 100*n_mv_fw['N MV']/n_rows
+    # Add columns for logical combination of the two series
+    df_f_w_mv['MV'] = df_f_w_mv['MV1'] | df_f_w_mv['MV2']  # MV1 or MV2
+    df_f_w_mv['MV1a2'] = df_f_w_mv['MV1'] & df_f_w_mv['MV2']  # MV1 and MV2
+    df_f_w_mv['MV1o'] = df_f_w_mv['MV1'] & ~df_f_w_mv['MV2']  # MV1 only
+    df_f_w_mv['MV2o'] = ~df_f_w_mv['MV1'] & df_f_w_mv['MV2']  # MV2 only
 
-    # Sort by number of missing values
-    n_mv_fw.sort_values('N MV', ascending=False, inplace=True)
+    # By summing, derive the number of features with MV of a given type
+    df_n_f_w_mv = df_f_w_mv.sum()
 
-    # Number of features with missing values
-    df_mv_fw = (n_mv_fw != 0).sum()
-    n_f_mv1 = df_mv_fw['N MV1']
-    n_f_mv2 = df_mv_fw['N MV2']
-    n_f_mv = df_mv_fw['N MV']
-    n_f_mv_1a2 = n_f_mv1 + n_f_mv2 - n_f_mv
-    n_f_mv1_o = n_f_mv1 - n_f_mv_1a2
-    n_f_mv2_o = n_f_mv2 - n_f_mv_1a2
-    n_f_wo_mv = n_cols - n_f_mv
+    # Numbers of features with missing values
+    n_f_w_mv = df_n_f_w_mv['MV']  # MV1 or MV2
+    n_f_w_mv1_o = df_n_f_w_mv['MV1o']  # MV1 only
+    n_f_w_mv2_o = df_n_f_w_mv['MV2o']  # MV2 only
+    n_f_w_mv_1a2 = df_n_f_w_mv['MV1a2']  # MV1 and MV2
+    n_f_wo_mv = n_cols - df_n_f_w_mv['MV']  # Without MV
 
     # Frequencies of features with missing values
-    f_f_mv = 100*n_f_mv/n_cols
-    f_f_mv1_o = 100*n_f_mv1_o/n_cols
-    f_f_mv2_o = 100*n_f_mv2_o/n_cols
-    f_f_mv_1a2 = 100*n_f_mv_1a2/n_cols
+    f_f_w_mv1_o = 100*n_f_w_mv1_o/n_cols
+    f_f_w_mv2_o = 100*n_f_w_mv2_o/n_cols
+    f_f_w_mv = 100*n_f_w_mv/n_cols
+    f_f_w_mv_1a2 = 100*n_f_w_mv_1a2/n_cols
     f_f_wo_mv = 100*n_f_wo_mv/n_cols
 
-    with pd.option_context('display.max_rows', None):
-        print(
-            f'\n'
-            f'Statistics feature-wise:\n'
-            f'------------------------\n'
-            f'N F MV:             {n_f_mv} ({f_f_mv:.1f}%)\n'
-            f'    N F MV1 only:   {n_f_mv1_o} ({f_f_mv1_o:.1f}%)\n'
-            f'    N F MV2 only:   {n_f_mv2_o} ({f_f_mv2_o:.1f}%)\n'
-            f'    N F MV 1 and 2: {n_f_mv_1a2} ({f_f_mv_1a2:.1f}%)\n'
-            f'\n'
-            f'{n_mv_fw}'
-        )
+    print(
+        f'\n'
+        f'Statistics on features:\n'
+        f'-----------------------\n'
+        f'N features: {n_cols}\n'
+        f'N features with MV:              {n_f_w_mv} ({f_f_w_mv:.1f}%)\n'
+        f'    N features with MV1 only:    {n_f_w_mv1_o} ({f_f_w_mv1_o:.1f}%)\n'
+        f'    N features with MV2 only:    {n_f_w_mv2_o} ({f_f_w_mv2_o:.1f}%)\n'
+        f'    N features with MV1 and MV2: {n_f_w_mv_1a2} ({f_f_w_mv_1a2:.1f}%)\n'
+    )
 
     if show:
         # Plot proportion of features with missing values
-
         df_show = pd.DataFrame({
-            'N MV': [n_f_mv],
-            'N MV1 only': [n_f_mv1_o],
-            'N MV2 only': [n_f_mv2_o],
-            'N MV 1 xor 2': [n_f_mv1_o + n_f_mv2_o],
+            'N MV': [n_f_w_mv],
+            'N MV1 only': [n_f_w_mv1_o],
+            'N MV2 only': [n_f_w_mv2_o],
+            'N MV 1 xor 2': [n_f_w_mv1_o + n_f_w_mv2_o],
             'N F': [n_cols],
             'type': ['Full data frame']
             })
@@ -135,21 +134,44 @@ def describe_missing_values(df_mv, show=False):
 
         sns.set_color_codes('pastel')
         sns.barplot(x='N MV', y='type', data=df_show, color='g',
-                    label=f'Not applicable and not available ({n_f_mv_1a2} • {f_f_mv_1a2:.1f}%)')
+                    label=f'Not applicable and not available ({n_f_w_mv_1a2} • {f_f_w_mv_1a2:.1f}%)')
 
         sns.set_color_codes('muted')
         sns.barplot(x='N MV 1 xor 2', y='type', data=df_show, color='g',
-                    label=f'Not applicable only ({n_f_mv1_o} • {f_f_mv1_o:.1f}%)')
+                    label=f'Not applicable only ({n_f_w_mv1_o} • {f_f_w_mv1_o:.1f}%)')
 
         sns.set_color_codes('dark')
         sns.barplot(x='N MV2 only', y='type', data=df_show, color='g',
-                    label=f'Not available only ({n_f_mv2_o} • {f_f_mv2_o:.1f}%)')
+                    label=f'Not available only ({n_f_w_mv2_o} • {f_f_w_mv2_o:.1f}%)')
 
         ax.legend(ncol=1, loc='lower right', frameon=True,
                   title='Type of missing values contained in the feature')
         ax.set(ylabel='', xlabel=f'Number of features (Total {n_cols})')
         sns.despine(left=True, bottom=True)
 
+    # 3: Statistics feature-wise
+    n_mv1_fw = df_mv1.sum().to_frame('N MV1')  # Number of MV 1 by feature
+    n_mv2_fw = df_mv2.sum().to_frame('N MV2')  # Number of MV 2 by feature
+
+    n_mv_fw = pd.concat([n_mv1_fw, n_mv2_fw], axis=1)
+    n_mv_fw['N MV'] = n_mv_fw['N MV1'] + n_mv_fw['N MV2']
+    n_mv_fw['F MV1'] = 100*n_mv_fw['N MV1']/n_rows
+    n_mv_fw['F MV2'] = 100*n_mv_fw['N MV2']/n_rows
+    n_mv_fw['F MV'] = 100*n_mv_fw['N MV']/n_rows
+
+    # Sort by number of missing values
+    n_mv_fw.sort_values('N MV', ascending=False, inplace=True)
+
+    with pd.option_context('display.max_rows', None):
+        print(
+            f'\n'
+            f'Statistics feature-wise:\n'
+            f'------------------------\n'
+            f'\n'
+            f'{n_mv_fw}'
+        )
+
+    if show:
         # Plot proportion of missing values in each feature
         # Copy index in a column for the barplot method
         n_mv_fw['feature'] = n_mv_fw.index
@@ -180,7 +202,7 @@ def describe_missing_values(df_mv, show=False):
         ax.tick_params(labelsize=5)
         sns.despine(left=True, bottom=True)
 
-    # 3: Rows without missing values
+    # 4: Rows without missing values
     # For each row, tells if it contains MV of type 1
     df_r_w_mv1 = df_mv1.any(axis=1).rename('MV1')
     # For each row, tells if it contains MV of type 2
@@ -257,11 +279,91 @@ def describe_missing_values(df_mv, show=False):
         ax.set(ylabel='', xlabel=f'Number of rows (Total {n_rows})')
         sns.despine(left=True, bottom=True)
 
+    # 5: Number of rows affected if we remove features with MV
+    df_f_w_mv1 = df_f_w_mv['MV1']  # Series of features having MV1
+    df_f_w_mv2 = df_f_w_mv['MV2']  # Series of features having MV2
+    df_f_w_mv_1o2 = df_f_w_mv['MV']  # Series of features having MV1 or MV2
+    df_f_w_mv1_o = df_f_w_mv['MV1o']  # Series of features having MV1 only
+    df_f_w_mv2_o = df_f_w_mv['MV2o']  # Series of features having MV2 only
+    df_f_w_mv_1a2 = df_f_w_mv['MV1a2']  # Series of features having MV1 and MV2
+
+    df_features = pd.Series(True, index=df_f_w_mv.index)
+
+    features_to_drop_mv1 = df_features.loc[~df_f_w_mv1].index
+    features_to_drop_mv2 = df_features.loc[~df_f_w_mv2].index
+    features_to_drop_mv_1o2 = df_features.loc[~df_f_w_mv_1o2].index
+    features_to_drop_mv1_o = df_features.loc[~df_f_w_mv1_o].index
+    features_to_drop_mv2_o = df_features.loc[~df_f_w_mv2_o].index
+    features_to_drop_mv_1a2 = df_features.loc[~df_f_w_mv_1a2].index
+
+    df_mv1_dropped = df_mv_bool.drop(features_to_drop_mv1, 1)
+    df_mv2_dropped = df_mv_bool.drop(features_to_drop_mv2, 1)
+    df_mv_1o2_dropped = df_mv_bool.drop(features_to_drop_mv_1o2, 1)
+    df_mv1_o_dropped = df_mv_bool.drop(features_to_drop_mv1_o, 1)
+    df_mv2_o_dropped = df_mv_bool.drop(features_to_drop_mv2_o, 1)
+    df_mv_1a2_dropped = df_mv_bool.drop(features_to_drop_mv_1a2, 1)
+
+    # Number of rows affected if we remove feature having MV of type:
+    n_r_a_rm_mv1 = (~df_mv1_dropped).any(axis=1).sum()  # MV1
+    n_r_a_rm_mv2 = (~df_mv2_dropped).any(axis=1).sum()  # MV2
+    n_r_a_rm_mv_1o2 = (~df_mv_1o2_dropped).any(axis=1).sum()  # MV1 or MV2
+    n_r_a_rm_mv1_o = (~df_mv1_o_dropped).any(axis=1).sum()  # MV1 only
+    n_r_a_rm_mv2_o = (~df_mv2_o_dropped).any(axis=1).sum()  # MV2 only
+    n_r_a_rm_mv_1a2 = (~df_mv_1a2_dropped).any(axis=1).sum()  # MV1 and MV2
+
+    # Frequencies of rows affected if we remove feature having MV of type:
+    f_r_a_rm_mv1 = 100*n_r_a_rm_mv1/n_rows  # MV1
+    f_r_a_rm_mv2 = 100*n_r_a_rm_mv2/n_rows  # MV2
+    f_r_a_rm_mv_1o2 = 100*n_r_a_rm_mv_1o2/n_rows  # MV1 or MV2
+    f_r_a_rm_mv1_o = 100*n_r_a_rm_mv1_o/n_rows  # MV1 only
+    f_r_a_rm_mv2_o = 100*n_r_a_rm_mv2_o/n_rows  # MV2 only
+    f_r_a_rm_mv_1a2 = 100*n_r_a_rm_mv_1a2/n_rows  # MV1 and MV2
+
+    print(
+        f'N rows affected if we remove features with :\n'
+        f'    MV1:          {n_r_a_rm_mv1} ({f_r_a_rm_mv1:.2f}%)\n'
+        f'    MV2:          {n_r_a_rm_mv2} ({f_r_a_rm_mv2:.2f}%)\n'
+        f'    MV:           {n_r_a_rm_mv_1o2} ({f_r_a_rm_mv_1o2:.2f}%)\n'
+        f'    MV1 only:     {n_r_a_rm_mv1_o} ({f_r_a_rm_mv1_o:.2f}%)\n'
+        f'    MV2 only:     {n_r_a_rm_mv2_o} ({f_r_a_rm_mv2_o:.2f}%)\n'
+        f'    MV1 and MV2:  {n_r_a_rm_mv_1a2} ({f_r_a_rm_mv_1a2:.2f}%)\n'
+    )
+
+    if show:
+        # Plot number of rows affected
+        df_show = pd.DataFrame({
+            'N rows affected': [
+                n_r_a_rm_mv1,
+                n_r_a_rm_mv2,
+                n_r_a_rm_mv_1o2,
+                n_r_a_rm_mv1_o,
+                n_r_a_rm_mv2_o,
+                n_r_a_rm_mv_1a2],
+            'N R': [n_rows for _ in range(6)],
+            'type': [
+                f'MV1\n{f_r_a_rm_mv1:.2f}%',
+                f'MV2\n{f_r_a_rm_mv2:.2f}%',
+                f'MV\n{f_r_a_rm_mv_1o2:.2f}%',
+                f'MV1 only\n{f_r_a_rm_mv1_o:.2f}%',
+                f'MV2 only\n{f_r_a_rm_mv2_o:.2f}%',
+                f'MV1 and MV2\n{f_r_a_rm_mv_1a2:.2f}%']
+        })
+
+        _, ax = plt.subplots(figsize=(10, 4))
+
+        sns.set_color_codes('muted')
+        sns.barplot(x='N rows affected', y='type', data=df_show, color='r')
+
+        ax.set_title('Number of rows loosing information by'
+                     '\nremoving features containing missing values of type:')
+        ax.set(ylabel='', xlabel=f'Number of rows (Total {n_rows})')
+        sns.despine(left=True, bottom=True)
+
     plt.show()
 
 
 if __name__ == '__main__':
-    df = NHIS['family']
+    df = NHIS['person']
     df_mv = get_missing_values(df, NHIS_heuristic)
 
     describe_missing_values(df_mv, show=True)
