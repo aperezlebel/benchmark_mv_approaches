@@ -320,7 +320,7 @@ def describe_missing_values(df_mv, show=False):
     f_r_a_rm_mv_1a2 = 100*n_r_a_rm_mv_1a2/n_rows  # MV1 and MV2
 
     print(
-        f'N rows affected if we remove features with :\n'
+        f'N rows losing information if we remove features with :\n'
         f'    MV1:          {n_r_a_rm_mv1} ({f_r_a_rm_mv1:.2f}%)\n'
         f'    MV2:          {n_r_a_rm_mv2} ({f_r_a_rm_mv2:.2f}%)\n'
         f'    MV:           {n_r_a_rm_mv_1o2} ({f_r_a_rm_mv_1o2:.2f}%)\n'
@@ -330,7 +330,7 @@ def describe_missing_values(df_mv, show=False):
     )
 
     if show:
-        # Plot number of rows affected
+        # Plot number of rows losing information when removing features with MV
         df_show = pd.DataFrame({
             'N rows affected': [
                 n_r_a_rm_mv1,
@@ -349,21 +349,82 @@ def describe_missing_values(df_mv, show=False):
                 f'MV1 and MV2\n{f_r_a_rm_mv_1a2:.2f}%']
         })
 
+        df_show.sort_values('N rows affected', ascending=False, inplace=True)
+
         _, ax = plt.subplots(figsize=(10, 4))
 
         sns.set_color_codes('muted')
         sns.barplot(x='N rows affected', y='type', data=df_show, color='r')
 
-        ax.set_title('Number of rows loosing information by'
+        ax.set_title('Number of rows losing information by'
                      '\nremoving features containing missing values of type:')
         ax.set(ylabel='', xlabel=f'Number of rows (Total {n_rows})')
+        sns.despine(left=True, bottom=True)
+
+    # 6: Proportion of information lost when removing features with MV
+    # Number
+    n_v_lost_mv1 = (~df_mv1_dropped).sum().sum()
+    n_v_lost_mv2 = (~df_mv2_dropped).sum().sum()
+    n_v_lost_mv_1o2 = (~df_mv_1o2_dropped).sum().sum()
+    n_v_lost_mv1_o = (~df_mv1_o_dropped).sum().sum()
+    n_v_lost_mv2_o = (~df_mv2_o_dropped).sum().sum()
+    n_v_lost_mv_1a2 = (~df_mv_1a2_dropped).sum().sum()
+
+    # Frequencies
+    f_v_lost_mv1 = 100*n_v_lost_mv1/n_values
+    f_v_lost_mv2 = 100*n_v_lost_mv2/n_values
+    f_v_lost_mv_1o2 = 100*n_v_lost_mv_1o2/n_values
+    f_v_lost_mv1_o = 100*n_v_lost_mv1_o/n_values
+    f_v_lost_mv2_o = 100*n_v_lost_mv2_o/n_values
+    f_v_lost_mv_1a2 = 100*n_v_lost_mv_1a2/n_values
+
+    print(
+        f'N values lost if we remove features with :\n'
+        f'    MV1:          {n_v_lost_mv1} ({f_v_lost_mv1:.2f}%)\n'
+        f'    MV2:          {n_v_lost_mv2} ({f_v_lost_mv2:.2f}%)\n'
+        f'    MV:           {n_v_lost_mv_1o2} ({f_v_lost_mv_1o2:.2f}%)\n'
+        f'    MV1 only:     {n_v_lost_mv1_o} ({f_v_lost_mv1_o:.2f}%)\n'
+        f'    MV2 only:     {n_v_lost_mv2_o} ({f_v_lost_mv2_o:.2f}%)\n'
+        f'    MV1 and MV2:  {n_v_lost_mv_1a2} ({f_v_lost_mv_1a2:.2f}%)\n'
+    )
+
+    if show:
+        # Plot number of values lost when removing features with MV
+        df_show = pd.DataFrame({
+            'N values lost': [
+                n_v_lost_mv1,
+                n_v_lost_mv2,
+                n_v_lost_mv_1o2,
+                n_v_lost_mv1_o,
+                n_v_lost_mv2_o,
+                n_v_lost_mv_1a2],
+            'N R': [n_rows for _ in range(6)],
+            'type': [
+                f'MV1\n{f_v_lost_mv1:.2f}%',
+                f'MV2\n{f_v_lost_mv2:.2f}%',
+                f'MV\n{f_v_lost_mv_1o2:.2f}%',
+                f'MV1 only\n{f_v_lost_mv1_o:.2f}%',
+                f'MV2 only\n{f_v_lost_mv2_o:.2f}%',
+                f'MV1 and MV2\n{f_v_lost_mv_1a2:.2f}%']
+        })
+
+        df_show.sort_values('N values lost', ascending=False, inplace=True)
+
+        _, ax = plt.subplots(figsize=(10, 4))
+
+        sns.set_color_codes('muted')
+        sns.barplot(x='N values lost', y='type', data=df_show, color='b')
+
+        ax.set_title('Number of actual values lost by'
+                     '\nremoving features containing missing values of type:')
+        ax.set(ylabel='', xlabel=f'Number of values (Total {n_values})')
         sns.despine(left=True, bottom=True)
 
     plt.show()
 
 
 if __name__ == '__main__':
-    df = NHIS['person']
+    df = NHIS['family']
     df_mv = get_missing_values(df, NHIS_heuristic)
 
     describe_missing_values(df_mv, show=True)
