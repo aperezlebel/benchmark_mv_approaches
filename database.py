@@ -24,3 +24,21 @@ def load_NHIS():
 
 
 NHIS = load_NHIS()
+
+
+def load_TB():
+    """Load the TraumaBase database."""
+    data_folder = 'TraumaBase/'
+
+    TB = {
+        '20000': pd.read_csv(data_folder+'Traumabase_20000.csv', sep=';')
+    }
+
+    return TB
+
+
+TB = load_TB()
+
+
+if __name__ == '__main__':
+    print(TB['20000'])
