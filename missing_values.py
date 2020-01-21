@@ -1,8 +1,7 @@
 """Function for detecting missing values."""
 import pandas as pd
 
-from database import NHIS
-from heuristic import NHIS as NHIS_heuristic
+import NHIS
 
 
 def get_missing_values(df, heuristic):
@@ -35,9 +34,9 @@ def get_missing_values(df, heuristic):
 
 
 if __name__ == '__main__':
-    print(get_missing_values(NHIS['family'], NHIS_heuristic))
-    print(get_missing_values(NHIS['child'], NHIS_heuristic))
-    print(get_missing_values(NHIS['adult'], NHIS_heuristic))
-    print(get_missing_values(NHIS['person'], NHIS_heuristic))
-    print(get_missing_values(NHIS['injury'], NHIS_heuristic))
-    print(get_missing_values(NHIS['household'], NHIS_heuristic))
+    print(get_missing_values(NHIS.db['family'], NHIS.heuristic))
+    print(get_missing_values(NHIS.db['child'], NHIS.heuristic))
+    print(get_missing_values(NHIS.db['adult'], NHIS.heuristic))
+    print(get_missing_values(NHIS.db['person'], NHIS.heuristic))
+    print(get_missing_values(NHIS.db['injury'], NHIS.heuristic))
+    print(get_missing_values(NHIS.db['household'], NHIS.heuristic))

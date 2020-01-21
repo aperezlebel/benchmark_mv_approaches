@@ -6,8 +6,7 @@ matplotlib.use('MacOSX')
 import seaborn as sns
 import matplotlib.pyplot as plt
 
-from database import NHIS
-from heuristic import NHIS as NHIS_heuristic
+import NHIS
 from missing_values import get_missing_values
 
 
@@ -424,7 +423,7 @@ def describe_missing_values(df_mv, show=False):
 
 
 if __name__ == '__main__':
-    df = NHIS['family']
-    df_mv = get_missing_values(df, NHIS_heuristic)
+    df = NHIS.db['family']
+    df_mv = get_missing_values(df, NHIS.heuristic)
 
     describe_missing_values(df_mv, show=True)
