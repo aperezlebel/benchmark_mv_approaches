@@ -3,6 +3,7 @@
 import pandas as pd
 
 import NHIS
+import TB
 
 
 def _ask_feature_type_df(df):
@@ -73,5 +74,54 @@ def _ask_feature_type_df(df):
     return types
 
 
+def ask_feature_type_helper():
+    """Implement helper for asking feature type to the user."""
+    while True:
+        # Prevent from asking again when user failed on second input
+        if 'db_name' not in locals():
+            db_name = input(
+                '\n'
+                'Which database do you want to set the features\' types?\n'
+                'Available choices: {NHIS, TB}\n'
+                'Type "exit" to end.\n'
+            )
+
+        # Load appropiate database
+        if db_name == 'NHIS':
+            db = NHIS.db
+        elif db_name == 'TB':
+            db = TB.db
+        elif db_name == 'exit':
+            return
+        else:
+            print('\nAnswer must be in {NHIS, TB}')
+            del db_name
+            continue
+
+        df_name = input(
+            f'\n'
+            f'Which data frame of {db_name} do you want to set the '
+            f'features\' types?\n'
+            f'Available: {list(db.keys())}\n'
+            f'Type "none" to change database.\n'
+            f'Type "exit" to end.\n'
+        )
+
+        if df_name == 'none':
+            del db_name
+            continue
+
+        if df_name == 'exit':
+            return
+
+        if df_name not in db.keys():
+            print(f'\nAnswer must be in {list(db.keys())}')
+            continue
+
+        df = db[df_name]
+        types = _ask_feature_type_df(df)
+        print(types)
+
+
 if __name__ == '__main__':
-    print(_ask_feature_type_df(NHIS.db['family']))
+    ask_feature_type_helper()
