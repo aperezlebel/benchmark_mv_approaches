@@ -44,3 +44,29 @@ def NHIS(series):
         series_mv[series == 99] = 2
 
     return series_mv
+
+
+def TB(series):
+    """Implement the heuritic for detecting NHIS missing values.
+
+    Parameters
+    ----------
+    series : pandas.Series
+        One column of the NHIS dataframe, stored as a pandas.Series object.
+
+    Returns
+    -------
+    pandas.Series
+        A series with same name and index as input series but having values
+        in [0, 1, 2] encoding respectively: Not a missing value,
+        Not applicable, Not available.
+
+    """
+    # The series storing the type of missing values
+    series_mv = pd.Series(0, index=series.index, name=series.name)
+
+    series_mv[series.isna()] = 2
+    series_mv[series == 'NA'] = 2
+    series_mv[series == 'ND'] = 2
+
+    return series_mv
