@@ -52,4 +52,6 @@ def heuristic(series):
 
 
 # TraumaBase parameters
+name = 'TraumaBase'
+acronym = 'TB'
 db = load_database(encode=True)

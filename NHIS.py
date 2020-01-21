@@ -68,4 +68,6 @@ def heuristic(series):
 
 
 # NHIS variables
+name = 'National Health Interview Survey'
+acronym = 'NHIS'
 db = load_database()
