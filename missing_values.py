@@ -11,7 +11,7 @@ def get_missing_values(df, heuristic):
     Parameters
     ----------
     df : pandas.DataFrame
-        The dataframe storing the input table from which to determine the type
+        The data frame storing the input table from which to determine the type
         of missing values.
     heuristic : function with pandas.Series -> pandas.Series signature
         The heuristic according to which are determined the type of missing
