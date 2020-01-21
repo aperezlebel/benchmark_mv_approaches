@@ -76,33 +76,37 @@ def _ask_feature_type_df(df):
 
 def ask_feature_type_helper():
     """Implement helper for asking feature type to the user."""
+    available_db_names = [db.acronym for db in [NHIS, TB]]
+
     while True:
         # Prevent from asking again when user failed on second input
         if 'db_name' not in locals():
             db_name = input(
-                '\n'
-                'Which database do you want to set the features\' types?\n'
-                'Available choices: {NHIS, TB}\n'
-                'Type "exit" to end.\n'
+                f'\n'
+                f'Which database do you want to set the features\' types?\n'
+                f'Available choices: {available_db_names}\n'
+                f'Type "exit" to end.\n'
             )
 
         # Load appropiate database
-        if db_name == 'NHIS':
+        if db_name == NHIS.acronym:
             db = NHIS.db
-        elif db_name == 'TB':
+        elif db_name == TB.acronym:
             db = TB.db
         elif db_name == 'exit':
             return
         else:
-            print('\nAnswer must be in {NHIS, TB}')
+            print(f'\nAnswer must be in {available_db_names}')
             del db_name
             continue
+
+        available_df_names = list(db.keys())
 
         df_name = input(
             f'\n'
             f'Which data frame of {db_name} do you want to set the '
             f'features\' types?\n'
-            f'Available: {list(db.keys())}\n'
+            f'Available: {available_df_names}\n'
             f'Type "none" to change database.\n'
             f'Type "exit" to end.\n'
         )
@@ -114,8 +118,8 @@ def ask_feature_type_helper():
         if df_name == 'exit':
             return
 
-        if df_name not in db.keys():
-            print(f'\nAnswer must be in {list(db.keys())}')
+        if df_name not in available_df_names:
+            print(f'\nAnswer must be in {available_df_names}')
             continue
 
         df = db[df_name]
