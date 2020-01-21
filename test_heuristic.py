@@ -33,6 +33,11 @@ def test_missing_values(df, df_mv, N=10):
     for mv_value in [0, 1, 2]:
         # Get coordinates of every cells matching the wanted value.
         row_ids, col_ids = np.where(df_mv == mv_value)
+
+        # Skip if no missing values found of this type
+        if len(row_ids) == 0:
+            continue
+
         # Draw a subset of this coordinates
         rand_range = np.random.choice(range(len(row_ids)), N, replace=False)
 
