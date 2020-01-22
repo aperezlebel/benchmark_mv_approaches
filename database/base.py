@@ -2,26 +2,29 @@
 
 from abc import ABC, abstractmethod
 
+from features_type import _load_feature_types
+
 
 class Database(ABC):
 
     @abstractmethod
     def __init__(self):
-        self.tables = dict()
+        self.dataframes = dict()
+        self.features_types = dict()
         self.name = ''
         self.acronym = ''
-        self._load()
+        self._load_db()
 
     def __getitem__(self, name):
         """Get data frame giving its name."""
-        return self.tables[name]
+        return self.dataframes[name]
 
-    def tables_names(self):
-        """Get tables' names."""
-        return list(self.tables.keys())
+    def df_names(self):
+        """Get data frames' names."""
+        return list(self.dataframes.keys())
 
     @abstractmethod
-    def _load(self):
+    def _load_db(self):
         pass
 
     @abstractmethod
@@ -42,3 +45,10 @@ class Database(ABC):
 
         """
         pass
+
+    def _load_feature_types(self):
+        for name in self.df_names():
+            try:
+                self.features_types[name] = _load_feature_types(self, name)
+            except FileNotFoundError:
+                print(f'{name}: features types not found. Ignored.')

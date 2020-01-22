@@ -12,12 +12,13 @@ class _NHIS(Database):
         super().__init__()
         self.name = 'National Health Interview Survey'
         self.acronym = 'NHIS'
+        self._load_feature_types()
 
-    def _load(self):
+    def _load_db(self):
         """Load the NHIS database."""
         data_folder = 'NHIS2017/data/'
 
-        self.tables = {
+        self.dataframes = {
             'family': pd.read_csv(data_folder+'family/familyxx.csv'),
             'child': pd.read_csv(data_folder+'child/samchild.csv'),
             'adult': pd.read_csv(data_folder+'adult/samadult.csv'),

@@ -4,8 +4,6 @@ import pandas as pd
 import os
 from time import time
 
-from database import NHIS, TB
-
 
 backup_dir = 'backup/'
 os.makedirs(backup_dir, exist_ok=True)
@@ -105,7 +103,7 @@ def ask_feature_type_helper():
             del db_name
             continue
 
-        available_df_names = db.tables_names()
+        available_df_names = db.df_names()
 
         df_name = input(
             f'\n'
@@ -191,6 +189,7 @@ def _load_feature_types(db, df_name):
 
 
 if __name__ == '__main__':
+    from database import NHIS, TB
     ask_feature_type_helper()
     # types = _ask_feature_type_df(NHIS['family'])
     # _dump_feature_types(types, NHIS, 'family')

@@ -11,12 +11,13 @@ class _TB(Database):
         super().__init__()
         self.name = 'TraumaBase'
         self.acronym = 'TB'
+        self._load_feature_types()
 
-    def _load(self, encode=True):
+    def _load_db(self, encode=True):
         """Load the TraumaBase database."""
         data_folder = 'TraumaBase/'
 
-        self.tables = {
+        self.dataframes = {
             '20000': pd.read_csv(data_folder+'Traumabase_20000.csv', sep=';')
         }
 
