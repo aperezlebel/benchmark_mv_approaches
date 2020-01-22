@@ -1,9 +1,15 @@
 """Functions to load or set the type of features of the databases."""
 
 import pandas as pd
+import os
+from time import time
 
 import NHIS
 import TB
+
+
+backup_dir = 'backup/'
+os.makedirs(backup_dir, exist_ok=True)
 
 
 def _ask_feature_type_df(df):
@@ -90,9 +96,9 @@ def ask_feature_type_helper():
 
         # Load appropiate database
         if db_name == NHIS.acronym:
-            db = NHIS.db
+            db = NHIS
         elif db_name == TB.acronym:
-            db = TB.db
+            db = TB
         elif db_name == 'exit':
             return
         else:
@@ -100,7 +106,7 @@ def ask_feature_type_helper():
             del db_name
             continue
 
-        available_df_names = list(db.keys())
+        available_df_names = list(db.db.keys())
 
         df_name = input(
             f'\n'
@@ -122,10 +128,45 @@ def ask_feature_type_helper():
             print(f'\nAnswer must be in {available_df_names}')
             continue
 
-        df = db[df_name]
+        df = db.db[df_name]
         types = _ask_feature_type_df(df)
-        print(types)
+        _dump_feature_types(types, db, df_name)
+
+
+def _dump_feature_types(types, db, df_name):
+    """Dump the feature types anonymizing the features' names."""
+    dir_path = f'metadata/features_types/{db.acronym}/'
+
+    # Anonymize features' names
+    anonymized_types = pd.Series(types.values, index=range(len(types.index)))
+
+    # Creates directories if doesn't exist
+    os.makedirs(dir_path, exist_ok=True)
+
+    # Save to csv
+    filepath = dir_path+df_name
+    anonymized_types.to_csv(f'{filepath}.csv', header=False)
+
+    # Backup all dumps in the same folder
+    backup_tag = f'{filepath.replace("/", "_")}_{time():.1f}'
+    anonymized_types.to_csv(f'{backup_dir}{backup_tag}.csv', header=False)
+
+
+def _load_feature_types(db, df_name):
+    """Load the feature types deanonymizing the features' names."""
+    filepath = f'metadata/features_types/{db.acronym}/{df_name}.csv'
+
+    # Load types series
+    anonymized_types = pd.read_csv(filepath, index_col=0,
+                                   header=None, squeeze=True)
+
+    # Deanonymize features' names and return
+    return pd.Series(anonymized_types.values, index=db.db[df_name].columns)
 
 
 if __name__ == '__main__':
     ask_feature_type_helper()
+    # types = _ask_feature_type_df(NHIS.db['family'])
+    # _dump_feature_types(types, NHIS, 'family')
+    # print(_load_feature_types(NHIS, 'family'))
+    # print(_load_feature_types(TB, '20000'))
