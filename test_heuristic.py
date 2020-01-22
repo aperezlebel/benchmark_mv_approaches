@@ -2,7 +2,7 @@
 
 import numpy as np
 
-import NHIS
+from database import NHIS
 from missing_values import get_missing_values
 
 
@@ -60,5 +60,5 @@ def test_missing_values(df, df_mv, N=10):
 
 
 if __name__ == '__main__':
-    df_mv = get_missing_values(NHIS.db['family'], NHIS.heuristic)
-    test_missing_values(NHIS.db['family'], df_mv)
+    df_mv = get_missing_values(NHIS['family'], NHIS.heuristic)
+    test_missing_values(NHIS['family'], df_mv)

@@ -4,8 +4,7 @@ import pandas as pd
 import os
 from time import time
 
-import NHIS
-import TB
+from database import NHIS, TB
 
 
 backup_dir = 'backup/'
@@ -106,7 +105,7 @@ def ask_feature_type_helper():
             del db_name
             continue
 
-        available_df_names = list(db.db.keys())
+        available_df_names = db.tables_names()
 
         df_name = input(
             f'\n'
@@ -128,13 +127,26 @@ def ask_feature_type_helper():
             print(f'\nAnswer must be in {available_df_names}')
             continue
 
-        df = db.db[df_name]
+        df = db[df_name]
         types = _ask_feature_type_df(df)
         _dump_feature_types(types, db, df_name)
 
 
 def _dump_feature_types(types, db, df_name):
-    """Dump the feature types anonymizing the features' names."""
+    """Dump the features' types anonymizing the features' names.
+
+    Parameters:
+    -----------
+    types: pandas.Series
+        Series with features' names as index and features' types as values.
+    db : Database class
+        The database from which has been computed the types. Used to dump
+        results in the right folder.
+    df_name : string
+        Name of the data frame from which has been computed the types.
+        Used to dump the results in the right folder.
+
+    """
     dir_path = f'metadata/features_types/{db.acronym}/'
 
     # Anonymize features' names
@@ -153,7 +165,21 @@ def _dump_feature_types(types, db, df_name):
 
 
 def _load_feature_types(db, df_name):
-    """Load the feature types deanonymizing the features' names."""
+    """Load the features' types deanonymizing the features' names.
+
+    Parameters:
+    -----------
+    db : Database class
+        The features' database.
+    df_name : string
+        Name of the features' data frame.
+
+    Returns:
+    --------
+    pandas.Series
+        Series with features' names as index and features' types as values.
+
+    """
     filepath = f'metadata/features_types/{db.acronym}/{df_name}.csv'
 
     # Load types series
@@ -161,12 +187,12 @@ def _load_feature_types(db, df_name):
                                    header=None, squeeze=True)
 
     # Deanonymize features' names and return
-    return pd.Series(anonymized_types.values, index=db.db[df_name].columns)
+    return pd.Series(anonymized_types.values, index=db[df_name].columns)
 
 
 if __name__ == '__main__':
     ask_feature_type_helper()
-    # types = _ask_feature_type_df(NHIS.db['family'])
+    # types = _ask_feature_type_df(NHIS['family'])
     # _dump_feature_types(types, NHIS, 'family')
     # print(_load_feature_types(NHIS, 'family'))
     # print(_load_feature_types(TB, '20000'))

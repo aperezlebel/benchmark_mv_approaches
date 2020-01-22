@@ -6,7 +6,7 @@ from copy import deepcopy
 from sklearn.experimental import enable_iterative_imputer
 from sklearn.impute import SimpleImputer, IterativeImputer
 
-import NHIS
+from database import NHIS
 from missing_values import get_missing_values
 
 
@@ -70,7 +70,7 @@ if __name__ == '__main__':
         'Iterative+mask': IterativeImputer(add_indicator=True),
     }
 
-    df = NHIS.db['family']
+    df = NHIS['family']
     df_mv = get_missing_values(df, NHIS.heuristic)
 
     for name, imputer in imputers.items():
