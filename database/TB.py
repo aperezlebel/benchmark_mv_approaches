@@ -30,7 +30,7 @@ class _TB(Database):
         #     TB['20000'] = df_encoded
 
     @staticmethod
-    def heuristic(self, series):
+    def heuristic(series):
         # The series storing the type of missing values
         series_mv = pd.Series(0, index=series.index, name=series.name)
 
