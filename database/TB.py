@@ -8,10 +8,7 @@ from .base import Database
 class _TB(Database):
 
     def __init__(self):
-        super().__init__()
-        self.name = 'TraumaBase'
-        self.acronym = 'TB'
-        self._load_feature_types()
+        super().__init__('TraumaBase', 'TB')
 
     def _load_db(self, encode=True):
         """Load the TraumaBase database."""

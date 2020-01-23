@@ -8,12 +8,13 @@ from features_type import _load_feature_types
 class Database(ABC):
 
     @abstractmethod
-    def __init__(self):
+    def __init__(self, name='', acronym=''):
         self.dataframes = dict()
         self.features_types = dict()
-        self.name = ''
-        self.acronym = ''
+        self.name = name
+        self.acronym = acronym
         self._load_db()
+        self._load_feature_types()
 
     def __getitem__(self, name):
         """Get data frame giving its name."""

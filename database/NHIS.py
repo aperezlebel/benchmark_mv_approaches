@@ -9,10 +9,7 @@ from .base import Database
 class _NHIS(Database):
 
     def __init__(self):
-        super().__init__()
-        self.name = 'National Health Interview Survey'
-        self.acronym = 'NHIS'
-        self._load_feature_types()
+        super().__init__('National Health Interview Survey', 'NHIS')
 
     def _load_db(self):
         """Load the NHIS database."""
