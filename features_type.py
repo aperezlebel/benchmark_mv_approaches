@@ -16,6 +16,8 @@ def _ask_feature_type_df(df):
         0 - Categorical
         1 - Ordinal
         2 - Continue
+        3 - Binary
+        -1 - Not a feature
 
     Parameters:
     -----------
@@ -25,7 +27,7 @@ def _ask_feature_type_df(df):
     Returns:
     --------
     pandas.Series
-        Series with df.columns as index and integer type as values (0, 1 or 2).
+        Series with df.columns as index and integers in [-1, 3] as values.
 
     """
     types = pd.Series(0, index=df.columns)
@@ -35,7 +37,7 @@ def _ask_feature_type_df(df):
         ' -------------------------------------------------------\n'
         '|Set the type of features in the data frame.            |\n'
         '|-------------------------------------------------------|\n'
-        '|Type an integer in {0, 1, 2} to set a category.        |\n'
+        '|Type an integer in [-1, 3] to set a category.          |\n'
         '|Leave empty to select default choice [bracketed].      |\n'
         '|Type "end" to exit and set all unaswered to default.   |\n'
         '--------------------------------------------------------'
@@ -50,6 +52,8 @@ def _ask_feature_type_df(df):
                 f'Type? [0 - Categorical]\n'
                 f'       1 - Ordinal\n'
                 f'       2 - Continue\n'
+                f'       3 - Binary\n'
+                f'      -1 - Not a feature\n'
             )
 
             # By typing 'end', the unanswered are set to default
@@ -67,10 +71,10 @@ def _ask_feature_type_df(df):
                 pass
 
             # Check if the integer is in the good range
-            if isinstance(t, int) and t <= 2 and t >= 0:
+            if isinstance(t, int) and t <= 3 and t >= -1:
                 break  # t matchs all conditions, so break the loop
 
-            print('\nError: enter an integer in {0, 1, 2} or type \'end\'.')
+            print('\nError: enter an integer in [-1, 3] or type "end".')
 
         types[feature] = t
 
