@@ -43,12 +43,12 @@ def _ask_feature_type_df(df):
         '--------------------------------------------------------'
     )
 
-    for feature in df.columns:
+    for i, feature in enumerate(df.columns):
         # Ask the feature type to the user
         while True:
             t = input(
                 f'\n\n'
-                f'Feature: {feature}\n\n'
+                f'Feature (ID: {i}): {feature}\n\n'
                 f'Type? [0 - Categorical]\n'
                 f'       1 - Ordinal\n'
                 f'       2 - Continue\n'
