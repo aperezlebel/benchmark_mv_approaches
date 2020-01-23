@@ -6,3 +6,4 @@ cache_*
 imputed
 TraumaBase
 backup
+*pyc
