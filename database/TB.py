@@ -9,6 +9,7 @@ class _TB(Database):
 
     def __init__(self):
         super().__init__('TraumaBase', 'TB')
+        self._encode()
 
     def _load_db(self, encode=True):
         """Load the TraumaBase database."""

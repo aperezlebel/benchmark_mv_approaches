@@ -29,6 +29,36 @@ def split_features(df, groups):
     return sub_df
 
 
+def fill_df(df, b, value, keys=None):
+
+    def fill(df, b, value):
+        for col in b.columns:
+            df[col][b[col]] = value
+
+        return df
+
+    if isinstance(df, dict):
+        if keys is None:
+            return {k: fill(df[k], b[k], value) for k in df.keys()}
+
+        df_encoded = dict()
+        for k in keys:
+            df_encoded[k] = fill(df[k], b[k], value)
+
+        for k in df.keys():
+            if k not in df_encoded:
+                df_encoded[k] = df[k].copy()
+
+        return df_encoded
+
+    if isinstance(df, list):
+        return [fill(v, b[k], value) for k, v in enumerate(df)]
+
+    return fill(df, b, value)
+
+
+
+
 if __name__ == '__main__':
     from database import TB
     print(split_features(TB['20000'], TB.features_types['20000']))
