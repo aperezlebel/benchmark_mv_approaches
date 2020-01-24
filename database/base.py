@@ -77,91 +77,34 @@ class Database(ABC):
         # Split the data frame according to the types of the features
         splitted_df = split_features(df, types)
 
-        # df_categorical = splitted_df[0]
-        # df_ordinal = splitted_df[1]
-        # df_continue = splitted_df[2]
-        # df_binary = splitted_df[3]
-
         # Split the missing values in the same way
         splitted_mv = split_features(mv, types)
 
-        # mv_categorical = splitted_mv[0]
-        # mv_ordinal = splitted_mv[1]
-        # mv_continue = splitted_mv[2]
-        # mv_binary = splitted_mv[3]
-
+        # Choose which tables go in which pipeline
         to_ordinal_encode_ids = [1, 3]
         to_one_hot_encode_ids = [0]
         to_delete_ids = [-1]
 
+        # Delete unwanted tables
         for k in to_delete_ids:
             del splitted_df[k]
             del splitted_mv[k]
 
-
         # Fill missing values otherwise the fit raises and error cause of Nans
-        # df_categorical[mv_categorical] = 'MISSING_VALUE'
-        # df_ordinal[mv_ordinal] = 'MISSING_VALUE'
-        # df_continue[mv_continue] = 'MISSING_VALUE'
-        # df_binary[mv_binary] = 'MISSING_VALUE'
-
-        # fill_df(df_categorical, mv_categorical, 'MISSING_VALUE')
-        # fill_df(df_ordinal, mv_ordinal, 'MISSING_VALUE')
-        # fill_df(df_continue, mv_continue, 'MISSING_VALUE')
-        # fill_df(df_binary, mv_binary, 'MISSING_VALUE')
-
-        # fill_df([
-        #     df_categorical,
-        #     df_ordinal,
-        #     df_continue,
-        #     df_binary
-        # ],
-        #     [
-        #     mv_categorical,
-        #     mv_ordinal,
-        #     mv_continue,
-        #     mv_binary
-        # ], 'MISSING_VALUE')
-
         fill_df(splitted_df, splitted_mv, 'MISSING_VALUE')
 
-        # Df to ordinal encode:
-        # to_ordinal_encode_df = {k: splitted_df[k] for k in to_ordinal_encode_ids}
-        # to_ordinal_encode_mv = {k: splitted_mv[k] for k in to_ordinal_encode_ids}
-
-        # Df to one hot encode:
-        # to_one_hot_encode_df = {k: splitted_df[k] for k in to_one_hot_encode_ids}
-        # to_one_hot_encode_mv = {k: splitted_mv[k] for k in to_one_hot_encode_ids}
-
-        # Ordinal encode the ordinal and binary ones
-        # ord_encoded = ordinal_encode([
-        #     # df_categorical,
-        #     df_ordinal,
-        #     df_binary
-        # ], [mv_ordinal, mv_binary])
-
-        # ord_encoded_df = ordinal_encode(to_ordinal_encode_df, to_ordinal_encode_mv)
-
-        # oe_df = [ordinal_encode(splitted_df[k], splitted_mv[k]) for k in to_ordinal_encode_ids]
-
+        # Ordinal encode
         splitted_df, splitted_mv = ordinal_encode(splitted_df, splitted_mv, keys=to_ordinal_encode_ids)
 
-        # One hot encode the categorical one
-        # one_hot_encoded = one_hot_encode([df_categorical], [mv_categorical])
-        # one_hot_encoded_df = one_hot_encode(to_one_hot_encode_df, to_one_hot_encode_mv)
-        # ohe_df = [one_hot_encode(splitted_df[k], splitted_mv[k]) for k in to_one_hot_encode_ids]
+        # One hot encode
         splitted_df, splitted_mv = one_hot_encode(splitted_df, splitted_mv, keys=to_one_hot_encode_ids)
 
-
-
-        # encoded_df_list = [df_continue]+oe_df+ohe_df
-
+        # Merge encoded df
         encoded_df = pd.concat(splitted_df.values(), axis=1)
         encoded_mv = pd.concat(splitted_mv.values(), axis=1)
 
         # Set missing values to blank
         fill_df(encoded_df, encoded_mv, np.nan)
-        # encoded_df[mv] = np.nan  # Clean the missing values with blank
 
         return encoded_df
 
