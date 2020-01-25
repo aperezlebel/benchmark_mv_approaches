@@ -19,6 +19,7 @@ class Database(ABC):
         self.features_types = dict()
 
         self.encoded_dataframes = dict()
+        self.encoded_missing_values = dict()
         self.name = name
         self.acronym = acronym
         self._load_db()
@@ -90,7 +91,7 @@ class Database(ABC):
             del splitted_df[k]
             del splitted_mv[k]
 
-        # Fill missing values otherwise the fit raises and error cause of Nans
+        # Fill missing values otherwise the fit raises an error cause of Nans
         fill_df(splitted_df, splitted_mv, 'MISSING_VALUE')
 
         # Ordinal encode
@@ -106,7 +107,7 @@ class Database(ABC):
         # Set missing values to blank
         fill_df(encoded_df, encoded_mv, np.nan)
 
-        return encoded_df
+        return encoded_df, encoded_mv
 
     def _encode(self):
         for name, df in self.dataframes.items():
@@ -117,5 +118,6 @@ class Database(ABC):
             else:
                 types = self.features_types[name]
                 mv = self.missing_values[name]
-                self.encoded_dataframes[name] = self._encode_df(df, mv != 0,
-                                                                types)
+                encoded_df, encoded_mv = self._encode_df(df, mv != 0, types)
+                self.encoded_dataframes[name] = encoded_df
+                self.encoded_missing_values[name] = encoded_mv
