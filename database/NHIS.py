@@ -4,6 +4,7 @@ import pandas as pd
 import numpy as np
 
 from .base import Database
+from .constants import NOT_APPLICABLE, NOT_AVAILABLE, NOT_MISSING
 
 
 class _NHIS(Database):
@@ -27,10 +28,11 @@ class _NHIS(Database):
     @staticmethod
     def heuristic(series):
         # The series storing the type of missing values
-        series_mv = pd.Series(0, index=series.index, name=series.name)
+        series_mv = pd.Series(NOT_MISSING, index=series.index,
+                              name=series.name)
 
         # Type 1 missing values
-        series_mv[series.isna()] = 1  # Type 1 missing values
+        series_mv[series.isna()] = NOT_APPLICABLE
 
         # Type 2 missing values
         # This rule is not applicable for mixed types columns
@@ -40,14 +42,14 @@ class _NHIS(Database):
         val_max = series.max()
 
         if val_max < 10:  # Type 1 column
-            series_mv[series == 7] = 2
-            series_mv[series == 8] = 2
-            series_mv[series == 9] = 2
+            series_mv[series == 7] = NOT_AVAILABLE
+            series_mv[series == 8] = NOT_AVAILABLE
+            series_mv[series == 9] = NOT_AVAILABLE
 
         if val_max < 100:  # Type 2 column
-            series_mv[series == 97] = 2
-            series_mv[series == 98] = 2
-            series_mv[series == 99] = 2
+            series_mv[series == 97] = NOT_AVAILABLE
+            series_mv[series == 98] = NOT_AVAILABLE
+            series_mv[series == 99] = NOT_AVAILABLE
 
         return series_mv
 

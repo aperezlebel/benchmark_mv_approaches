@@ -3,6 +3,7 @@
 import pandas as pd
 
 from .base import Database
+from .constants import NOT_APPLICABLE, NOT_AVAILABLE, NOT_MISSING
 
 
 class _TB(Database):
@@ -30,11 +31,31 @@ class _TB(Database):
     @staticmethod
     def heuristic(series):
         # The series storing the type of missing values
-        series_mv = pd.Series(0, index=series.index, name=series.name)
+        series_mv = pd.Series(NOT_MISSING, index=series.index,
+                              name=series.name)
 
-        series_mv[series.isna()] = 2
-        series_mv[series == 'NA'] = 2
-        series_mv[series == 'ND'] = 2
+        series_mv[series.isna()] = NOT_AVAILABLE
+        series_mv[series == 'NA'] = NOT_AVAILABLE
+        series_mv[series == 'ND'] = NOT_AVAILABLE
+        series_mv[series == 'NR'] = NOT_AVAILABLE
+        series_mv[series == 'NF'] = NOT_AVAILABLE
+        series_mv[series == 'NDC'] = NOT_AVAILABLE
+        series_mv[series == 'IMP'] = NOT_AVAILABLE
+
+        print(series.name)
+
+        if series.name == 'PaO2/FIO2 (mmHg) si VM ou CPAP':
+            series_mv[series == 'Non applicable :  ni VM ni CPAP'] = NOT_APPLICABLE
+
+        if series.name == 'Glasgow':
+            series_mv[series == '06/09/2019 00:00'] = NOT_AVAILABLE
+            series_mv[series == '10/12/2019 00:00'] = NOT_AVAILABLE
+
+        if series.name == 'CGR 24h':
+            series_mv[series == 'Pas de choc hémorragique'] = NOT_APPLICABLE
+
+        if series.name == 'Pression intracrânienne (PIC)':
+            series_mv[series == 'Pas de TC'] = NOT_APPLICABLE
 
         return series_mv
 

@@ -118,6 +118,7 @@ class Database(ABC):
             else:
                 types = self.features_types[name]
                 mv = self.missing_values[name]
-                encoded_df, encoded_mv = self._encode_df(df, mv != 0, types)
+                encoded_df, encoded_mv = self._encode_df(df, mv != NOT_MISSING,
+                                                         types)
                 self.encoded_dataframes[name] = encoded_df
                 self.encoded_missing_values[name] = encoded_mv

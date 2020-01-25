@@ -4,6 +4,8 @@ import pandas as pd
 import numpy as np
 from sklearn.preprocessing import OrdinalEncoder, OneHotEncoder
 
+from database.constants import NOT_MISSING
+
 
 def _df_type_handler(function, df, mv, keys):
     if isinstance(df, dict):
@@ -30,7 +32,7 @@ def ordinal_encode(df, mv, keys=None):
 
     def encode(df, mv):
         enc = OrdinalEncoder()
-        # Fit transform the encode
+        # Fit transform the encoder
         data_encoded = enc.fit_transform(df)
 
         df_encoded = pd.DataFrame(data_encoded,
@@ -46,7 +48,7 @@ def one_hot_encode(df, mv, keys=None):
     def encode(df, mv):
         enc = OneHotEncoder(sparse=False)
 
-        # Fit transform the encode
+        # Fit transform the encoder
         data_encoded = enc.fit_transform(df)
 
         feature_names = list(enc.get_feature_names(list(df.columns)))
@@ -56,7 +58,7 @@ def one_hot_encode(df, mv, keys=None):
                                   columns=feature_names
                                   )
 
-        mv_encoded = pd.DataFrame(np.zeros(data_encoded.shape),
+        mv_encoded = pd.DataFrame(NOT_MISSING*np.ones(data_encoded.shape),
                                   index=df.index,
                                   columns=feature_names)
 

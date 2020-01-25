@@ -1,0 +1,4 @@
+# Missing values type
+NOT_APPLICABLE = 1
+NOT_AVAILABLE = 2
+NOT_MISSING = 0
