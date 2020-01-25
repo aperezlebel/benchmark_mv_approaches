@@ -8,6 +8,7 @@ from missing_values import get_missing_values
 from features_type import _load_feature_types
 from df_utils import split_features, fill_df
 from encode import ordinal_encode, one_hot_encode
+from .constants import CATEGORICAL, ORDINAL, BINARY, NOT_A_FEATURE, NOT_MISSING
 
 
 class Database(ABC):
@@ -82,9 +83,9 @@ class Database(ABC):
         splitted_mv = split_features(mv, types)
 
         # Choose which tables go in which pipeline
-        to_ordinal_encode_ids = [1, 3]
-        to_one_hot_encode_ids = [0]
-        to_delete_ids = [-1]
+        to_ordinal_encode_ids = [ORDINAL, BINARY]
+        to_one_hot_encode_ids = [CATEGORICAL]
+        to_delete_ids = [NOT_A_FEATURE]
 
         # Delete unwanted tables
         for k in to_delete_ids:
