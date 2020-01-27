@@ -6,7 +6,7 @@ import pandas as pd
 import numpy as np
 from sklearn.preprocessing import OrdinalEncoder, OneHotEncoder
 
-from database.constants import NOT_MISSING
+from database.constants import NOT_MISSING, BINARY
 
 
 def _df_type_handler(function, df_seq, keys=None, **kwargs):
@@ -97,6 +97,8 @@ def one_hot_encode(df, mv, types, keys=None):
         mv_encoded = pd.DataFrame(NOT_MISSING*np.ones(data_encoded.shape),
                                   index=df.index,
                                   columns=feature_names)
+
+        types = pd.Series(BINARY, index=feature_names)
 
         return df_encoded, mv_encoded, types
 

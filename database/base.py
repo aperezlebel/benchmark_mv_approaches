@@ -18,11 +18,12 @@ class Database(ABC):
     def __init__(self, name='', acronym=''):
         self.dataframes = dict()
         self.missing_values = dict()
-        self.features_types = dict()
+        self.feature_types = dict()
         self.ordinal_orders = dict()
 
         self.encoded_dataframes = dict()
         self.encoded_missing_values = dict()
+        self.encoded_feature_types = dict()
         self.name = name
         self.acronym = acronym
         self._load_db()
@@ -64,7 +65,7 @@ class Database(ABC):
     def _load_feature_types(self):
         for name in self.df_names():
             try:
-                self.features_types[name] = _load_feature_types(self, name)
+                self.feature_types[name] = _load_feature_types(self, name)
             except FileNotFoundError:
                 print(f'{name}: features types not found. Ignored.')
             except ValueError:
@@ -119,22 +120,24 @@ class Database(ABC):
         # Merge encoded df
         encoded_df = pd.concat(splitted_df.values(), axis=1)
         encoded_mv = pd.concat(splitted_mv.values(), axis=1)
+        encoded_types = pd.concat(splitted_types.values())
 
         # Set missing values to blank
         fill_df(encoded_df, encoded_mv, np.nan)
 
-        return encoded_df, encoded_mv
+        return encoded_df, encoded_mv, encoded_types
 
     def _encode(self):
         for name, df in self.dataframes.items():
-            if name not in self.features_types:
+            if name not in self.feature_types:
                 print(f'{name}: feature types missing. Encoding ignored.')
             elif name not in self.missing_values:
                 print(f'{name}: missing values df missing. Encoding ignored.')
             else:
-                types = self.features_types[name]
+                types = self.feature_types[name]
                 mv = self.missing_values[name]
-                encoded_df, encoded_mv = self._encode_df(df, mv != NOT_MISSING,
-                                                         types, order=self.ordinal_orders[name])
-                self.encoded_dataframes[name] = encoded_df
-                self.encoded_missing_values[name] = encoded_mv
+                encoded = self._encode_df(df, mv != NOT_MISSING,
+                                          types, order=self.ordinal_orders[name])
+                self.encoded_dataframes[name] = encoded[0]
+                self.encoded_missing_values[name] = encoded[1]
+                self.encoded_feature_types[name] = encoded[2]
