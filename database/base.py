@@ -94,6 +94,9 @@ class Database(ABC):
         # Split the missing values in the same way
         splitted_mv = split_features(mv, types)
 
+        # Split the feature types in the same way
+        splitted_types = split_features(types, types)
+
         # Choose which tables go in which pipeline
         to_ordinal_encode_ids = [ORDINAL, BINARY]
         to_one_hot_encode_ids = [CATEGORICAL]
@@ -111,7 +114,7 @@ class Database(ABC):
         splitted_df, splitted_mv = ordinal_encode(splitted_df, splitted_mv, keys=to_ordinal_encode_ids, order=order)
 
         # One hot encode
-        splitted_df, splitted_mv = one_hot_encode(splitted_df, splitted_mv, keys=to_one_hot_encode_ids)
+        splitted_df, splitted_mv, splitted_types = one_hot_encode(splitted_df, splitted_mv, splitted_types, keys=to_one_hot_encode_ids)
 
         # Merge encoded df
         encoded_df = pd.concat(splitted_df.values(), axis=1)

@@ -9,26 +9,33 @@ from sklearn.preprocessing import OrdinalEncoder, OneHotEncoder
 from database.constants import NOT_MISSING
 
 
-def _df_type_handler(function, df, mv, keys, **kwargs):
-    if isinstance(df, dict):
-        df_encoded, mv_encoded = dict(), dict()
-        for k in df.keys():
+def _df_type_handler(function, df_seq, keys=None, **kwargs):
+    if not df_seq:
+        return function(**kwargs)
+    n_df = len(df_seq)
+    if isinstance(df_seq[0], dict):
+        res = tuple([dict() for k in range(n_df)])
+
+        for k in df_seq[0].keys():
             if keys is None or (keys is not None and k in keys):
-                df_encoded[k], mv_encoded[k] = function(df[k], mv[k], **kwargs)
+                r = function(*(df_seq[i][k] for i in range(n_df)), **kwargs)
+                for i in range(n_df):
+                    res[i][k] = r[i]
             else:
-                df_encoded[k], mv_encoded[k] = df[k].copy(), mv[k].copy()
+                for i in range(n_df):
+                    res[i][k] = df_seq[i][k].copy()
 
-        return df_encoded, mv_encoded
+        return res
 
-    if isinstance(df, list):
+    if isinstance(df_seq[0], list):
+        new_df_seq = [dict(enumerate(df)) for df in df_seq]
         df_encoded, mv_encoded = _df_type_handler(function,
-                                                  dict(enumerate(df)),
-                                                  dict(enumerate(mv)),
+                                                  new_df_seq,
                                                   keys=keys,
                                                   **kwargs)
         return list(df_encoded.values()), list(mv_encoded.values())
 
-    return function(df, mv, **kwargs)
+    return function(df_seq, **kwargs)
 
 
 def ordinal_encode(df, mv, keys=None, order=None):
@@ -69,12 +76,12 @@ def ordinal_encode(df, mv, keys=None, order=None):
 
         return df_encoded, mv
 
-    return _df_type_handler(encode, df, mv, keys, order=order)
+    return _df_type_handler(encode, (df, mv), keys, order=order)
 
 
-def one_hot_encode(df, mv, keys=None):
+def one_hot_encode(df, mv, types, keys=None):
 
-    def encode(df, mv):
+    def encode(df, mv, types):
         enc = OneHotEncoder(sparse=False)
 
         # Fit transform the encoder
@@ -91,6 +98,6 @@ def one_hot_encode(df, mv, keys=None):
                                   index=df.index,
                                   columns=feature_names)
 
-        return df_encoded, mv_encoded
+        return df_encoded, mv_encoded, types
 
-    return _df_type_handler(encode, df, mv, keys)
+    return _df_type_handler(encode, (df, mv, types), keys=keys)
