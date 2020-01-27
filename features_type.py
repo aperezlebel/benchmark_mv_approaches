@@ -17,6 +17,8 @@ def _ask_feature_type_df(df):
         1 - Ordinal
         2 - Continue
         3 - Binary
+        4 - Date timestamp
+        5 - Date exploded
         -1 - Not a feature
 
     Parameters:
@@ -27,7 +29,7 @@ def _ask_feature_type_df(df):
     Returns:
     --------
     pandas.Series
-        Series with df.columns as index and integers in [-1, 3] as values.
+        Series with df.columns as index and integers as values.
 
     """
     types = pd.Series(0, index=df.columns)
@@ -37,7 +39,7 @@ def _ask_feature_type_df(df):
         ' -------------------------------------------------------\n'
         '|Set the type of features in the data frame.            |\n'
         '|-------------------------------------------------------|\n'
-        '|Type an integer in [-1, 3] to set a category.          |\n'
+        '|Type an integer in [-1, 5] to set a category.          |\n'
         '|Leave empty to select default choice [bracketed].      |\n'
         '|Type "end" to exit and set all unaswered to default.   |\n'
         '--------------------------------------------------------'
@@ -53,6 +55,8 @@ def _ask_feature_type_df(df):
                 f'       1 - Ordinal\n'
                 f'       2 - Continue\n'
                 f'       3 - Binary\n'
+                f'       4 - Date timestamp\n'
+                f'       5 - Date exploded\n'
                 f'      -1 - Not a feature\n'
             )
 
@@ -71,10 +75,10 @@ def _ask_feature_type_df(df):
                 pass
 
             # Check if the integer is in the good range
-            if isinstance(t, int) and t <= 3 and t >= -1:
+            if isinstance(t, int) and t <= 5 and t >= -1:
                 break  # t matchs all conditions, so break the loop
 
-            print('\nError: enter an integer in [-1, 3] or type "end".')
+            print('\nError: enter an integer in [-1, 5] or type "end".')
 
         types[feature] = t
 
@@ -134,7 +138,7 @@ def ask_feature_type_helper():
         _dump_feature_types(types, db, df_name)
 
 
-def _dump_feature_types(types, db, df_name):
+def _dump_feature_types(types, db, df_name, anonymize=True):
     """Dump the features' types anonymizing the features' names.
 
     Parameters:
@@ -147,26 +151,30 @@ def _dump_feature_types(types, db, df_name):
     df_name : string
         Name of the data frame from which has been computed the types.
         Used to dump the results in the right folder.
+    anonymize : bool
+        Whether to anonymize feature names or not when dumping.
+        False: features' name is dumped. True: only id is dumped.
 
     """
     dir_path = f'metadata/features_types/{db.acronym}/'
 
     # Anonymize features' names
-    anonymized_types = pd.Series(types.values, index=range(len(types.index)))
+    if anonymize:
+        types = pd.Series(types.values, index=range(len(types.index)))
 
     # Creates directories if doesn't exist
     os.makedirs(dir_path, exist_ok=True)
 
     # Save to csv
     filepath = dir_path+df_name
-    anonymized_types.to_csv(f'{filepath}.csv', header=False)
+    types.to_csv(f'{filepath}.csv', header=False)
 
     # Backup all dumps in the same folder
     backup_tag = f'{filepath.replace("/", "_")}_{time():.1f}'
-    anonymized_types.to_csv(f'{backup_dir}{backup_tag}.csv', header=False)
+    types.to_csv(f'{backup_dir}{backup_tag}.csv', header=False)
 
 
-def _load_feature_types(db, df_name):
+def _load_feature_types(db, df_name, anonymized=True):
     """Load the features' types deanonymizing the features' names.
 
     Parameters:
@@ -175,6 +183,9 @@ def _load_feature_types(db, df_name):
         The features' database.
     df_name : string
         Name of the features' data frame.
+    anonymized : bool
+        Whether the features have been anonymized before being dumped
+        (i.e no feature names but only their id).
 
     Returns:
     --------
@@ -185,12 +196,14 @@ def _load_feature_types(db, df_name):
     filepath = f'metadata/features_types/{db.acronym}/{df_name}.csv'
 
     # Load types series
-    anonymized_types = pd.read_csv(filepath, index_col=0,
+    types = pd.read_csv(filepath, index_col=0,
                                    header=None, squeeze=True)
 
-    # Deanonymize features' names and return
-    return pd.Series(anonymized_types.values, index=db[df_name].columns)
+    # Deanonymize features' names
+    if anonymized:
+        types = pd.Series(types.values, index=db[df_name].columns)
 
+    return types
 
 if __name__ == '__main__':
     from database import NHIS, TB
