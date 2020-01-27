@@ -65,7 +65,8 @@ class Database(ABC):
     def _load_feature_types(self):
         for name in self.df_names():
             try:
-                self.feature_types[name] = _load_feature_types(self, name)
+                self.feature_types[name] = _load_feature_types(self, name,
+                                                               anonymized=False)
             except FileNotFoundError:
                 print(f'{name}: features types not found. Ignored.')
             except ValueError:
