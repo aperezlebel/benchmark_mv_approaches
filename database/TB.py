@@ -57,6 +57,20 @@ class _TB(Database):
         if series.name == 'Pression intracrânienne (PIC)':
             series_mv[series == 'Pas de TC'] = NOT_APPLICABLE
 
+        if series.name == 'Nombre de pneumopathies':
+            series_mv[series == 'Non'] = NOT_APPLICABLE
+            series_mv[series == 'Oui'] = NOT_AVAILABLE
+
+        if series.name == 'Jour de la première pneumopathie':
+            series_mv[series == 'Non'] = NOT_APPLICABLE
+            series_mv[series == 'Oui'] = NOT_AVAILABLE
+
+        if series.name == 'Régression mydriase sous osmothérapie':
+            series_mv[series == 'Non testé'] = NOT_AVAILABLE
+
+        if series.name == 'Lieu du traumatisme':
+            series_mv[series == 'Non-spécifié'] = NOT_AVAILABLE
+
         return series_mv
 
 
