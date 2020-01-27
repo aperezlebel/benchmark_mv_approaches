@@ -3,6 +3,7 @@
 from abc import ABC, abstractmethod
 import pandas as pd
 import numpy as np
+import yaml
 
 from missing_values import get_missing_values
 from features_type import _load_feature_types
@@ -18,6 +19,7 @@ class Database(ABC):
         self.dataframes = dict()
         self.missing_values = dict()
         self.features_types = dict()
+        self.ordinal_orders = dict()
 
         self.encoded_dataframes = dict()
         self.encoded_missing_values = dict()
@@ -25,6 +27,7 @@ class Database(ABC):
         self.acronym = acronym
         self._load_db()
         self._load_feature_types()
+        self._load_ordinal_orders()
         self._find_missing_values()
 
     def __getitem__(self, name):
@@ -70,12 +73,21 @@ class Database(ABC):
                     f'Check if lengths match. Ignored.'
                 )
 
+    def _load_ordinal_orders(self):
+        for df_name in self.dataframes.keys():
+            filepath = f'metadata/ordinal_orders/{self.acronym}/{df_name}.yml'
+            with open(filepath, 'r') as file:
+                try:
+                    self.ordinal_orders[df_name] = yaml.safe_load(file)
+                except yaml.YAMLError as exc:
+                    print(f'{exc}. No order loaded for {df_name}.')
+
     def _find_missing_values(self):
         for name, df in self.dataframes.items():
             self.missing_values[name] = get_missing_values(df, self.heuristic)
 
     @staticmethod
-    def _encode_df(df, mv, types):
+    def _encode_df(df, mv, types, order=None):
         # Split the data frame according to the types of the features
         splitted_df = split_features(df, types)
 
@@ -93,10 +105,10 @@ class Database(ABC):
             del splitted_mv[k]
 
         # Fill missing values otherwise the fit raises an error cause of Nans
-        fill_df(splitted_df, splitted_mv, 'MISSING_VALUE')
+        fill_df(splitted_df, splitted_mv, 'z MISSING_VALUE')
 
         # Ordinal encode
-        splitted_df, splitted_mv = ordinal_encode(splitted_df, splitted_mv, keys=to_ordinal_encode_ids)
+        splitted_df, splitted_mv = ordinal_encode(splitted_df, splitted_mv, keys=to_ordinal_encode_ids, order=order)
 
         # One hot encode
         splitted_df, splitted_mv = one_hot_encode(splitted_df, splitted_mv, keys=to_one_hot_encode_ids)
@@ -120,6 +132,6 @@ class Database(ABC):
                 types = self.features_types[name]
                 mv = self.missing_values[name]
                 encoded_df, encoded_mv = self._encode_df(df, mv != NOT_MISSING,
-                                                         types)
+                                                         types, order=self.ordinal_orders[name])
                 self.encoded_dataframes[name] = encoded_df
                 self.encoded_missing_values[name] = encoded_mv
