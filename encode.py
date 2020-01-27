@@ -5,11 +5,15 @@ from time import time
 import pandas as pd
 import numpy as np
 from sklearn.preprocessing import OrdinalEncoder, OneHotEncoder
+from datetime import datetime
 
-from database.constants import NOT_MISSING, BINARY
+from database.constants import NOT_MISSING, BINARY, CONTINUE
 
 
 def _df_type_handler(function, df_seq, keys=None, **kwargs):
+    if not isinstance(keys, list):
+        keys = [keys]
+
     if not df_seq:
         return function(**kwargs)
     n_df = len(df_seq)
@@ -98,8 +102,49 @@ def one_hot_encode(df, mv, types, keys=None):
                                   index=df.index,
                                   columns=feature_names)
 
-        types = pd.Series(BINARY, index=feature_names)
+        types_encoded = pd.Series(BINARY, index=feature_names)
 
-        return df_encoded, mv_encoded, types
+        return df_encoded, mv_encoded, types_encoded
 
     return _df_type_handler(encode, (df, mv, types), keys=keys)
+
+
+def date_encode(df, mv, types, keys=None, method='timestamp', dayfirst=False):
+
+    def encode(df, mv, types, method='timestamp', dayfirst=False):
+        if method == 'timestamp':
+            data = dict()
+
+            for feature_name in df.columns:
+                dt_series = pd.to_datetime(df[feature_name], dayfirst=dayfirst)
+                dt_min = np.datetime64(dt_series.min())
+                tdt = np.timedelta64(1, 'D')
+                data[feature_name] = np.subtract(dt_series.values, dt_min)/tdt
+
+            df_encoded = pd.DataFrame(data, index=df.index)
+            mv_encoded = mv
+            types_encoded = pd.Series(CONTINUE, index=df_encoded.columns)
+
+        elif method == 'explode':
+            df_data = dict()
+            mv_data = dict()
+
+            for feature_name in df.columns:
+                dt = pd.to_datetime(df[feature_name], dayfirst=dayfirst).dt
+
+                df_data[f'{feature_name}_year'] = dt.year
+                df_data[f'{feature_name}_month'] = dt.month
+                df_data[f'{feature_name}_day'] = dt.day
+
+                mv_data[f'{feature_name}_year'] = mv[feature_name]
+                mv_data[f'{feature_name}_month'] = mv[feature_name]
+                mv_data[f'{feature_name}_day'] = mv[feature_name]
+
+            df_encoded = pd.DataFrame(df_data, index=df.index)
+            mv_encoded = pd.DataFrame(mv_data, index=df.index)
+            types_encoded = pd.Series(CONTINUE, index=df_encoded.columns)
+
+        return df_encoded, mv_encoded, types_encoded
+
+    return _df_type_handler(encode, (df, mv, types), keys=keys, method=method,
+                            dayfirst=dayfirst)

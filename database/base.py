@@ -8,8 +8,9 @@ import yaml
 from missing_values import get_missing_values
 from features_type import _load_feature_types
 from df_utils import split_features, fill_df
-from encode import ordinal_encode, one_hot_encode
-from .constants import CATEGORICAL, ORDINAL, BINARY, NOT_A_FEATURE, NOT_MISSING
+from encode import ordinal_encode, one_hot_encode, date_encode
+from .constants import CATEGORICAL, ORDINAL, BINARY, NOT_A_FEATURE, \
+    NOT_MISSING, DATE_TIMESTAMP, DATE_EXPLODED
 
 
 class Database(ABC):
@@ -118,13 +119,17 @@ class Database(ABC):
         # One hot encode
         splitted_df, splitted_mv, splitted_types = one_hot_encode(splitted_df, splitted_mv, splitted_types, keys=to_one_hot_encode_ids)
 
+        # Set missing values to blank
+        fill_df(splitted_df, splitted_mv, np.nan)
+
+        # Date encode
+        splitted_df, splitted_mv, splitted_types = date_encode(splitted_df, splitted_mv, splitted_types, keys=DATE_EXPLODED, method='explode', dayfirst=True)
+        splitted_df, splitted_mv, splitted_types = date_encode(splitted_df, splitted_mv, splitted_types, keys=DATE_TIMESTAMP, method='timestamp', dayfirst=True)
+
         # Merge encoded df
         encoded_df = pd.concat(splitted_df.values(), axis=1)
         encoded_mv = pd.concat(splitted_mv.values(), axis=1)
         encoded_types = pd.concat(splitted_types.values())
-
-        # Set missing values to blank
-        fill_df(encoded_df, encoded_mv, np.nan)
 
         return encoded_df, encoded_mv, encoded_types
 
