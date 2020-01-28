@@ -15,10 +15,11 @@ def _ask_feature_type_df(df):
     Available types:
         0 - Categorical
         1 - Ordinal
-        2 - Continue
-        3 - Binary
+        2 - Continue • real
+        3 - Continue • integer
         4 - Date timestamp
         5 - Date exploded
+        6 - Binary
         -1 - Not a feature
 
     Parameters:
@@ -39,7 +40,7 @@ def _ask_feature_type_df(df):
         ' -------------------------------------------------------\n'
         '|Set the type of features in the data frame.            |\n'
         '|-------------------------------------------------------|\n'
-        '|Type an integer in [-1, 5] to set a category.          |\n'
+        '|Type an integer in [-1, 6] to set a category.          |\n'
         '|Leave empty to select default choice [bracketed].      |\n'
         '|Type "end" to exit and set all unaswered to default.   |\n'
         '--------------------------------------------------------'
@@ -53,10 +54,11 @@ def _ask_feature_type_df(df):
                 f'Feature (ID: {i}): {feature}\n\n'
                 f'Type? [0 - Categorical]\n'
                 f'       1 - Ordinal\n'
-                f'       2 - Continue\n'
-                f'       3 - Binary\n'
+                f'       2 - Continue • real\n'
+                f'       3 - Continue • integer\n'
                 f'       4 - Date timestamp\n'
                 f'       5 - Date exploded\n'
+                f'       6 - Binary\n'
                 f'      -1 - Not a feature\n'
             )
 
@@ -75,10 +77,10 @@ def _ask_feature_type_df(df):
                 pass
 
             # Check if the integer is in the good range
-            if isinstance(t, int) and t <= 5 and t >= -1:
+            if isinstance(t, int) and t <= 6 and t >= -1:
                 break  # t matchs all conditions, so break the loop
 
-            print('\nError: enter an integer in [-1, 5] or type "end".')
+            print('\nError: enter an integer in [-1, 6] or type "end".')
 
         types[feature] = t
 
@@ -197,7 +199,7 @@ def _load_feature_types(db, df_name, anonymized=True):
 
     # Load types series
     types = pd.read_csv(filepath, index_col=0,
-                                   header=None, squeeze=True)
+                        header=None, squeeze=True)
 
     # Deanonymize features' names
     if anonymized:

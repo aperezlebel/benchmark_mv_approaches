@@ -7,7 +7,7 @@ import numpy as np
 from sklearn.preprocessing import OrdinalEncoder, OneHotEncoder
 from datetime import datetime
 
-from database.constants import NOT_MISSING, BINARY, CONTINUE
+from database.constants import NOT_MISSING, BINARY, CONTINUE_I
 
 
 def _df_type_handler(function, df_seq, keys=None, **kwargs):
@@ -123,7 +123,7 @@ def date_encode(df, mv, types, keys=None, method='timestamp', dayfirst=False):
 
             df_encoded = pd.DataFrame(data, index=df.index)
             mv_encoded = mv
-            types_encoded = pd.Series(CONTINUE, index=df_encoded.columns)
+            types_encoded = pd.Series(CONTINUE_I, index=df_encoded.columns)
 
         elif method == 'explode':
             df_data = dict()
@@ -142,7 +142,7 @@ def date_encode(df, mv, types, keys=None, method='timestamp', dayfirst=False):
 
             df_encoded = pd.DataFrame(df_data, index=df.index)
             mv_encoded = pd.DataFrame(mv_data, index=df.index)
-            types_encoded = pd.Series(CONTINUE, index=df_encoded.columns)
+            types_encoded = pd.Series(CONTINUE_I, index=df_encoded.columns)
 
         return df_encoded, mv_encoded, types_encoded
 

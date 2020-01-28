@@ -63,7 +63,7 @@ def impute(df, df_mv, imputer):
 
 if __name__ == '__main__':
     from database import TB
-    from database.constants import CATEGORICAL
+    from database.constants import CATEGORICAL, CONTINUE_R
 
     imputers = {
         'Mean': SimpleImputer(strategy='mean'),
@@ -87,5 +87,6 @@ if __name__ == '__main__':
         print(df_imputed)
         df_imputed.to_csv(f'imputed/TB_20000_imputed_{name}.csv', sep=';')
 
-        df_rounded = rint_features(df_imputed, TB.encoded_feature_types['20000'] != CATEGORICAL)
+        f_types = TB.encoded_feature_types['20000']
+        df_rounded = rint_features(df_imputed, (f_types != CATEGORICAL) & (f_types != CONTINUE_R))
         df_rounded.to_csv(f'imputed/TB_20000_imputed_rounded_{name}.csv', sep=';')
