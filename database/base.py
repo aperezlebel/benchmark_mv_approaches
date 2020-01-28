@@ -111,7 +111,8 @@ class Database(ABC):
             del splitted_mv[k]
 
         # Fill missing values otherwise the fit raises an error cause of Nans
-        fill_df(splitted_df, splitted_mv, 'z MISSING_VALUE')
+        splitted_mv_bool = {k: mv != NOT_MISSING for k, mv in splitted_mv.items()}
+        fill_df(splitted_df, splitted_mv_bool, 'z MISSING_VALUE')
 
         # Ordinal encode
         splitted_df, splitted_mv = ordinal_encode(splitted_df, splitted_mv, keys=to_ordinal_encode_ids, order=order)
@@ -120,7 +121,8 @@ class Database(ABC):
         splitted_df, splitted_mv, splitted_types = one_hot_encode(splitted_df, splitted_mv, splitted_types, keys=to_one_hot_encode_ids)
 
         # Set missing values to blank
-        fill_df(splitted_df, splitted_mv, np.nan)
+        splitted_mv_bool = {k: mv != NOT_MISSING for k, mv in splitted_mv.items()}
+        fill_df(splitted_df, splitted_mv_bool, np.nan)
 
         # Date encode
         splitted_df, splitted_mv, splitted_types = date_encode(splitted_df, splitted_mv, splitted_types, keys=DATE_EXPLODED, method='explode', dayfirst=True)
@@ -142,8 +144,8 @@ class Database(ABC):
             else:
                 types = self.feature_types[name]
                 mv = self.missing_values[name]
-                encoded = self._encode_df(df, mv != NOT_MISSING,
-                                          types, order=self.ordinal_orders[name])
+                encoded = self._encode_df(df, mv, types,
+                                          order=self.ordinal_orders[name])
                 self.encoded_dataframes[name] = encoded[0]
                 self.encoded_missing_values[name] = encoded[1]
                 self.encoded_feature_types[name] = encoded[2]
