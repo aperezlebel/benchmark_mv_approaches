@@ -1,6 +1,7 @@
 """Operations on pandas data frame."""
 
 import pandas as pd
+import numpy as np
 
 
 def split_features(df, groups):
@@ -62,8 +63,33 @@ def fill_df(df, b, value, keys=None):
     return fill(df, b, value)
 
 
+def rint_features(df, features):
+    """Inplace round elements of selected columns to nearest integer.
+
+    Parameters:
+    -----------
+    df : pandas.DataFrame
+        The data frame with columns to be rounded.
+    groups : pandas.Series
+        Series with the features' names as index and boolean values where True
+        encode the features to round.
+
+    Returns:
+    --------
+    pandas.DataFrame
+        Data frame with rounded columns.
+
+    """
+    features_to_round = features[features].index
+
+    df_rounded = df.copy()
+
+    for feature_name in features_to_round:
+        df_rounded[feature_name] = np.rint(df[feature_name])
+
+    return df_rounded
 
 
 if __name__ == '__main__':
     from database import TB
-    print(split_features(TB['20000'], TB.features_types['20000']))
+    print(split_features(TB['20000'], TB.feature_types['20000']))

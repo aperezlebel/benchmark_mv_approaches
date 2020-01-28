@@ -6,8 +6,9 @@ from copy import deepcopy
 from sklearn.experimental import enable_iterative_imputer
 from sklearn.impute import SimpleImputer, IterativeImputer
 
-from database import NHIS
-from missing_values import get_missing_values
+# from database import NHIS
+# from missing_values import get_missing_values
+from df_utils import fill_df, rint_features
 
 
 def impute(df, df_mv, imputer):
@@ -33,7 +34,7 @@ def impute(df, df_mv, imputer):
 
     """
     imputer = deepcopy(imputer)
-    mv_placeholder = 0
+    mv_placeholder = -1
 
     # Find an unused placeholder for missing values
     while df.isin([mv_placeholder]).any().any():
@@ -41,7 +42,7 @@ def impute(df, df_mv, imputer):
 
     # Replace the missing values with the placeholder
     df_aux = df.copy()
-    df_aux[df_mv] = mv_placeholder
+    fill_df(df_aux, df_mv, mv_placeholder)
 
     # Impute the missing values
     imputer.missing_values = mv_placeholder
@@ -61,19 +62,30 @@ def impute(df, df_mv, imputer):
 
 
 if __name__ == '__main__':
+    from database import TB
+    from database.constants import CATEGORICAL
+
     imputers = {
         'Mean': SimpleImputer(strategy='mean'),
         'Mean+mask': SimpleImputer(strategy='mean', add_indicator=True),
         'Med': SimpleImputer(strategy='median'),
         'Med+mask': SimpleImputer(strategy='median', add_indicator=True),
-        'Iterative': IterativeImputer(),
-        'Iterative+mask': IterativeImputer(add_indicator=True),
+        # 'Iterative': IterativeImputer(),
+        # 'Iterative+mask': IterativeImputer(add_indicator=True),
     }
 
-    df = NHIS['family']
-    df_mv = get_missing_values(df, NHIS.heuristic)
+    df = TB.encoded_dataframes['20000']
+    # TB.encoded_dataframes['20000'].to_csv('sandbox/to_impute.csv',
+    #                                   sep=';')
+    # TB.encoded_missing_values['20000'].to_csv('sandbox/to_impute_mv.csv',
+    #                                   sep=';')
+    # df_mv = get_missing_values(df, NHIS.heuristic)
+    df_mv = TB.encoded_missing_values['20000']
 
     for name, imputer in imputers.items():
         df_imputed = impute(df, df_mv != 0, imputer)
         print(df_imputed)
-        df_imputed.to_csv(f'imputed/family_imputed_{name}.csv')
+        df_imputed.to_csv(f'imputed/TB_20000_imputed_{name}.csv', sep=';')
+
+        df_rounded = rint_features(df_imputed, TB.encoded_feature_types['20000'] != CATEGORICAL)
+        df_rounded.to_csv(f'imputed/TB_20000_imputed_rounded_{name}.csv', sep=';')
