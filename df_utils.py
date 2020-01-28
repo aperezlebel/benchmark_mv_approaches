@@ -1,5 +1,7 @@
 """Operations on pandas data frame."""
 
+import pandas as pd
+
 
 def split_features(df, groups):
     """Split the columns of a df according to their given group.
@@ -23,8 +25,11 @@ def split_features(df, groups):
     for group_id in groups.unique():
         # Get the names of the features to drop
         features_to_drop = groups[groups != group_id].index
-        # Get the data frame without htose features
-        sub_df[group_id] = df.drop(features_to_drop, 1)
+        # Get the data frame without those features
+        if isinstance(df, pd.Series):
+            sub_df[group_id] = df.drop(features_to_drop)
+        else:
+            sub_df[group_id] = df.drop(features_to_drop, 1)
 
     return sub_df
 
