@@ -4,6 +4,8 @@ import pandas as pd
 import os
 from time import time
 
+from database.constants import METADATA_PATH
+
 
 backup_dir = 'backup/'
 os.makedirs(backup_dir, exist_ok=True)
@@ -158,7 +160,7 @@ def _dump_feature_types(types, db, df_name, anonymize=True):
         False: features' name is dumped. True: only id is dumped.
 
     """
-    dir_path = f'metadata/features_types/{db.acronym}/'
+    dir_path = f'{METADATA_PATH}/features_types/{db.acronym}/'
 
     # Anonymize features' names
     if anonymize:
@@ -195,7 +197,7 @@ def _load_feature_types(db, df_name, anonymized=True):
         Series with features' names as index and features' types as values.
 
     """
-    filepath = f'metadata/features_types/{db.acronym}/{df_name}.csv'
+    filepath = f'{METADATA_PATH}/features_types/{db.acronym}/{df_name}.csv'
 
     # Load types series
     types = pd.read_csv(filepath, index_col=0,

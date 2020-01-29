@@ -14,3 +14,6 @@ DATE_TIMESTAMP = 4
 DATE_EXPLODED = 5
 BINARY = 6
 NOT_A_FEATURE = -1
+
+# Paths
+METADATA_PATH = 'database/metadata/'

@@ -10,7 +10,7 @@ from features_type import _load_feature_types
 from df_utils import split_features, fill_df
 from encode import ordinal_encode, one_hot_encode, date_encode
 from .constants import CATEGORICAL, ORDINAL, BINARY, NOT_A_FEATURE, \
-    NOT_MISSING, DATE_TIMESTAMP, DATE_EXPLODED
+    NOT_MISSING, DATE_TIMESTAMP, DATE_EXPLODED, METADATA_PATH
 
 
 class Database(ABC):
@@ -78,7 +78,7 @@ class Database(ABC):
 
     def _load_ordinal_orders(self):
         for df_name in self.dataframes.keys():
-            filepath = f'metadata/ordinal_orders/{self.acronym}/{df_name}.yml'
+            filepath = f'{METADATA_PATH}/ordinal_orders/{self.acronym}/{df_name}.yml'
             with open(filepath, 'r') as file:
                 try:
                     self.ordinal_orders[df_name] = yaml.safe_load(file)

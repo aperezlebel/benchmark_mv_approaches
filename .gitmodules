@@ -1,0 +1,3 @@
+[submodule "database/metadata"]
+	path = database/metadata
+	url = https://github.com/alexprz/missing_values_analysis_metadata
