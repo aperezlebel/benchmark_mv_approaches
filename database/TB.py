@@ -1,6 +1,7 @@
 """Gather all TraumaBase related functions."""
 
 import pandas as pd
+import numpy as np
 
 from .base import Database
 from .constants import NOT_APPLICABLE, NOT_AVAILABLE, NOT_MISSING
@@ -70,6 +71,12 @@ class _TB(Database):
 
         if series.name == 'Lieu du traumatisme':
             series_mv[series == 'Non-spécifié'] = NOT_AVAILABLE
+
+        if series.name == 'DATE_ENTREE':
+            series_mv[series == np.nan] = NOT_AVAILABLE
+
+        if series.name == 'Dose noradrénaline au moment départ au scan':
+            series_mv[series == 'Rien'] = NOT_AVAILABLE
 
         return series_mv
 
