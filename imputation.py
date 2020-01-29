@@ -71,8 +71,8 @@ if __name__ == '__main__':
         'Mean+mask': SimpleImputer(strategy='mean', add_indicator=True),
         'Med': SimpleImputer(strategy='median'),
         'Med+mask': SimpleImputer(strategy='median', add_indicator=True),
-        # 'Iterative': IterativeImputer(),
-        # 'Iterative+mask': IterativeImputer(add_indicator=True),
+        'Iterative': IterativeImputer(),
+        'Iterative+mask': IterativeImputer(add_indicator=True),
     }
 
     df = TB.encoded_dataframes['20000']
