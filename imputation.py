@@ -64,6 +64,7 @@ def impute(df, df_mv, imputer):
 if __name__ == '__main__':
     from database import TB
     from database.constants import CATEGORICAL, CONTINUE_R
+    import os
 
     imputers = {
         'Mean': SimpleImputer(strategy='mean'),
@@ -81,6 +82,8 @@ if __name__ == '__main__':
     #                                   sep=';')
     # df_mv = get_missing_values(df, NHIS.heuristic)
     df_mv = TB.encoded_missing_values['20000']
+
+    os.makedirs('imputed/', exist_ok=True)
 
     for name, imputer in imputers.items():
         df_imputed = impute(df, df_mv != 0, imputer)
