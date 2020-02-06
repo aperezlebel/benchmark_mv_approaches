@@ -5,7 +5,7 @@ import pandas as pd
 
 class PredictionTask():
 
-    def __init__(self, df, to_predict, to_drop=None):
+    def __init__(self, df, to_predict, to_drop=None, to_keep=None):
         if not isinstance(df, pd.DataFrame):
             raise ValueError('df must be a pandas DataFrame.')
 
@@ -16,16 +16,25 @@ class PredictionTask():
             raise ValueError('to_predict must be a column name of df.')
         self.to_predict = to_predict
 
-        if to_drop is not None:
-            if not isinstance(to_drop, list):
-                raise ValueError('to_drop must be a list or None.')
-            elif not all(f in columns for f in to_drop):
-                raise ValueError('Values of to_drop must be df columns names.')
-            elif to_predict in to_drop:
-                raise ValueError('to_predict should not be in to_drop.')
+        if to_drop is not None and to_keep is not None:
+            raise ValueError('to_drop and to_keep cannot be both non None.')
+
+        features = to_drop
+        if to_keep is not None:
+            features = to_keep
+
+        if features is not None:
+            if not isinstance(features, list):
+                raise ValueError('to_drop or to_keep must be a list or None.')
+            elif not all(f in columns for f in features):
+                raise ValueError('Values of to_drop or to_keep must be df columns names.')
+            elif to_predict in features:
+                raise ValueError('to_predict should not be in to_drop or to_keep.')
 
         self.to_drop = to_drop
-
+        if to_keep is not None:
+            to_keep = to_keep+[to_predict]
+            self.to_drop = [f for f in columns if f not in to_keep]
 
     @property
     def df(self):
