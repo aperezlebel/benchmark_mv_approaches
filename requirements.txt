@@ -4,3 +4,5 @@ matplotlib
 joblib
 sklearn
 pyyaml
+cython
+lxlm
