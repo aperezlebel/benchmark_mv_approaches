@@ -90,6 +90,39 @@ def rint_features(df, features):
     return df_rounded
 
 
+def set_dtypes_features(df, groups, dtypes):
+    """Split the columns of a df according to their given group.
+
+    Parameters:
+    -----------
+    df : pandas.DataFrame
+        The data frame to be splitted.
+    groups : pandas.Series
+        Series with the features' names or indexs as index and the group as
+        values.
+    group : scalar
+        Scalar to look for in the groups series. The dtype will be set on the
+        matched features.
+    dtypes: python type or np.dtype
+        Matched features will be set to this type
+
+    Returns:
+    --------
+    pandas.DataFrame
+        Data frame with casted dtypes.
+
+    """
+    _dtypes = dict()
+
+    for group, dtype in dtypes.items():
+        # Get the names of the features to set the dtype
+        features = groups[groups == group].index
+        for f in features:
+            _dtypes[f] = dtype
+
+    return df.astype(_dtypes)
+
+
 if __name__ == '__main__':
     from database import TB
     print(split_features(TB['20000'], TB.feature_types['20000']))

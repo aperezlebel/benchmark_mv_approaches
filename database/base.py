@@ -7,10 +7,10 @@ import yaml
 
 from missing_values import get_missing_values
 from features_type import _load_feature_types
-from df_utils import split_features, fill_df
+from df_utils import split_features, fill_df, set_dtypes_features
 from encode import ordinal_encode, one_hot_encode, date_encode
-from .constants import CATEGORICAL, ORDINAL, BINARY, NOT_A_FEATURE, \
-    NOT_MISSING, DATE_TIMESTAMP, DATE_EXPLODED, METADATA_PATH
+from .constants import CATEGORICAL, ORDINAL, BINARY, CONTINUE_R, CONTINUE_I, \
+    NOT_A_FEATURE, NOT_MISSING, DATE_TIMESTAMP, DATE_EXPLODED, METADATA_PATH
 
 
 class Database(ABC):
@@ -132,6 +132,11 @@ class Database(ABC):
         encoded_df = pd.concat(splitted_df.values(), axis=1)
         encoded_mv = pd.concat(splitted_mv.values(), axis=1)
         encoded_types = pd.concat(splitted_types.values())
+
+        # Set types on encoded df
+        encoded_df = set_dtypes_features(encoded_df, encoded_types, {
+            CONTINUE_R: float,
+            CONTINUE_I: float})
 
         return encoded_df, encoded_mv, encoded_types
 
