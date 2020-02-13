@@ -4,6 +4,7 @@ from abc import ABC, abstractmethod
 import pandas as pd
 import numpy as np
 import yaml
+import os
 
 from missing_values import get_missing_values
 from features_type import _load_feature_types
@@ -79,6 +80,11 @@ class Database(ABC):
     def _load_ordinal_orders(self):
         for df_name in self.dataframes.keys():
             filepath = f'{METADATA_PATH}/ordinal_orders/{self.acronym}/{df_name}.yml'
+
+            if not os.path.exists(filepath):
+                print(f'Order file not found. No order loaded for {df_name}.')
+                return
+
             with open(filepath, 'r') as file:
                 try:
                     self.ordinal_orders[df_name] = yaml.safe_load(file)
