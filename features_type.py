@@ -139,19 +139,18 @@ def ask_feature_type_helper():
 
         df = db[df_name]
         types = _ask_feature_type_df(df)
-        _dump_feature_types(types, db, df_name)
+        _dump_feature_types(types, db.acronym, df_name, anonymize=False)
 
 
-def _dump_feature_types(types, db, df_name, anonymize=True):
+def _dump_feature_types(types, db_acronym, df_name, anonymize=True):
     """Dump the features' types anonymizing the features' names.
 
     Parameters:
     -----------
     types: pandas.Series
         Series with features' names as index and features' types as values.
-    db : Database class
-        The database from which has been computed the types. Used to dump
-        results in the right folder.
+    db_acronym : string
+        Databse acronym. Used to dump results in the right folder.
     df_name : string
         Name of the data frame from which has been computed the types.
         Used to dump the results in the right folder.
@@ -160,7 +159,7 @@ def _dump_feature_types(types, db, df_name, anonymize=True):
         False: features' name is dumped. True: only id is dumped.
 
     """
-    dir_path = f'{METADATA_PATH}/features_types/{db.acronym}/'
+    dir_path = f'{METADATA_PATH}/features_types/{db_acronym}/'
 
     # Anonymize features' names
     if anonymize:
