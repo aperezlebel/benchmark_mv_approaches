@@ -93,3 +93,4 @@ if __name__ == '__main__':
         f_types = TB.encoded_feature_types['20000']
         df_rounded = rint_features(df_imputed, (f_types != CATEGORICAL) & (f_types != CONTINUE_R))
         df_rounded.to_csv(f'imputed/TB_20000_imputed_rounded_{name}.csv', sep=';')
+        del df_rounded
