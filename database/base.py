@@ -48,6 +48,7 @@ class Database(ABC):
 
         self._load_db(load)
         self._load_feature_types()
+        self._drop()
         self._load_ordinal_orders()
         self._find_missing_values()
         self._encode()
@@ -59,6 +60,16 @@ class Database(ABC):
     def df_names(self):
         """Get data frames' names."""
         return list(self.dataframes.keys())
+
+    @abstractmethod
+    def _to_drop(self, df_name):
+        pass
+
+    def _drop(self):
+        for name, df in self.dataframes.items():
+            to_drop = self._to_drop(name)
+            print(f'{name}: Dropping {len(to_drop)} cols out of {df.shape[1]}')
+            df.drop(to_drop, axis=1, inplace=True)
 
     def _load_db(self, load):
         available_paths = self.available_paths

@@ -4,7 +4,8 @@ import pandas as pd
 import numpy as np
 
 from .base import Database
-from .constants import NOT_APPLICABLE, NOT_AVAILABLE, NOT_MISSING
+from .constants import NOT_APPLICABLE, NOT_AVAILABLE, NOT_MISSING, \
+    CATEGORICAL
 
 
 class UKBB(Database):
@@ -36,10 +37,18 @@ class UKBB(Database):
 
         series_mv[series.isna()] = NOT_AVAILABLE
 
-        print(series.name)
+        print(series.name, end='\r')
 
         return series_mv
 
     def _encode(self):
-        super()._encode()
+        pass#super()._encode()
+
+    def _to_drop(self, df_name):
+        if df_name == '24440':
+            types = self.feature_types[df_name]
+            return list(types[types == CATEGORICAL].index)
+
+
+
 

@@ -60,3 +60,6 @@ class NHIS(Database):
 
     def _encode(self):
         super()._encode()
+
+    def _to_drop(self, df_name):
+        return None
