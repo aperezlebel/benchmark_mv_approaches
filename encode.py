@@ -14,8 +14,9 @@ def _df_type_handler(function, df_seq, keys=None, **kwargs):
     if not isinstance(keys, list):
         keys = [keys]
 
-    if not df_seq:
+    if not df_seq:  # Empty df_seq
         return function(**kwargs)
+
     n_df = len(df_seq)
     if isinstance(df_seq[0], dict):
         res = tuple([dict() for k in range(n_df)])
@@ -62,7 +63,7 @@ def ordinal_encode(df, mv, keys=None, order=None):
         enc = OrdinalEncoder(categories=categories)
 
         # Fit transform the encoder
-        data_encoded = enc.fit_transform(df)
+        data_encoded = enc.fit_transform(df.astype(str))  # Cast to str
 
         df_encoded = pd.DataFrame(data_encoded,
                                   index=df.index, columns=df.columns)
@@ -89,7 +90,7 @@ def one_hot_encode(df, mv, types, keys=None):
         enc = OneHotEncoder(sparse=False)
 
         # Fit transform the encoder
-        data_encoded = enc.fit_transform(df)
+        data_encoded = enc.fit_transform(df.astype(str))  # Cast to str
 
         feature_names = list(enc.get_feature_names(list(df.columns)))
 
