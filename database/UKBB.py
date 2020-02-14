@@ -41,8 +41,8 @@ class UKBB(Database):
 
         return series_mv
 
-    def _encode(self):
-        pass#super()._encode()
+    def _encode(self, df_names):
+        super()._encode(df_names, encode=['date'])
 
     def _to_drop(self, df_name):
         if df_name == '24440':

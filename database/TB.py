@@ -77,8 +77,8 @@ class TB(Database):
 
         return series_mv
 
-    def _encode(self):
-        super()._encode()
+    def _encode(self, df_names):
+        super()._encode(df_names)
 
     def _to_drop(self, df_name):
         return None

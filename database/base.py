@@ -138,7 +138,7 @@ class Database(ABC):
             self.missing_values[name] = get_missing_values(df, self.heuristic)
 
     @staticmethod
-    def _encode_df(df, mv, types, order=None):
+    def _encode_df(df, mv, types, order=None, encode=None):
         # Split the data frame according to the types of the features
         splitted_df = split_features(df, types)
 
@@ -149,9 +149,19 @@ class Database(ABC):
         splitted_types = split_features(types, types)
 
         # Choose which tables go in which pipeline
-        to_ordinal_encode_ids = [ORDINAL, BINARY]
-        to_one_hot_encode_ids = [CATEGORICAL]
+        to_ordinal_encode_ids = []
+        to_one_hot_encode_ids = []
         to_delete_ids = [NOT_A_FEATURE]
+
+        if encode is None or 'ordinal' in encode or 'all' in encode:
+            to_ordinal_encode_ids = [ORDINAL, BINARY]
+
+        if encode is None or 'one_hot' in encode or 'all' in encode:
+            to_one_hot_encode_ids = [CATEGORICAL]
+
+        if encode is None or 'date' in encode or 'all' in encode:
+            to_date_encode_exp = [DATE_EXPLODED]
+            to_date_encode_tim = [DATE_TIMESTAMP]
 
         # Delete unwanted tables
         for k in to_delete_ids:
@@ -160,7 +170,7 @@ class Database(ABC):
 
         # Fill missing values otherwise the fit raises an error cause of Nans
         splitted_mv_bool = {k: mv != NOT_MISSING for k, mv in splitted_mv.items()}
-        fill_df(splitted_df, splitted_mv_bool, 'z MISSING_VALUE')
+        splitted_df = fill_df(splitted_df, splitted_mv_bool, 'z MISSING_VALUE')
 
         # Ordinal encode
         splitted_df, splitted_mv = ordinal_encode(splitted_df, splitted_mv, keys=to_ordinal_encode_ids, order=order)
@@ -170,11 +180,11 @@ class Database(ABC):
 
         # Set missing values to blank
         splitted_mv_bool = {k: mv != NOT_MISSING for k, mv in splitted_mv.items()}
-        fill_df(splitted_df, splitted_mv_bool, np.nan)
+        splitted_df = fill_df(splitted_df, splitted_mv_bool, np.nan)
 
         # Date encode
-        splitted_df, splitted_mv, splitted_types = date_encode(splitted_df, splitted_mv, splitted_types, keys=DATE_EXPLODED, method='explode', dayfirst=True)
-        splitted_df, splitted_mv, splitted_types = date_encode(splitted_df, splitted_mv, splitted_types, keys=DATE_TIMESTAMP, method='timestamp', dayfirst=True)
+        splitted_df, splitted_mv, splitted_types = date_encode(splitted_df, splitted_mv, splitted_types, keys=to_date_encode_exp, method='explode', dayfirst=True)
+        splitted_df, splitted_mv, splitted_types = date_encode(splitted_df, splitted_mv, splitted_types, keys=to_date_encode_tim, method='timestamp', dayfirst=True)
 
         # Merge encoded df
         encoded_df = pd.concat(splitted_df.values(), axis=1)
@@ -189,7 +199,7 @@ class Database(ABC):
         return encoded_df, encoded_mv, encoded_types
 
     @abstractmethod
-    def _encode(self, df_names):
+    def _encode(self, df_names, encode=None):
         for name in df_names:
             df = self.dataframes[name]
             if name not in self.feature_types:
@@ -202,7 +212,7 @@ class Database(ABC):
                 order = None
                 if name in self.ordinal_orders:
                     order = self.ordinal_orders[name]
-                encoded = self._encode_df(df, mv, types, order=order)
+                encoded = self._encode_df(df, mv, types, order=order, encode=encode)
                 self.encoded_dataframes[name] = encoded[0]
                 self.encoded_missing_values[name] = encoded[1]
                 self.encoded_feature_types[name] = encoded[2]
