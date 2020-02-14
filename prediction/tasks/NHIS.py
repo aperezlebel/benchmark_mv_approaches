@@ -1,11 +1,12 @@
 """Build prediction tasks for the NHIS database."""
 
 import pandas as pd
+import numpy as np
 
-from database import TB
+import database
 from prediction import PredictionTask
 
-
+TB = database.TB('20000')
 df_with_MV = TB.encoded_dataframes['20000']
 df_mv = TB.encoded_missing_values['20000']
 df_imputed = pd.read_csv('imputed/TB_20000_imputed_rounded_Iterative.csv',
@@ -41,20 +42,24 @@ to_drop_1 = [
     "Procédure limitations de soins (LATA)",
 ]
 
+def transform_df_1(df, to_predict):
+    # Drop rows with missing values in the feature to predict
+    return df.dropna(axis=0, subset=[to_predict])
+
 death_imputed = PredictionTask(
-    df=df_imputed,
+    df=transform_df_1(df_imputed, to_predict_1),
     to_predict=to_predict_1,
     to_drop=to_drop_1
 )
 
 death_with_MV = PredictionTask(
-    df=df_with_MV,
+    df=transform_df_1(df_with_MV, to_predict_1),
     to_predict=to_predict_1,
     to_drop=to_drop_1
 )
 
 # Task 2: Platelet prediciton (https://arxiv.org/abs/1909.06631)
-def transform_df_2(df):
+def transform_df_2(df, to_predict):
     """Build df with appropiate features for platelet prediciton following
     github.com/wjiang94/ABSLOPE/blob/master/ABSLOPE/OnlineSupp/OnlineSupp.pdf"""
     df = df.copy()
@@ -75,9 +80,7 @@ def transform_df_2(df):
     df['DBP.min'] = df['Pression Artérielle Diastolique (PAD) minimum']
 
     # Drop rows with missing values in the feature to predict
-    df.dropna(axis=0, subset=['Plaquettes'], inplace=True)
-
-    return df
+    return df.dropna(axis=0, subset=[to_predict])
 
 
 to_predict_2 = 'Plaquettes'
@@ -100,15 +103,66 @@ to_keep_2 = [
 ]
 
 platelet_imputed = PredictionTask(
-    df=transform_df_2(df_imputed),
+    df=transform_df_2(df_imputed, to_predict_2),
     to_predict=to_predict_2,
     to_keep=to_keep_2
 )
 
 platelet_with_MV = PredictionTask(
-    df=transform_df_2(df_with_MV),
+    df=transform_df_2(df_with_MV, to_predict_2),
     to_predict=to_predict_2,
     to_keep=to_keep_2
+)
+
+
+# Task 3: Hemorrhagic shock prediciton (https://arxiv.org/pdf/1805.04602)
+def transform_df_3(df, to_predict):
+    """Build df with appropiate features for Hemmoohagic shock prediction."""
+    df = df.copy()
+    df['Age'] = df['Age du patient (ans)']
+    df['BMI'] = df['BMI']
+    df['FC.SMUR'] = df['Fréquence cardiaque (FC) à l arrivée du SMUR']
+    df['SD.SMUR'] = df['Pression Artérielle Systolique (PAS) à l arrivée du SMUR'] - df['Pression Artérielle Diastolique (PAD) à l arrivée du SMUR']
+    df['SD.min'] = df['Pression Artérielle Systolique (PAS) minimum'] - df['Pression Artérielle Diastolique (PAD) minimum']
+    df['FC.max'] = df['Fréquence cardiaque (FC) maximum']
+    df['Glasgow.moteur.init'] = df['Glasgow moteur initial']
+    df['Glasgow.init'] = df['Glasgow initial']
+    df['Hemocue.init'] = df['Hémocue initial']
+    df['SpO2.min'] = df['SpO2 min']
+    df['RT.colloides'] = df['Colloïdes']
+    df['RT.cristalloides'] = df['Cristalloïdes']
+
+    # Drop rows with missing values in the feature to predict
+    df[df_mv[to_predict] != 0] = np.nan
+    return df.dropna(axis=0, subset=[to_predict])
+
+
+to_predict_3 = 'Choc hémorragique (? 4 CGR sur 6h)'
+to_keep_3 = [
+    'Age',
+    'BMI',
+    'FC.SMUR',
+    'SD.SMUR',
+    'SD.min',
+    'FC.max',
+    'Glasgow.moteur.init',
+    'Glasgow.init',
+    'Hemocue.init',
+    'SpO2.min',
+    'RT.colloides',
+    'RT.cristalloides'
+]
+
+shock_hemo_imputed = PredictionTask(
+    df=transform_df_3(df_imputed, to_predict_3),
+    to_predict=to_predict_3,
+    # to_keep=to_keep_3
+)
+
+shock_hemo_with_MV = PredictionTask(
+    df=transform_df_3(df_with_MV, to_predict_3),
+    to_predict=to_predict_3,
+    # to_keep=to_keep_3
 )
 
 # All tasks
@@ -117,4 +171,6 @@ tasks = {
     'death_with_MV': death_with_MV,
     'platelet_imputed': platelet_imputed,
     'platelet_with_MV': platelet_with_MV,
+    'shock_hemo_imputed': shock_hemo_imputed,
+    'shock_hemo_with_MV': shock_hemo_with_MV,
 }
