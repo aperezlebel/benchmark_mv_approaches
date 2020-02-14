@@ -38,24 +38,22 @@ def split_features(df, groups):
 def fill_df(df, b, value, keys=None):
 
     def fill(df, b, value):
-        for col in b.columns:
-            df[col][b[col]] = value
+        return df.mask(b, value)
 
-        return df
 
     if isinstance(df, dict):
         if keys is None:
             return {k: fill(df[k], b[k], value) for k in df.keys()}
 
-        df_encoded = dict()
+        df_filled = dict()
         for k in keys:
-            df_encoded[k] = fill(df[k], b[k], value)
+            df_filled[k] = fill(df[k], b[k], value)
 
         for k in df.keys():
-            if k not in df_encoded:
-                df_encoded[k] = df[k].copy()
+            if k not in df_filled:
+                df_filled[k] = df[k].copy()
 
-        return df_encoded
+        return df_filled
 
     if isinstance(df, list):
         return [fill(v, b[k], value) for k, v in enumerate(df)]
