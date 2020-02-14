@@ -69,8 +69,11 @@ class Database(ABC):
         for name in df_names:
             df = self.dataframes[name]
             to_drop = self._to_drop(name)
+            if to_drop is None:
+                continue
             print(f'{name}: Dropping {len(to_drop)} cols out of {df.shape[1]}')
             df.drop(to_drop, axis=1, inplace=True)
+            self.feature_types[name].drop(to_drop, inplace=True)
 
     def _load_db(self, df_names):
         available_paths = self.available_paths
