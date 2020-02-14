@@ -39,19 +39,19 @@ class Database(ABC):
     def available_paths(self):
         return {n: p for n, p in self.frame_paths.items() if os.path.exists(p)}
 
-    def load(self, load):
-        if isinstance(load, str):
-            load = [load]
+    def load(self, df_names):
+        if isinstance(df_names, str):
+            df_names = [df_names]
 
-        if not isinstance(load, list):
+        if not isinstance(df_names, list):
             raise ValueError('Table names to load must be list or str.')
 
-        self._load_db(load)
-        self._load_feature_types()
-        self._drop()
-        self._load_ordinal_orders()
-        self._find_missing_values()
-        self._encode()
+        self._load_db(df_names)
+        self._load_feature_types(df_names)
+        self._drop(df_names)
+        self._load_ordinal_orders(df_names)
+        self._find_missing_values(df_names)
+        self._encode(df_names)
 
     def __getitem__(self, name):
         """Get data frame giving its name."""
@@ -65,22 +65,23 @@ class Database(ABC):
     def _to_drop(self, df_name):
         pass
 
-    def _drop(self):
-        for name, df in self.dataframes.items():
+    def _drop(self, df_names):
+        for name in df_names:
+            df = self.dataframes[name]
             to_drop = self._to_drop(name)
             print(f'{name}: Dropping {len(to_drop)} cols out of {df.shape[1]}')
             df.drop(to_drop, axis=1, inplace=True)
 
-    def _load_db(self, load):
+    def _load_db(self, df_names):
         available_paths = self.available_paths
-        for n in load:
-            if n not in available_paths:
+        for name in df_names:
+            if name not in available_paths:
                 raise ValueError(
-                    f'{n} not an available name.\n'
+                    f'{name} not an available name.\n'
                     f'Available name and paths are {available_paths}.'
                 )
-            p = self.frame_paths[n]
-            self.dataframes[n] = pd.read_csv(p, sep=self._sep)
+            p = self.frame_paths[name]
+            self.dataframes[name] = pd.read_csv(p, sep=self._sep)
 
     @abstractmethod
     def heuristic(self, series):
@@ -101,8 +102,8 @@ class Database(ABC):
         """
         pass
 
-    def _load_feature_types(self):
-        for name in self.df_names():
+    def _load_feature_types(self, df_names):
+        for name in df_names:
             try:
                 self.feature_types[name] = _load_feature_types(self, name,
                                                                anonymized=False)
@@ -114,22 +115,23 @@ class Database(ABC):
                     f'Check if lengths match. Ignored.'
                 )
 
-    def _load_ordinal_orders(self):
-        for df_name in self.dataframes.keys():
-            filepath = f'{METADATA_PATH}/ordinal_orders/{self.acronym}/{df_name}.yml'
+    def _load_ordinal_orders(self, df_names):
+        for name in df_names:
+            filepath = f'{METADATA_PATH}/ordinal_orders/{self.acronym}/{name}.yml'
 
             if not os.path.exists(filepath):
-                print(f'Order file not found. No order loaded for {df_name}.')
+                print(f'Order file not found. No order loaded for {name}.')
                 continue
 
             with open(filepath, 'r') as file:
                 try:
-                    self.ordinal_orders[df_name] = yaml.safe_load(file)
+                    self.ordinal_orders[name] = yaml.safe_load(file)
                 except yaml.YAMLError as exc:
-                    print(f'{exc}. No order loaded for {df_name}.')
+                    print(f'{exc}. No order loaded for {name}.')
 
-    def _find_missing_values(self):
-        for name, df in self.dataframes.items():
+    def _find_missing_values(self, df_names):
+        for name in df_names:
+            df = self.dataframes[name]
             self.missing_values[name] = get_missing_values(df, self.heuristic)
 
     @staticmethod
@@ -184,8 +186,9 @@ class Database(ABC):
         return encoded_df, encoded_mv, encoded_types
 
     @abstractmethod
-    def _encode(self):
-        for name, df in self.dataframes.items():
+    def _encode(self, df_names):
+        for name in df_names:
+            df = self.dataframes[name]
             if name not in self.feature_types:
                 print(f'{name}: feature types missing. Encoding ignored.')
             elif name not in self.missing_values:
