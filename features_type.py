@@ -4,6 +4,7 @@ import pandas as pd
 import os
 from time import time
 
+import database
 from database.constants import METADATA_PATH
 
 
@@ -91,6 +92,7 @@ def _ask_feature_type_df(df):
 
 def ask_feature_type_helper():
     """Implement helper for asking feature type to the user."""
+    NHIS, TB = database.NHIS(), database.TB()
     available_db_names = [db.acronym for db in [NHIS, TB]]
 
     while True:
@@ -139,27 +141,33 @@ def ask_feature_type_helper():
 
         df = db[df_name]
         types = _ask_feature_type_df(df)
-        _dump_feature_types(types, db.acronym, df_name, anonymize=False)
+        _dump_feature_types(types, db, df_name, anonymize=False)
 
 
-def _dump_feature_types(types, db_acronym, df_name, anonymize=True):
+def _dump_feature_types(types, db, df_name, anonymize=True):
     """Dump the features' types anonymizing the features' names.
 
     Parameters:
     -----------
     types: pandas.Series
         Series with features' names as index and features' types as values.
-    db_acronym : string
-        Databse acronym. Used to dump results in the right folder.
+    db : Database object
+        Used to dump results in the right folder.
     df_name : string
-        Name of the data frame from which has been computed the types.
+        Name or path of the data frame from which has been computed the types.
         Used to dump the results in the right folder.
     anonymize : bool
         Whether to anonymize feature names or not when dumping.
         False: features' name is dumped. True: only id is dumped.
 
     """
-    dir_path = f'{METADATA_PATH}/features_types/{db_acronym}/'
+    if df_name in db.frame_paths:
+        path = db.frame_paths[df_name]
+    else:
+        path = df_name
+    filename = os.path.basename(path)
+    basename, _ = os.path.splitext(filename)
+    dir_path = f'{METADATA_PATH}features_types/{db.acronym}/'
 
     # Anonymize features' names
     if anonymize:
@@ -169,7 +177,7 @@ def _dump_feature_types(types, db_acronym, df_name, anonymize=True):
     os.makedirs(dir_path, exist_ok=True)
 
     # Save to csv
-    filepath = dir_path+df_name
+    filepath = dir_path+basename
     types.to_csv(f'{filepath}.csv', header=False)
 
     # Backup all dumps in the same folder
@@ -196,7 +204,9 @@ def _load_feature_types(db, df_name, anonymized=True):
         Series with features' names as index and features' types as values.
 
     """
-    filepath = f'{METADATA_PATH}/features_types/{db.acronym}/{df_name}.csv'
+    filename = os.path.basename(db.frame_paths[df_name])
+    basename, _ = os.path.splitext(filename)
+    filepath = f'{METADATA_PATH}features_types/{db.acronym}/{basename}.csv'
 
     # Load types series
     types = pd.read_csv(filepath, index_col=0,

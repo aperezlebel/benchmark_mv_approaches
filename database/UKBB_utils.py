@@ -4,6 +4,7 @@ import numpy as np
 
 from .constants import CONTINUE_R, CONTINUE_I, BINARY, CATEGORICAL, \
     NOT_A_FEATURE, DATE_EXPLODED
+from .UKBB import UKBB
 
 from features_type import _dump_feature_types
 
@@ -21,7 +22,7 @@ def UKBB_feature_types_converter(html_folder):
             html_file = os.path.join(html_folder, filename)
 
             types = _html_to_types(html_file)
-            _dump_feature_types(types, 'UKBB', basename, anonymize=False)
+            _dump_feature_types(types, UKBB(), basename, anonymize=False)
             print(types)
 
 

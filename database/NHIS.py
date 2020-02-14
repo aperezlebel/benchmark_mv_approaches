@@ -7,23 +7,28 @@ from .base import Database
 from .constants import NOT_APPLICABLE, NOT_AVAILABLE, NOT_MISSING
 
 
-class _NHIS(Database):
+class NHIS(Database):
 
-    def __init__(self):
-        super().__init__('National Health Interview Survey', 'NHIS')
-
-    def _load_db(self):
-        """Load the NHIS database."""
+    def __init__(self, load=None):
         data_folder = 'NHIS2017/data/'
 
-        self.dataframes = {
-            'family': pd.read_csv(data_folder+'family/familyxx.csv'),
-            'child': pd.read_csv(data_folder+'child/samchild.csv'),
-            'adult': pd.read_csv(data_folder+'adult/samadult.csv'),
-            'person': pd.read_csv(data_folder+'person/personsx.csv'),
-            'household': pd.read_csv(data_folder+'household/househld.csv'),
-            'injury': pd.read_csv(data_folder+'injury/injpoiep.csv'),
+        paths = {
+            'family': data_folder+'family/familyxx.csv',
+            'child': data_folder+'child/samchild.csv',
+            'adult': data_folder+'adult/samadult.csv',
+            'person': data_folder+'person/personsx.csv',
+            'household': data_folder+'household/househld.csv',
+            'injury': data_folder+'injury/injpoiep.csv',
         }
+        sep = ','
+
+        super().__init__(
+            name='National Health Interview Survey',
+            acronym='NHIS',
+            paths=paths,
+            sep=sep,
+            load=load
+            )
 
     @staticmethod
     def heuristic(series):
@@ -53,5 +58,5 @@ class _NHIS(Database):
 
         return series_mv
 
-
-NHIS = _NHIS()
+    def _encode(self):
+        super()._encode()

@@ -17,7 +17,7 @@ from .constants import CATEGORICAL, ORDINAL, BINARY, CONTINUE_R, CONTINUE_I, \
 class Database(ABC):
 
     @abstractmethod
-    def __init__(self, name='', acronym=''):
+    def __init__(self, name='', acronym='', paths=dict(), sep=',', load=None):
         self.dataframes = dict()
         self.missing_values = dict()
         self.feature_types = dict()
@@ -26,12 +26,31 @@ class Database(ABC):
         self.encoded_dataframes = dict()
         self.encoded_missing_values = dict()
         self.encoded_feature_types = dict()
+
         self.name = name
         self.acronym = acronym
-        self._load_db()
+        self.frame_paths = paths
+        self._sep = sep
+
+        if load is not None:
+            self.load(load)
+
+    @property
+    def available_paths(self):
+        return {n: p for n, p in self.frame_paths.items() if os.path.exists(p)}
+
+    def load(self, load):
+        if isinstance(load, str):
+            load = [load]
+
+        if not isinstance(load, list):
+            raise ValueError('Table names to load must be list or str.')
+
+        self._load_db(load)
         self._load_feature_types()
         self._load_ordinal_orders()
         self._find_missing_values()
+        self._encode()
 
     def __getitem__(self, name):
         """Get data frame giving its name."""
@@ -41,9 +60,16 @@ class Database(ABC):
         """Get data frames' names."""
         return list(self.dataframes.keys())
 
-    @abstractmethod
-    def _load_db(self):
-        pass
+    def _load_db(self, load):
+        available_paths = self.available_paths
+        for n in load:
+            if n not in available_paths:
+                raise ValueError(
+                    f'{n} not an available name.\n'
+                    f'Available name and paths are {available_paths}.'
+                )
+            p = self.frame_paths[n]
+            self.dataframes[n] = pd.read_csv(p, sep=self._sep)
 
     @abstractmethod
     def heuristic(self, series):
@@ -69,8 +95,8 @@ class Database(ABC):
             try:
                 self.feature_types[name] = _load_feature_types(self, name,
                                                                anonymized=False)
-            except FileNotFoundError:
-                print(f'{name}: features types not found. Ignored.')
+            # except FileNotFoundError:
+            #     print(f'{name}: features types not found. Ignored.')
             except ValueError:
                 print(
                     f'{name}: error while loading feature type. '
@@ -83,7 +109,7 @@ class Database(ABC):
 
             if not os.path.exists(filepath):
                 print(f'Order file not found. No order loaded for {df_name}.')
-                return
+                continue
 
             with open(filepath, 'r') as file:
                 try:
@@ -146,6 +172,7 @@ class Database(ABC):
 
         return encoded_df, encoded_mv, encoded_types
 
+    @abstractmethod
     def _encode(self):
         for name, df in self.dataframes.items():
             if name not in self.feature_types:

@@ -2,32 +2,29 @@
 
 import pandas as pd
 import numpy as np
+import os
 
 from .base import Database
 from .constants import NOT_APPLICABLE, NOT_AVAILABLE, NOT_MISSING
 
 
-class _TB(Database):
+class TB(Database):
 
-    def __init__(self):
-        super().__init__('TraumaBase', 'TB')
-        self._encode()
+    def __init__(self, load=None):
 
-    def _load_db(self, encode=True):
-        """Load the TraumaBase database."""
         data_folder = 'TraumaBase/'
-
-        self.dataframes = {
-            '20000': pd.read_csv(data_folder+'Traumabase_20000.csv', sep=';')
+        paths = {
+            '20000': data_folder+'Traumabase_20000.csv'
         }
+        sep = ';'
 
-        # if encode:
-        #     df = TB['20000'].copy()
-        #     df_mv = get_missing_values(df, TB_heuristic)
-        #     df.where(df_mv == 0, other=-1, inplace=True)
-        #     df_encoded, _ = ordinal_encode(df)
-        #     df_encoded[df_mv != 0] = np.nan
-        #     TB['20000'] = df_encoded
+        super().__init__(
+            name='TraumaBase',
+            acronym='TB',
+            paths=paths,
+            sep=sep,
+            load=load
+            )
 
     @staticmethod
     def heuristic(series):
@@ -80,5 +77,8 @@ class _TB(Database):
 
         return series_mv
 
+    def _encode(self):
+        super()._encode()
 
-TB = _TB()
+
+# TB = _TB()

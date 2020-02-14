@@ -7,19 +7,26 @@ from .base import Database
 from .constants import NOT_APPLICABLE, NOT_AVAILABLE, NOT_MISSING
 
 
-class _UKBB(Database):
+class UKBB(Database):
 
-    def __init__(self):
-        super().__init__('UK BioBank', 'UKBB')
-        self._encode()
-
-    def _load_db(self, encode=True):
-        """Load the UKBB database."""
+    def __init__(self, load=None):
         data_folder = 'UKBB/ukbb_tabular/csv/'
-
-        self.dataframes = {
-            '24440': pd.read_csv(data_folder+'ukb24440.csv', sep=',')
+        paths = {
+            '24440': data_folder+'ukb24440.csv',
+            '25908': data_folder+'ukb25908.csv',
+            '28435': data_folder+'ukb28435.csv',
+            '32309': data_folder+'ukb32309.csv',
+            '35375': data_folder+'ukb35375.csv',
+            '38276': data_folder+'ukb38276.csv',
         }
+        sep = ','
+
+        super().__init__(
+            name='UK BioBank',
+            acronym='UKBB',
+            paths=paths,
+            sep=sep,
+            load=load)
 
     @staticmethod
     def heuristic(series):
@@ -33,5 +40,6 @@ class _UKBB(Database):
 
         return series_mv
 
+    def _encode(self):
+        super()._encode()
 
-UKBB = _UKBB()
