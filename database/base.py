@@ -155,8 +155,10 @@ class Database(ABC):
             else:
                 types = self.feature_types[name]
                 mv = self.missing_values[name]
-                encoded = self._encode_df(df, mv, types,
-                                          order=self.ordinal_orders[name])
+                order = None
+                if name in self.ordinal_orders:
+                    order = self.ordinal_orders[name]
+                encoded = self._encode_df(df, mv, types, order=order)
                 self.encoded_dataframes[name] = encoded[0]
                 self.encoded_missing_values[name] = encoded[1]
                 self.encoded_feature_types[name] = encoded[2]
