@@ -1,3 +1,4 @@
+"""Base classes for the task management."""
 import pandas as pd
 import numpy as np
 
@@ -7,6 +8,8 @@ from typing import List, Callable
 
 @dataclass(frozen=True)
 class TaskMeta():
+    """Store the tasks metadata (e.g feature to predict, to drop...)."""
+
     df_name: str
     predict: str
     drop: List[str] = None
@@ -17,10 +20,13 @@ class TaskMeta():
 
 @dataclass
 class Task:
+    """Gather task metadata and the dataframe on which to run the task."""
+
     _df_untransformed: pd.DataFrame
     meta: TaskMeta
 
     def __post_init__(self):
+        """Transform given df, run checks and set drop according to meta."""
         self._df = self.meta.transform(self._df_untransformed, meta=self.meta)
         self._check()
         self._set_drop()
@@ -45,7 +51,7 @@ class Task:
                     raise ValueError('drop or keep must be a list or None.')
                 elif not all(f in cols for f in features):
                     print(features)
-                    raise ValueError('Values of drop or keep must be df columns names.')
+                    raise ValueError('Drop/keep must contains column names.')
                 elif predict in features:
                     raise ValueError('predict should not be in drop or keep.')
 
@@ -75,16 +81,15 @@ class Task:
 
     @property
     def df(self):
+        """Full transformed data frame."""
         return self._df.drop(self._drop, axis=1)
 
     @property
-    def df_plain(self):
-        return self._df
-
-    @property
     def X(self):
+        """Features used for prediction."""
         return self.df.drop(self.meta.predict, axis=1)
 
     @property
     def y(self):
+        """Feature to predict."""
         return self._df[self.meta.predict]

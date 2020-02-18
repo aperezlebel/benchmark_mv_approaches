@@ -1,23 +1,10 @@
 """Build prediction tasks for the UKBB database."""
 
-import pandas as pd
-import numpy as np
-from collections import namedtuple
-
 from .base import TaskMeta
-
-# import database
-# from prediction import PredictionTask
-
-# df_name = '24440'
-# UKBB = database.UKBB()
-# df_with_MV = UKBB.encoded_dataframes[df_name]
-# df_mv = UKBB.encoded_missing_values[df_name]
-# df_imputed = pd.read_csv('imputed/TB_20000_imputed_rounded_Iterative.csv',
-#                          sep=';', index_col=0).astype(df_with_MV.dtypes)
 
 
 tasks_meta = dict()
+
 
 # Task 1: Fluid intelligence prediction
 def transform_df_fluid_intelligence(df, **kwargs):
@@ -72,20 +59,3 @@ tasks_meta['fluid_intelligence'] = TaskMeta(
     ],
     transform=transform_df_fluid_intelligence
 )
-
-
-
-
-# fluid_with_MV = PredictionTask(
-#     db=UKBB,
-#     df_name=df_name,
-#     transform=lambda df: transform_df_1(df, to_predict_1),
-#     predict=to_predict_1,
-#     to_drop=to_drop_1,
-#     drop_contains=drop_contains_1
-# )
-
-# All tasks
-# tasks = {
-#     'fluid_with_MV': fluid_with_MV
-# }
