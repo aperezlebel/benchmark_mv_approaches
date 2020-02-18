@@ -1,1 +1,2 @@
-from .NHIS import tasks as NHIS_tasks
+# from .NHIS import tasks as NHIS
+# from .UKBB import tasks as UKBB

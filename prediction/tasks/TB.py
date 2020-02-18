@@ -1,4 +1,4 @@
-"""Build prediction tasks for the NHIS database."""
+"""Build prediction tasks for the TB database."""
 
 import pandas as pd
 import numpy as np
@@ -6,11 +6,11 @@ import numpy as np
 import database
 from prediction import PredictionTask
 
-TB = database.TB('20000')
-df_with_MV = TB.encoded_dataframes['20000']
-df_mv = TB.encoded_missing_values['20000']
-df_imputed = pd.read_csv('imputed/TB_20000_imputed_rounded_Iterative.csv',
-                         sep=';', index_col=0).astype(df_with_MV.dtypes)
+TB = database.TB()
+# df_with_MV = TB.encoded_dataframes['20000']
+# df_mv = TB.encoded_missing_values['20000']
+# df_imputed = pd.read_csv('imputed/TB_20000_imputed_rounded_Iterative.csv',
+#                          sep=';', index_col=0).astype(df_with_MV.dtypes)
 
 
 # Task 1: Death prediction
@@ -46,14 +46,16 @@ def transform_df_1(df, to_predict):
     # Drop rows with missing values in the feature to predict
     return df.dropna(axis=0, subset=[to_predict])
 
-death_imputed = PredictionTask(
-    df=transform_df_1(df_imputed, to_predict_1),
-    to_predict=to_predict_1,
-    to_drop=to_drop_1
-)
+# death_imputed = PredictionTask(
+#     df=transform_df_1(df_imputed, to_predict_1),
+#     to_predict=to_predict_1,
+#     to_drop=to_drop_1
+# )
 
 death_with_MV = PredictionTask(
-    df=transform_df_1(df_with_MV, to_predict_1),
+    db=TB,
+    df_name='20000',
+    transform=lambda df: transform_df_1(df, to_predict_1),
     to_predict=to_predict_1,
     to_drop=to_drop_1
 )
@@ -102,14 +104,16 @@ to_keep_2 = [
     'DBP.min'
 ]
 
-platelet_imputed = PredictionTask(
-    df=transform_df_2(df_imputed, to_predict_2),
-    to_predict=to_predict_2,
-    to_keep=to_keep_2
-)
+# platelet_imputed = PredictionTask(
+#     df=transform_df_2(df_imputed, to_predict_2),
+#     to_predict=to_predict_2,
+#     to_keep=to_keep_2
+# )
 
 platelet_with_MV = PredictionTask(
-    df=transform_df_2(df_with_MV, to_predict_2),
+    db=TB,
+    df_name='20000',
+    transform=lambda df: transform_df_2(df, to_predict_2),
     to_predict=to_predict_2,
     to_keep=to_keep_2
 )
@@ -133,7 +137,7 @@ def transform_df_3(df, to_predict):
     df['RT.cristalloides'] = df['Cristalloïdes']
 
     # Drop rows with missing values in the feature to predict
-    df[df_mv[to_predict] != 0] = np.nan
+    # df[df_mv[to_predict] != 0] = np.nan
     return df.dropna(axis=0, subset=[to_predict])
 
 
@@ -153,24 +157,26 @@ to_keep_3 = [
     'RT.cristalloides'
 ]
 
-shock_hemo_imputed = PredictionTask(
-    df=transform_df_3(df_imputed, to_predict_3),
-    to_predict=to_predict_3,
-    # to_keep=to_keep_3
-)
+# shock_hemo_imputed = PredictionTask(
+#     df=transform_df_3(df_imputed, to_predict_3),
+#     to_predict=to_predict_3,
+#     # to_keep=to_keep_3
+# )
 
 shock_hemo_with_MV = PredictionTask(
-    df=transform_df_3(df_with_MV, to_predict_3),
+    db=TB,
+    df_name='20000',
+    transform=lambda df: transform_df_3(df, to_predict_3),
     to_predict=to_predict_3,
     # to_keep=to_keep_3
 )
 
 # All tasks
 tasks = {
-    'death_imputed': death_imputed,
+    # 'death_imputed': death_imputed,
     'death_with_MV': death_with_MV,
-    'platelet_imputed': platelet_imputed,
+    # 'platelet_imputed': platelet_imputed,
     'platelet_with_MV': platelet_with_MV,
-    'shock_hemo_imputed': shock_hemo_imputed,
+    # 'shock_hemo_imputed': shock_hemo_imputed,
     'shock_hemo_with_MV': shock_hemo_with_MV,
 }
