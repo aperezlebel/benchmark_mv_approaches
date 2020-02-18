@@ -39,12 +39,18 @@ class Database(ABC):
     def available_paths(self):
         return {n: p for n, p in self.frame_paths.items() if os.path.exists(p)}
 
+    def is_loaded(self, df_name):
+        return df_name in self.dataframes
+
     def load(self, df_names):
         if isinstance(df_names, str):
             df_names = [df_names]
 
         if not isinstance(df_names, list):
             raise ValueError('Table names to load must be list or str.')
+
+        # Remove dfs already loaded
+        df_names = [n for n in df_names if n not in self.dataframes]
 
         self._load_db(df_names)
         self._load_feature_types(df_names)
