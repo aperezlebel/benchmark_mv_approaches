@@ -13,6 +13,8 @@ def transform_df_death(df, **kwargs):
 
 
 tasks_meta['death'] = TaskMeta(
+    name='death',
+    db='TB',
     df_name='20000',
     predict="Décès",
     drop=[
@@ -75,6 +77,8 @@ def transform_df_platelet(df, **kwargs):
 
 
 tasks_meta['platelet'] = TaskMeta(
+    name='platelet',
+    db='TB',
     df_name='20000',
     predict='Plaquettes',
     keep=[
@@ -123,6 +127,8 @@ def transform_df_shock_hemo(df, **kwargs):
 
 
 tasks_meta['shock_hemo'] = TaskMeta(
+    name='shock_hemo',
+    db='TB',
     df_name='20000',
     predict='Choc hémorragique (? 4 CGR sur 6h)',
     keep=[
