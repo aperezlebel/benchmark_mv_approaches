@@ -10,6 +10,8 @@ from typing import List, Callable
 class TaskMeta():
     """Store the tasks metadata (e.g feature to predict, to drop...)."""
 
+    name: str  # Name of the task
+    db: str
     df_name: str
     predict: str
     drop: List[str] = None
@@ -17,8 +19,16 @@ class TaskMeta():
     keep: List[str] = None
     transform: Callable[[pd.DataFrame], pd.DataFrame] = lambda x: x
 
+    def get_infos(self):
+        """
+        Return a dict of some printable properties.
 
-@dataclass
+        Used to next dump task infos in a file.
+        """
+        props = ['db', 'df_name', 'predict', 'drop', 'drop_contains', 'keep']
+        return dict(filter(lambda x: x[0] in props, self.__dict__.items()))
+
+
 class Task:
     """Gather task metadata and the dataframe on which to run the task."""
 
@@ -93,3 +103,6 @@ class Task:
     def y(self):
         """Feature to predict."""
         return self._df[self.meta.predict]
+
+    def get_infos(self):
+        return self.meta.get_infos()
