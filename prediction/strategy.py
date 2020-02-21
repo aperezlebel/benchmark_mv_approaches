@@ -10,10 +10,12 @@ class Strategy():
     """Elements to run cross-validated ML estimator with hyperparms tuning."""
 
     estimator: BaseEstimator
-    split: Any
+    split_function: Any
+    split_params: dict
     cv: Any
     param_space: dict
     search: Callable[[BaseEstimator, dict, Any], Any]
+    search_params: dict
     _name: str = None
     _count: int = field(default=0, init=False)
 
@@ -28,7 +30,11 @@ class Strategy():
             raise ValueError('Given parmameters must be params of estimator.')
 
         # Intitialize search function with given parameters
-        self.search = self.search(self.estimator, self.param_space, self.cv)
+        self.search_params['cv'] = self.cv
+        self.search = self.search(self.estimator, self.param_space, **self.search_params)
+
+        # Intitialize split function with given parameters
+        self.split = lambda X, y: self.split_function(X, y, **self.split_params)
 
     @property
     def name(self):
@@ -50,16 +56,24 @@ class Strategy():
     def cv_class(self):
         return self.cv.__class__.__name__
 
+    def search_class(self):
+        return self.search.__class__.__name__
+
     def get_infos(self):
         estimator_params = {
             k: v for k, v in self.estimator.__dict__.items() if k not in self.param_space
         }
+        s_p = {k: self.search_params[k] for k in ['scoring']}
         return {
             'name': self.name,
             'estimator': self.estimator_class(),
             'estimator_params': estimator_params,
+            'split_function': self.split_function.__name__,
+            'split_params': self.split_params,
             'cv': self.cv_class(),
             'cv_params': self.cv.__dict__,
+            'search': self.search_class(),
+            'search_params': s_p,
             'classification': self.is_classification(),
             'param_space': self.param_space
         }
