@@ -66,16 +66,27 @@ class DumpHelper:
         _dump_infos(self.task, f'{self.task_folder}task_infos.yml')
         _dump_infos(self.strat, f'{self.strat_folder}strat_infos.yml')
 
-    def dump_regression(self, y_pred, y_true):
+    def dump_prediction(self, y_pred, y_true):
         df = pd.DataFrame({
             'y_pred': y_pred,
             'y_true': y_true,
         })
 
-        df.to_csv(self.strat_folder+'regression_results.csv')
+        df.to_csv(self.strat_folder+'prediction.csv')
 
     def dump_best_params(self, best_params):
         _dump_yaml(best_params, self.strat_folder+'best_params.yml')
 
     def dump_cv_results(self, cv_results):
         _dump_yaml(cv_results, self.strat_folder+'cv_results.yml')
+
+    def dump_roc(self, y_score, y_true):
+        df = pd.DataFrame({
+            'y_score': y_score,
+            'y_true': y_true
+        })
+
+        df.to_csv(self.strat_folder+'roc.csv')
+
+    # def dump_classification_report(self, report):
+    #     _dump_yaml(report, self.strat_folder+'classification_report.yml')
