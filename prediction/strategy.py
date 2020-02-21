@@ -1,46 +1,47 @@
 """Implement the Strategy class."""
+import sklearn
 import numpy as np
 from dataclasses import dataclass, field
 from typing import Any, Callable
 from sklearn.base import BaseEstimator, RegressorMixin, ClassifierMixin
 
 
-@dataclass()
 class Strategy():
     """Elements to run cross-validated ML estimator with hyperparms tuning."""
 
-    estimator: BaseEstimator
-    split_function: Any
-    split_params: dict
-    cv: Any
-    param_space: dict
-    search: Callable[[BaseEstimator, dict, Any], Any]
-    search_params: dict
-    _name: str = None
-    _count: int = field(default=0, init=False)
+    _count = 0
 
-    def __post_init__(self):
-        """Check params and intialize search."""
+    def __init__(self, estimator, split, cv, param_space, search,
+                 imputer=None, split_params=dict(), search_params=dict(),
+                 name=None):
+        self.estimator = estimator
+        self.cv = cv
+        self.param_space = param_space
+        self._name = name
+        self.imputer = imputer
+
+        self._split_function = split
+        self.split = lambda X, y: split(X, y, **split_params)
+        self.split_params = split_params
+
+        search_params['cv'] = self.cv
+        self.search = search(estimator, param_space, **search_params)
+
         Strategy._count += 1
         self.count = Strategy._count
-        # Check
-        e = self.estimator
-        p = self.param_space
-        if not all(p in e.get_params().keys() for p in p.keys()):
+
+        if not all(p in estimator.get_params().keys() for p in param_space.keys()):
             raise ValueError('Given parmameters must be params of estimator.')
-
-        # Intitialize search function with given parameters
-        self.search_params['cv'] = self.cv
-        self.search = self.search(self.estimator, self.param_space, **self.search_params)
-
-        # Intitialize split function with given parameters
-        self.split = lambda X, y: self.split_function(X, y, **self.split_params)
 
     @property
     def name(self):
         if self._name is None:
             return self.estimator_class()
         return self._name
+
+    @name.setter
+    def name(self, name):
+        self._name = name
 
     def is_regression(self):
         """Return True if the estimator is a regressor."""
@@ -59,21 +60,33 @@ class Strategy():
     def search_class(self):
         return self.search.__class__.__name__
 
+    def imputer_class(self):
+        return self.imputer.__class__.__name__
+
     def get_infos(self):
+        # Remove redondant params in the dump
         estimator_params = {
             k: v for k, v in self.estimator.__dict__.items() if k not in self.param_space
         }
-        s_p = {k: self.search_params[k] for k in ['scoring']}
+        # Remove redondant params in the dump
+        search_params = {
+            k: v for k, v in self.search.__dict__.items() if k not in ['estimator', 'cv']
+        }
+        imputer_params = None if self.imputer is None else self.imputer.__dict__
+
         return {
             'name': self.name,
             'estimator': self.estimator_class(),
             'estimator_params': estimator_params,
-            'split_function': self.split_function.__name__,
+            'split_function': self._split_function.__name__,
             'split_params': self.split_params,
             'cv': self.cv_class(),
             'cv_params': self.cv.__dict__,
             'search': self.search_class(),
-            'search_params': s_p,
+            'search_params': search_params,
             'classification': self.is_classification(),
-            'param_space': self.param_space
+            'param_space': self.param_space,
+            'imputer': self.imputer_class(),
+            'imputer_params': imputer_params,
+            'sklearn_version': sklearn.__version__
         }
