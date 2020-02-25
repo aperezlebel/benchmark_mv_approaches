@@ -3,6 +3,7 @@
 # from sklearn.experimental import enable_hist_gradient_boosting
 import pandas as pd
 import numpy as np
+from copy import deepcopy
 
 from .DumpHelper import DumpHelper
 
@@ -64,24 +65,36 @@ def train(task, strategy):
 
     X, y = task.X, task.y
 
-    X_train, X_test, y_train, y_test = strategy.split(X, y)
+    # Non nested CV
+    # X_train, X_test, y_train, y_test = strategy.split(X, y)
 
-    # Imputation
-    if strategy.imputer is not None:
-        strategy.imputer.fit(X_train)
-        X_train = impute(X_train, strategy.imputer)
-        X_test = impute(X_test, strategy.imputer)
+    # Nested CV
+    Estimators = []
 
-    estimator = strategy.search.fit(X_train, y_train)
+    for i, (train_index, test_index) in enumerate(strategy.outer_cv.split(X)):
 
-    y_pred = estimator.predict(X_test)
+        X_train, X_test = X.iloc[train_index], X.iloc[test_index]
+        y_train, y_test = y.iloc[train_index], y.iloc[test_index]
 
-    dh.dump_best_params(estimator.best_params_)
-    dh.dump_prediction(y_pred, y_test)
-    dh.dump_cv_results(estimator.cv_results_)
+        # Imputation
+        if strategy.imputer is not None:
+            strategy.imputer.fit(X_train)
+            X_train = impute(X_train, strategy.imputer)
+            X_test = impute(X_test, strategy.imputer)
 
-    if strategy.is_classification():
-        y_score = estimator.decision_function(X_test)
-        dh.dump_roc(y_score, y_test)
+        # Hyper-parameters search
+        estimator = deepcopy(strategy.search)
+        estimator.fit(X_train, y_train)
+        Estimators.append(estimator)
 
-    return estimator
+        y_pred = estimator.predict(X_test)
+
+        dh.dump_best_params(estimator.best_params_, fold=i)
+        dh.dump_prediction(y_pred, y_test, fold=i)
+        dh.dump_cv_results(estimator.cv_results_, fold=i)
+
+        if strategy.is_classification():
+            y_score = estimator.decision_function(X_test)
+            dh.dump_roc(y_score, y_test, fold=i)
+
+    return Estimators
