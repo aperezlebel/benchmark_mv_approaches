@@ -1,11 +1,16 @@
 """Pipeline to train model, find best parameters, give results."""
 
 # from sklearn.experimental import enable_hist_gradient_boosting
+import logging
 import pandas as pd
 import numpy as np
 from copy import deepcopy
+from sklearn.inspection import permutation_importance
 
 from .DumpHelper import DumpHelper
+
+
+logger = logging.getLogger(__name__)
 
 
 def impute(df, imputer):
@@ -61,6 +66,8 @@ def train(task, strategy):
         Stores the results of the training.
 
     """
+    logger.info(f'Started task "{task.meta.name}" '
+                f'using "{strategy.name}" strategy on "{task.meta.db}".')
     dh = DumpHelper(task, strategy)  # Used to dump results
 
     X, y = task.X, task.y
@@ -72,21 +79,27 @@ def train(task, strategy):
     Estimators = []
 
     for i, (train_index, test_index) in enumerate(strategy.outer_cv.split(X)):
+        logger.info(f'Started fold {i}.')
 
         X_train, X_test = X.iloc[train_index], X.iloc[test_index]
         y_train, y_test = y.iloc[train_index], y.iloc[test_index]
 
         # Imputation
         if strategy.imputer is not None:
+            logger.info('Fitting imputation.')
             strategy.imputer.fit(X_train)
+            logger.info('Imputing X_train.')
             X_train = impute(X_train, strategy.imputer)
+            logger.info('Imputing X_test.')
             X_test = impute(X_test, strategy.imputer)
 
         # Hyper-parameters search
+        logger.info('Searching best hyper-parameters.')
         estimator = deepcopy(strategy.search)
         estimator.fit(X_train, y_train)
         Estimators.append(estimator)
 
+        logger.info('Predicting on X_test using best fitted estimator.')
         y_pred = estimator.predict(X_test)
 
         dh.dump_best_params(estimator.best_params_, fold=i)
@@ -94,6 +107,7 @@ def train(task, strategy):
         dh.dump_cv_results(estimator.cv_results_, fold=i)
 
         if strategy.is_classification():
+            logger.info('Computing y_score for ROC.')
             y_score = estimator.decision_function(X_test)
             dh.dump_roc(y_score, y_test, fold=i)
 

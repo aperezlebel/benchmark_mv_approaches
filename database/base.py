@@ -1,6 +1,7 @@
 """Implement abstract class for the databases."""
 
 from abc import ABC, abstractmethod
+import logging
 import pandas as pd
 import numpy as np
 import yaml
@@ -12,6 +13,9 @@ from df_utils import split_features, fill_df, set_dtypes_features
 from encode import ordinal_encode, one_hot_encode, date_encode
 from .constants import CATEGORICAL, ORDINAL, BINARY, CONTINUE_R, CONTINUE_I, \
     NOT_A_FEATURE, NOT_MISSING, DATE_TIMESTAMP, DATE_EXPLODED, METADATA_PATH
+
+
+logger = logging.getLogger(__name__)
 
 
 class Database(ABC):
@@ -82,6 +86,7 @@ class Database(ABC):
             self.feature_types[name].drop(to_drop, inplace=True)
 
     def _load_db(self, df_names):
+        logger.info(f'Loading dataframes for {self.acronym}.')
         available_paths = self.available_paths
         for name in df_names:
             if name not in available_paths:
@@ -90,6 +95,8 @@ class Database(ABC):
                     f'Available name and paths are {available_paths}.'
                 )
             p = self.frame_paths[name]
+
+            logger.info(f'Loading {name} data frame.')
             self.dataframes[name] = pd.read_csv(p, sep=self._sep)
 
     @abstractmethod
@@ -112,7 +119,9 @@ class Database(ABC):
         pass
 
     def _load_feature_types(self, df_names):
+        logger.info(f'Loading feature types for {self.acronym}.')
         for name in df_names:
+            logger.info(f'Loading feature types of {name} data frame.')
             try:
                 self.feature_types[name] = _load_feature_types(self, name,
                                                                anonymized=False)
@@ -125,7 +134,9 @@ class Database(ABC):
                 )
 
     def _load_ordinal_orders(self, df_names):
+        logger.info(f'Loading ordinal orders for {self.acronym}.')
         for name in df_names:
+            logger.info(f'Loading ordinal orders of {name}.')
             filepath = f'{METADATA_PATH}/ordinal_orders/{self.acronym}/{name}.yml'
 
             if not os.path.exists(filepath):
@@ -139,7 +150,9 @@ class Database(ABC):
                     print(f'{exc}. No order loaded for {name}.')
 
     def _find_missing_values(self, df_names):
+        logger.info(f'Finding missing values for {self.acronym}.')
         for name in df_names:
+            logger.info(f'Finding missing values of {name}.')
             df = self.dataframes[name]
             self.missing_values[name] = get_missing_values(df, self.heuristic)
 
@@ -206,7 +219,9 @@ class Database(ABC):
 
     @abstractmethod
     def _encode(self, df_names, encode=None):
+        logger.info(f'Encoding data frames for {self.acronym}.')
         for name in df_names:
+            logger.info(f'Encoding {name}.')
             df = self.dataframes[name]
             if name not in self.feature_types:
                 print(f'{name}: feature types missing. Encoding ignored.')
