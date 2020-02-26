@@ -9,8 +9,6 @@ from sklearn.base import BaseEstimator, RegressorMixin, ClassifierMixin
 class Strategy():
     """Elements to run cross-validated ML estimator with hyperparms tuning."""
 
-    _count = 0
-
     def __init__(self, estimator, inner_cv, outer_cv, param_space, search,
                  imputer=None, search_params=dict(), compute_importance=False,
                  importance_params=dict(), name=None):
@@ -25,9 +23,6 @@ class Strategy():
 
         search_params['cv'] = self.inner_cv
         self.search = search(estimator, param_space, **search_params)
-
-        Strategy._count += 1
-        self.count = Strategy._count
 
         if not all(p in estimator.get_params().keys() for p in param_space.keys()):
             raise ValueError('Given parmameters must be params of estimator.')

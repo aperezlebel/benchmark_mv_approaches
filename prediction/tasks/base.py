@@ -32,12 +32,12 @@ class TaskMeta():
 class Task:
     """Gather task metadata and the dataframe on which to run the task."""
 
-    _df_untransformed: pd.DataFrame
-    meta: TaskMeta
-
-    def __post_init__(self):
+    def __init__(self, df, meta):
         """Transform given df, run checks and set drop according to meta."""
-        self._df = self.meta.transform(self._df_untransformed, meta=self.meta)
+        self._df = meta.transform(df, meta=meta)
+        self.meta = meta
+
+
         self._check()
         self._set_drop()
 
