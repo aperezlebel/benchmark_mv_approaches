@@ -38,6 +38,9 @@ def listify(d):
         Same dict with numpy arrays converted to lists
 
     """
+    if isinstance(d, list):
+        return d
+
     for k, v in d.items():
         if isinstance(v, np.ndarray):
             d[k] = v.tolist()
@@ -58,6 +61,7 @@ class DumpHelper:
         self.strat_folder = f'{self.task_folder}{strat.name}/'
 
         self.dump_infos()
+        self._dump_features()
 
     def dump_infos(self):
         """Dump the infos of the task and strategy used."""
@@ -73,6 +77,10 @@ class DumpHelper:
 
         _dump_infos(self.task, f'{self.task_folder}task_infos.yml')
         _dump_infos(self.strat, f'{self.strat_folder}strat_infos.yml')
+
+    def _dump_features(self):
+        filepath = self.task_folder+'features.yml'
+        _dump_yaml(list(self.task.X.columns), filepath)
 
     def _filepath(self, filename):
         return f'{self.strat_folder}{filename}'
@@ -183,5 +191,9 @@ class DumpHelper:
 
         self._dump(df, 'roc.csv', fold=fold)
 
-    # def dump_classification_report(self, report):
-    #     _dump_yaml(report, self.strat_folder+'classification_report.yml')
+    def dump_importance(self, importance, fold=None):
+        data = {
+            'importances_mean': importance.importances_mean,
+            'importances_std': importance.importances_std
+        }
+        self._dump(data, 'importance.yml', fold=fold)

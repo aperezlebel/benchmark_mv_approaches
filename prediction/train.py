@@ -102,6 +102,13 @@ def train(task, strategy):
         logger.info('Predicting on X_test using best fitted estimator.')
         y_pred = estimator.predict(X_test)
 
+        if strategy.compute_importance:  # Compute feature importance
+            logger.info('Computing feature importance using permutations.')
+            importance = permutation_importance(estimator, X_test, y_test, **strategy.importance_params)
+            dh.dump_importance(importance, fold=i)
+        else:
+            logger.info('Skipping feature importance.')
+
         dh.dump_best_params(estimator.best_params_, fold=i)
         dh.dump_prediction(y_pred, y_test, fold=i)
         dh.dump_cv_results(estimator.cv_results_, fold=i)

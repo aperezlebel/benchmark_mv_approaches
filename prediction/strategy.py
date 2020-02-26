@@ -11,20 +11,19 @@ class Strategy():
 
     _count = 0
 
-    def __init__(self, estimator, split, cv, param_space, search,
-                 imputer=None, split_params=dict(), search_params=dict(),
-                 name=None):
+    def __init__(self, estimator, inner_cv, outer_cv, param_space, search,
+                 imputer=None, search_params=dict(), compute_importance=False,
+                 importance_params=dict(), name=None):
         self.estimator = estimator
-        self.cv = cv
+        self.inner_cv = inner_cv
+        self.outer_cv = outer_cv
         self.param_space = param_space
         self._name = name
         self.imputer = imputer
+        self.compute_importance = compute_importance
+        self.importance_params = importance_params
 
-        self._split_function = split
-        self.split = lambda X, y: split(X, y, **split_params)
-        self.split_params = split_params
-
-        search_params['cv'] = self.cv
+        search_params['cv'] = self.inner_cv
         self.search = search(estimator, param_space, **search_params)
 
         Strategy._count += 1
@@ -54,8 +53,11 @@ class Strategy():
     def estimator_class(self):
         return self.estimator.__class__.__name__
 
-    def cv_class(self):
-        return self.cv.__class__.__name__
+    def inner_cv_class(self):
+        return self.inner_cv.__class__.__name__
+
+    def outer_cv_class(self):
+        return self.inner_cv.__class__.__name__
 
     def search_class(self):
         return self.search.__class__.__name__
@@ -78,15 +80,17 @@ class Strategy():
             'name': self.name,
             'estimator': self.estimator_class(),
             'estimator_params': estimator_params,
-            'split_function': self._split_function.__name__,
-            'split_params': self.split_params,
-            'cv': self.cv_class(),
-            'cv_params': self.cv.__dict__,
+            'inner_cv': self.inner_cv_class(),
+            'inner_cv_params': self.inner_cv.__dict__,
+            'outer_cv': self.outer_cv_class(),
+            'outer_cv_params': self.outer_cv.__dict__,
             'search': self.search_class(),
             'search_params': search_params,
             'classification': self.is_classification(),
             'param_space': self.param_space,
             'imputer': self.imputer_class(),
             'imputer_params': imputer_params,
+            'compute_importance': self.compute_importance,
+            'importance_params': self.importance_params,
             'sklearn_version': sklearn.__version__
         }
