@@ -194,6 +194,7 @@ class DumpHelper:
     def dump_importance(self, importance, fold=None):
         data = {
             'importances_mean': importance.importances_mean,
-            'importances_std': importance.importances_std
+            'importances_std': importance.importances_std,
+            'importances': importance.importances
         }
         self._dump(data, 'importance.yml', fold=fold)
