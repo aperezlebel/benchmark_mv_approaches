@@ -6,6 +6,7 @@ import pandas as pd
 import numpy as np
 from copy import deepcopy
 from sklearn.inspection import permutation_importance
+from sklearn.model_selection import learning_curve
 
 from .DumpHelper import DumpHelper
 
@@ -117,5 +118,19 @@ def train(task, strategy):
             logger.info('Computing y_score for ROC.')
             y_score = estimator.decision_function(X_test)
             dh.dump_roc(y_score, y_test, fold=i)
+
+        # Learning curve
+        if strategy.learning_curve:
+            logger.info('Computing learning curve.')
+            curve = learning_curve(estimator, X_train, y_train, n_jobs=4,
+                                   cv=strategy.inner_cv, return_times=True,
+                                   **strategy.learning_curve_params)
+            dh.dump_learning_curve({
+                'train_sizes_abs': curve[0],
+                'train_scores': curve[1],
+                'test_scores': curve[2],
+                'fit_times': curve[3],
+                'score_times': curve[4],
+            }, fold=i)
 
     return Estimators
