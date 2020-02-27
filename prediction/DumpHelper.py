@@ -56,14 +56,35 @@ class DumpHelper:
         self.task = task
         self.strat = strat
 
-        self.task_folder = (f'{results_folder}{self.task.meta.db}/'
-                            f'{self.task.meta.name}/')
+        self.db_folder = f'{results_folder}{self.task.meta.db}/'
+
+        self.dump_count = self._increase_and_get_dump_count()
+
+        self.task_folder = (f'{self.db_folder}{self.task.meta.name}_'
+                            f'{self.dump_count}/')
         self.strat_folder = f'{self.task_folder}{strat.name}/'
 
-        self.dump_infos()
+        self._dump_infos()
         self._dump_features()
 
-    def dump_infos(self):
+    def _increase_and_get_dump_count(self):
+        count_filepath = self.db_folder+'dump_count.txt'
+
+        if not os.path.exists(count_filepath):
+            count = 0
+        else:
+            with open(count_filepath, 'r') as file:
+                c = file.read()
+                # if 'c'
+                count = int(c) + 1
+
+        # Dump new count
+        with open(count_filepath, 'w') as file:
+            file.write(str(count))
+
+        return count
+
+    def _dump_infos(self):
         """Dump the infos of the task and strategy used."""
 
         # Create all necessary folders and ignore if already exist
@@ -198,3 +219,6 @@ class DumpHelper:
             'importances': importance.importances
         }
         self._dump(data, 'importance.yml', fold=fold)
+
+    def dump_learning_curve(self, learning_curve, fold=None):
+        self._dump(learning_curve, 'learning_curve.yml', fold=fold)
