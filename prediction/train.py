@@ -122,7 +122,7 @@ def train(task, strategy):
         # Learning curve
         if strategy.learning_curve:
             logger.info('Computing learning curve.')
-            curve = learning_curve(estimator, X_train, y_train, n_jobs=4,
+            curve = learning_curve(estimator, X_train, y_train,
                                    cv=strategy.inner_cv, return_times=True,
                                    **strategy.learning_curve_params)
             dh.dump_learning_curve({
