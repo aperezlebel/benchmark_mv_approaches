@@ -11,7 +11,8 @@ class Strategy():
 
     def __init__(self, estimator, inner_cv, outer_cv, param_space, search,
                  imputer=None, search_params=dict(), compute_importance=False,
-                 importance_params=dict(), name=None):
+                 importance_params=dict(), learning_curve=False,
+                 learning_curve_params=dict(), name=None):
         self.estimator = estimator
         self.inner_cv = inner_cv
         self.outer_cv = outer_cv
@@ -20,6 +21,8 @@ class Strategy():
         self.imputer = imputer
         self.compute_importance = compute_importance
         self.importance_params = importance_params
+        self.learning_curve = learning_curve
+        self.learning_curve_params = learning_curve_params
 
         search_params['cv'] = self.inner_cv
         self.search = search(estimator, param_space, **search_params)
@@ -87,5 +90,6 @@ class Strategy():
             'imputer_params': imputer_params,
             'compute_importance': self.compute_importance,
             'importance_params': self.importance_params,
+            'learning_curve_params': self.learning_curve_params,
             'sklearn_version': sklearn.__version__
         }
