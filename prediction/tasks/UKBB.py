@@ -1,6 +1,6 @@
 """Build prediction tasks for the UKBB database."""
 
-from .base import TaskMeta
+from .taskMeta import TaskMeta
 
 
 tasks_meta = list()
