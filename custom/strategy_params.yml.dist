@@ -1,0 +1,3 @@
+n_jobs: 4  # Number of cpu to use (-1 for all)
+n_iter: 1  # Number of samples for the random search
+n_repeats: 1  # Number of times to permute a feature for feature importance

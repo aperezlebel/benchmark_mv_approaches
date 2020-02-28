@@ -8,4 +8,5 @@ TraumaBase
 backup
 *pyc
 results
-custom
+custom/*
+!*.dist
