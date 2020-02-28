@@ -1,7 +1,16 @@
+"""Load jobs from job file if any."""
+import os
+
 from ..strategies import strategies
 from ..tasks import tasks
 
-jobs = [
-    (tasks['TB/death'], strategies['Classification']),
-    (tasks['TB/death'], strategies['Classification'])
-]
+jobs = []
+
+# Loading jobs from file
+filepath = 'jobs.txt'
+
+if os.path.exists(filepath):
+    with open(filepath, 'r') as file:
+        for line in file.read().splitlines():
+            task_name, startegy_name = line.split(' ')
+            jobs.append((tasks[task_name], strategies[startegy_name]))
