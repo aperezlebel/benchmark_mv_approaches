@@ -5,6 +5,8 @@ import numpy as np
 from dataclasses import dataclass
 from typing import List, Callable
 
+from database import dbs
+
 
 @dataclass(frozen=True)
 class TaskMeta():
@@ -28,18 +30,36 @@ class TaskMeta():
         props = ['db', 'df_name', 'predict', 'drop', 'drop_contains', 'keep']
         return dict(filter(lambda x: x[0] in props, self.__dict__.items()))
 
+    @property
+    def tag(self):
+        return f'{self.db}/{self.name}'
+
+    def transform_df(self, df):
+        return self.transform(df, meta=self)
+
 
 class Task:
     """Gather task metadata and the dataframe on which to run the task."""
 
-    def __init__(self, df, meta):
-        """Transform given df, run checks and set drop according to meta."""
-        self._df = meta.transform(df, meta=meta)
+    def __init__(self, meta):
+        # """Transform given df, run checks and set drop according to meta."""
+        self._df = None#meta.transform(df, meta=meta)
         self.meta = meta
 
+    def _load_df(self):
+        if self._df is not None:
+            return self._df
+
+        db = dbs[self.meta.db]
+        db.load(self.meta.df_name)
+
+        df = db.encoded_dataframes[self.meta.df_name]
+        self._df = self.meta.transform_df(df)
 
         self._check()
         self._set_drop()
+
+        return self._df
 
     def _check(self):
         """Check if drop, drop_contains and keep contains feature of the df."""
@@ -92,6 +112,7 @@ class Task:
     @property
     def df(self):
         """Full transformed data frame."""
+        self._load_df()
         return self._df.drop(self._drop, axis=1)
 
     @property

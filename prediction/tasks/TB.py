@@ -2,7 +2,7 @@
 
 from .base import TaskMeta
 
-tasks_meta = dict()
+tasks_meta = list()
 
 
 # Task 1: Death prediction
@@ -12,7 +12,7 @@ def transform_df_death(df, **kwargs):
     return df.dropna(axis=0, subset=[predict])
 
 
-tasks_meta['death'] = TaskMeta(
+tasks_meta.append(TaskMeta(
     name='death',
     db='TB',
     df_name='20000',
@@ -44,7 +44,7 @@ tasks_meta['death'] = TaskMeta(
         "Procédure limitations de soins (LATA)",
     ],
     transform=transform_df_death
-)
+))
 
 
 # Task 2: Platelet prediciton (https://arxiv.org/abs/1909.06631)
@@ -76,7 +76,7 @@ def transform_df_platelet(df, **kwargs):
     return df.dropna(axis=0, subset=[predict])
 
 
-tasks_meta['platelet'] = TaskMeta(
+tasks_meta.append(TaskMeta(
     name='platelet',
     db='TB',
     df_name='20000',
@@ -99,7 +99,7 @@ tasks_meta['platelet'] = TaskMeta(
         'DBP.min'
     ],
     transform=transform_df_platelet
-)
+))
 
 
 # Task 3: Hemorrhagic shock prediciton (https://arxiv.org/pdf/1805.04602)
@@ -126,7 +126,7 @@ def transform_df_shock_hemo(df, **kwargs):
     return df.dropna(axis=0, subset=[predict])
 
 
-tasks_meta['shock_hemo'] = TaskMeta(
+tasks_meta.append(TaskMeta(
     name='shock_hemo',
     db='TB',
     df_name='20000',
@@ -146,4 +146,4 @@ tasks_meta['shock_hemo'] = TaskMeta(
         'RT.cristalloides'
     ],
     transform=transform_df_shock_hemo
-)
+))

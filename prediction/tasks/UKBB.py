@@ -3,7 +3,7 @@
 from .base import TaskMeta
 
 
-tasks_meta = dict()
+tasks_meta = list()
 
 
 # Task 1: Fluid intelligence prediction
@@ -14,7 +14,7 @@ def transform_df_fluid_intelligence(df, **kwargs):
     return df.dropna(axis=0, subset=[predict])
 
 
-tasks_meta['fluid_intelligence'] = TaskMeta(
+tasks_meta.append(TaskMeta(
     name='fluid_intelligence',
     db='UKBB',
     df_name='24440',
@@ -60,4 +60,4 @@ tasks_meta['fluid_intelligence'] = TaskMeta(
         '40006',
     ],
     transform=transform_df_fluid_intelligence
-)
+))
