@@ -67,7 +67,7 @@ def train(task, strategy):
         Stores the results of the training.
 
     """
-    logger.info(f'Started task "{task.meta.name}" '
+    logger.info(f'Started task "{task.meta.tag}" '
                 f'using "{strategy.name}" strategy on "{task.meta.db}".')
     dh = DumpHelper(task, strategy)  # Used to dump results
 
