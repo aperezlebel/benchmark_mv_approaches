@@ -39,18 +39,25 @@ def listify(d):
 
     """
     if isinstance(d, list):
+        return [listify(v) for v in d]
+    elif isinstance(d, np.ndarray):
+        return listify(d.tolist())
+    elif isinstance(d, dict):
+        return {k: listify(v) for k, v in d.items()}
+    elif isinstance(d, int):
         return d
-
-    for k, v in d.items():
-        if isinstance(v, np.ndarray):
-            d[k] = v.tolist()
-        elif isinstance(v, dict):
-            d[k] = listify(v)
-    return d
+    elif isinstance(d, str):
+        return d
+    elif np.isscalar(d):
+        return float(d)
+    elif callable(d):
+        return d.__name__
+    else:
+        return d
 
 
 class DumpHelper:
-
+    _count = None
 
     def __init__(self, task, strat):
         self.task = task
@@ -58,16 +65,19 @@ class DumpHelper:
 
         self.db_folder = f'{results_folder}{self.task.meta.db}/'
 
-        self.dump_count = self._increase_and_get_dump_count()
+        dump_count = self._get_dump_count()
 
         self.task_folder = (f'{self.db_folder}{self.task.meta.name}_'
-                            f'{self.dump_count}/')
+                            f'{dump_count}/')
         self.strat_folder = f'{self.task_folder}{strat.name}/'
 
         self._dump_infos()
         self._dump_features()
 
-    def _increase_and_get_dump_count(self):
+    def _get_dump_count(self):
+        if DumpHelper._count is not None:
+            return DumpHelper._count
+
         count_filepath = self.db_folder+'dump_count.txt'
 
         if not os.path.exists(count_filepath):
@@ -75,13 +85,16 @@ class DumpHelper:
         else:
             with open(count_filepath, 'r') as file:
                 c = file.read()
-                # if 'c'
-                count = int(c) + 1
+                if c == '':
+                    count = 0
+                else:
+                    count = int(c) + 1
 
         # Dump new count
         with open(count_filepath, 'w') as file:
             file.write(str(count))
 
+        DumpHelper._count = count
         return count
 
     def _dump_infos(self):

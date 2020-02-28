@@ -7,7 +7,7 @@ from ..tasks import tasks
 jobs = []
 
 # Loading jobs from file
-filepath = 'jobs.txt'
+filepath = 'custom/jobs.txt'
 
 if os.path.exists(filepath):
     with open(filepath, 'r') as file:
