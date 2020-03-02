@@ -93,6 +93,8 @@ def train(task, strategy):
             X_train = impute(X_train, strategy.imputer)
             logger.info('Imputing X_test.')
             X_test = impute(X_test, strategy.imputer)
+        else:
+            logger.info('Skipping imputation.')
 
         # Hyper-parameters search
         logger.info('Searching best hyper-parameters.')
