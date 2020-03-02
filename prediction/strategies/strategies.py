@@ -29,6 +29,8 @@ else:
     params = dict()
 
 # Load or defaults
+n_outer_splits = params.get('n_outer_splits', 2)
+n_inner_splits = params.get('n_inner_splits', 2)
 n_jobs = params.get('n_jobs', 1)
 n_iter = params.get('n_iter', 1)
 n_repeats = params.get('n_repeats', 1)
@@ -40,7 +42,7 @@ learning_curve = params.get('learning_curve', False)
 strategies.append(Strategy(
     name='Classification',
     estimator=HistGradientBoostingClassifier(),
-    inner_cv=ShuffleSplit(n_splits=2, train_size=0.8, random_state=RS),
+    inner_cv=ShuffleSplit(n_splits=n_inner_splits, train_size=0.8, random_state=RS),
     # param_space={
     #     'learning_rate': [0.01],#np.linspace(0.01, 0.15, 3),
     #     'max_iter': [100]#[100, 500, 1000]
@@ -58,7 +60,7 @@ strategies.append(Strategy(
         'return_train_score': True,
         'n_iter': n_iter
     },
-    outer_cv=KFold(n_splits=2, shuffle=True, random_state=RS),
+    outer_cv=KFold(n_splits=n_outer_splits, shuffle=True, random_state=RS),
     compute_importance=compute_importance,
     importance_params={
         'n_jobs': n_jobs,
@@ -75,7 +77,7 @@ strategies.append(Strategy(
 strategies.append(Strategy(
     name='Regression',
     estimator=HistGradientBoostingRegressor(loss='least_absolute_deviation'),
-    inner_cv=ShuffleSplit(n_splits=2, train_size=0.8, random_state=RS),
+    inner_cv=ShuffleSplit(n_splits=n_inner_splits, train_size=0.8, random_state=RS),
     # param_space={
     #     'learning_rate': np.array([0.1]),#np.linspace(0.001, 0.1, 5),#[0.1, 0.15, 0.2, 0.25],
     #     'max_depth': [3]#[3, 6, 8]
@@ -93,7 +95,7 @@ strategies.append(Strategy(
         'return_train_score': True,
         'n_iter': n_iter
     },
-    outer_cv=KFold(n_splits=2, shuffle=True, random_state=RS),
+    outer_cv=KFold(n_splits=n_outer_splits, shuffle=True, random_state=RS),
     compute_importance=compute_importance,
     importance_params={
         'n_jobs': n_jobs,
