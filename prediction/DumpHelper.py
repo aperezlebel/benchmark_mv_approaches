@@ -91,6 +91,7 @@ class DumpHelper:
                     count = int(c) + 1
 
         # Dump new count
+        os.makedirs(self.db_folder, exist_ok=True)
         with open(count_filepath, 'w') as file:
             file.write(str(count))
 
