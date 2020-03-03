@@ -5,3 +5,4 @@ learning_curve: False  # Whether to compute the learning curve
 compute_importance: False  # Whether to compute the feature importance
 n_outer_splits: 2  # Number of splits of the outer CV
 n_inner_splits: 2  # Number of splits of the inner CV
+iterative_imputer_max_iter: 10  # Max # of imputation rounds for iterative imp

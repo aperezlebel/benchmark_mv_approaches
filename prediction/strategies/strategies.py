@@ -36,6 +36,7 @@ n_iter = params.get('n_iter', 1)
 n_repeats = params.get('n_repeats', 1)
 compute_importance = params.get('compute_importance', False)
 learning_curve = params.get('learning_curve', False)
+iterative_imputer_max_iter = params.get('iterative_imputer_max_iter', 10)
 
 
 # A strategy to run a classification
@@ -115,8 +116,9 @@ imputers = {
     'Mean+mask': SimpleImputer(strategy='mean', add_indicator=True),
     'Med': SimpleImputer(strategy='median'),
     'Med+mask': SimpleImputer(strategy='median', add_indicator=True),
-    'Iterative': IterativeImputer(),
-    'Iterative+mask': IterativeImputer(add_indicator=True),
+    'Iterative': IterativeImputer(max_iter=iterative_imputer_max_iter),
+    'Iterative+mask': IterativeImputer(add_indicator=True,
+                                       max_iter=iterative_imputer_max_iter),
 }
 
 # Add imputed versions of the previosu strategies
