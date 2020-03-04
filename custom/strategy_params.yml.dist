@@ -2,6 +2,7 @@ n_jobs: 4  # Number of cpu to use (-1 for all)
 n_iter: 1  # Number of samples for the random search
 n_repeats: 1  # Number of times to permute a feature for feature importance
 learning_curve: False  # Whether to compute the learning curve
+n_learning_trains: 5  # Number of training sizes for the learning curve
 compute_importance: False  # Whether to compute the feature importance
 n_outer_splits: 2  # Number of splits of the outer CV
 n_inner_splits: 2  # Number of splits of the inner CV

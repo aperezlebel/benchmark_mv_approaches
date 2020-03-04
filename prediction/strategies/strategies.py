@@ -36,6 +36,7 @@ n_iter = params.get('n_iter', 1)
 n_repeats = params.get('n_repeats', 1)
 compute_importance = params.get('compute_importance', False)
 learning_curve = params.get('learning_curve', False)
+n_learning_trains = params.get('n_learning_trains', 5)
 iterative_imputer_max_iter = params.get('iterative_imputer_max_iter', 10)
 
 
@@ -70,7 +71,8 @@ strategies.append(Strategy(
     learning_curve=learning_curve,
     learning_curve_params={
         'scoring': 'roc_auc_ovr_weighted',
-        'n_jobs': n_jobs
+        'n_jobs': n_jobs,
+        'train_sizes': np.linspace(0.1, 1, n_learning_trains)
     }
 ))
 
@@ -105,7 +107,8 @@ strategies.append(Strategy(
     learning_curve=learning_curve,
     learning_curve_params={
         'scoring': 'r2',
-        'n_jobs': n_jobs
+        'n_jobs': n_jobs,
+        'train_sizes': np.linspace(0.1, 1, n_learning_trains)
     }
 ))
 
