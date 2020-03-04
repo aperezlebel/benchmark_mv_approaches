@@ -19,6 +19,7 @@ class UKBB(Database):
             '32309': data_folder+'ukb32309.csv',
             '35375': data_folder+'ukb35375.csv',
             '38276': data_folder+'ukb38276.csv',
+            '40284': data_folder+'ukb40284.csv',
         }
         sep = ','
 

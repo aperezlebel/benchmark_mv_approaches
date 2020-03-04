@@ -17,7 +17,7 @@ def transform_df_fluid_intelligence(df, **kwargs):
 tasks_meta.append(TaskMeta(
     name='fluid_intelligence',
     db='UKBB',
-    df_name='24440',
+    df_name='40284',
     predict='20016-0.0',
     drop=[
         '20016-1.0',

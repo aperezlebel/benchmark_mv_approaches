@@ -97,7 +97,8 @@ class Database(ABC):
             p = self.frame_paths[name]
 
             logger.info(f'Loading {name} data frame.')
-            self.dataframes[name] = pd.read_csv(p, sep=self._sep)
+            self.dataframes[name] = pd.read_csv(p, sep=self._sep,
+                                                encoding='ISO-8859-1')
 
     @abstractmethod
     def heuristic(self, series):
