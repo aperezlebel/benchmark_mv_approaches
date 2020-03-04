@@ -110,20 +110,18 @@ def train(task, strategy):
         logger.info('Learning curve: skipping.')
 
 
-    # # ROC curve
-    # if strategy.is_classification():
-    #     logger.info('ROC: computing curve.')
-    #     for i, (train_index, test_index) in enumerate(strategy.outer_cv.split(X)):
-    #         logger.info(f'Started fold {i}.')
+    # ROC curve
+    if strategy.is_classification():
+        logger.info('ROC: computing curve.')
+        y_score = cross_val_predict(estimator, X, y, cv=strategy.outer_cv, n_jobs=-1, method='decision_function')
+        # probas = cross_val_predict(estimator, X, y, cv=strategy.outer_cv, method='predict_proba')
+        # print(probas)
 
-    #         X_train, X_test = X.iloc[train_index], X.iloc[test_index]
-    #         y_train, y_test = y.iloc[train_index], y.iloc[test_index]
-
-    #         logger.info(f'ROC: Computing y_score for fold {i}.')
-    #         y_score = estimator.decision_function(X_test)
-    #         dh.dump_roc(y_score, y_test, fold=i)
-    # else:
-    #     logger.info('ROC: not a classification, skipping.')
+        # y_score = estimator.decision_function(X_test)
+        # dh.dump_probas(probas[:, 1], y, fold=None)
+        dh.dump_roc(y_score, y, fold=None)
+    else:
+        logger.info('ROC: not a classification, skipping.')
 
     # # Feature importance
     # if strategy.compute_importance:
