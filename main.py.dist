@@ -1,0 +1,6 @@
+import main_prediction
+import test_fit_time
+
+
+def run():
+    main_prediction.run()
