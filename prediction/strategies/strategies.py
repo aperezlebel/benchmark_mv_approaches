@@ -57,7 +57,7 @@ strategies.append(Strategy(
     search=RandomizedSearchCV,
     search_params={
         'scoring': 'recall',
-        'verbose': 2,
+        'verbose': 1000,
         'n_jobs': n_jobs,
         'return_train_score': True,
         'n_iter': n_iter
@@ -94,7 +94,7 @@ strategies.append(Strategy(
     search_params={
         'scoring': ['r2', 'neg_mean_absolute_error'],
         'refit': 'r2',
-        'verbose': 2,
+        'verbose': 1000,
         'return_train_score': True,
         'n_iter': n_iter
     },
