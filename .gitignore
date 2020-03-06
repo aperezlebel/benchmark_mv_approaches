@@ -10,3 +10,4 @@ backup
 results
 custom/*
 !*.dist
+logs
