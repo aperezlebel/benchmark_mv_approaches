@@ -98,6 +98,7 @@ def train(task, strategy):
         logger.info(f'Learning curve: starting with {strategy.outer_cv.n_splits} folds.')
         curve = learning_curve(estimator, X, y,
                                cv=strategy.outer_cv, return_times=True,
+                               verbose=1000,
                                **strategy.learning_curve_params)
         dh.dump_learning_curve({
             'train_sizes_abs': curve[0],
