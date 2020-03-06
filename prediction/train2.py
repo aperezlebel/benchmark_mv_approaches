@@ -90,7 +90,7 @@ def train(task, strategy):
 
     # CV prediction
     logger.info(f'Started cross_val_predict with {strategy.outer_cv.n_splits} folds.')
-    y_pred = cross_val_predict(estimator, X, y, cv=strategy.outer_cv, n_jobs=-1)
+    y_pred = cross_val_predict(estimator, X, y, cv=strategy.outer_cv, n_jobs=1, verbose=1000)
     dh.dump_prediction(y_pred, y)
 
     # Learning curve
@@ -113,7 +113,9 @@ def train(task, strategy):
     # ROC curve
     if strategy.is_classification():
         logger.info('ROC: computing curve.')
-        y_score = cross_val_predict(estimator, X, y, cv=strategy.outer_cv, n_jobs=-1, method='decision_function')
+        y_score = cross_val_predict(estimator, X, y, cv=strategy.outer_cv,
+                                    n_jobs=1, method='decision_function',
+                                    verbose=1000)
         # probas = cross_val_predict(estimator, X, y, cv=strategy.outer_cv, method='predict_proba')
         # print(probas)
 
