@@ -95,7 +95,9 @@ def train(task, strategy):
         y_train, y_test = y.iloc[train_index], y.iloc[test_index]
 
         # CV prediction
+        logger.info('Fitting estimator on train folds.')
         estimator.fit(X_train, y_train)
+        logger.info('Predicting test fold with fitted estimator.')
         y_pred = estimator.predict(X_test)
         dh.dump_prediction(y_pred, y_test, fold=i)
 
