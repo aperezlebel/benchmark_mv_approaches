@@ -17,3 +17,5 @@ NOT_A_FEATURE = -1
 
 # Paths
 METADATA_PATH = 'database/metadata/'
+
+MV_PLACEHOLDER = 'z MISSING_VALUE'
