@@ -21,7 +21,8 @@ logger = logging.getLogger(__name__)
 class Database(ABC):
 
     @abstractmethod
-    def __init__(self, name='', acronym='', paths=dict(), sep=',', load=None):
+    def __init__(self, name='', acronym='', paths=dict(), sep=',', load=None,
+                 encoding='utf-8'):
         self.dataframes = dict()
         self.missing_values = dict()
         self.feature_types = dict()
@@ -35,6 +36,7 @@ class Database(ABC):
         self.acronym = acronym
         self.frame_paths = paths
         self._sep = sep
+        self._encoding = encoding
 
         if load is not None:
             self.load(load)
@@ -56,8 +58,8 @@ class Database(ABC):
         # Remove dfs already loaded
         df_names = [n for n in df_names if n not in self.dataframes]
 
-        self._load_db(df_names)
         self._load_feature_types(df_names)
+        self._load_db(df_names)
         self._drop(df_names)
         self._load_ordinal_orders(df_names)
         self._find_missing_values(df_names)
@@ -98,7 +100,8 @@ class Database(ABC):
 
             logger.info(f'Loading {name} data frame.')
             self.dataframes[name] = pd.read_csv(p, sep=self._sep,
-                                                encoding='ISO-8859-1')
+                                                encoding=self._encoding)
+                                                # dtype=dtype)
 
     @abstractmethod
     def heuristic(self, series):
@@ -121,6 +124,7 @@ class Database(ABC):
 
     def _load_feature_types(self, df_names):
         logger.info(f'Loading feature types for {self.acronym}.')
+
         for name in df_names:
             logger.info(f'Loading feature types of {name} data frame.')
             try:
