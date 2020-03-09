@@ -194,17 +194,16 @@ class Database(ABC):
 
         # Fill missing values otherwise the fit raises an error cause of Nans
         splitted_mv_bool = {k: mv != NOT_MISSING for k, mv in splitted_mv.items()}
-        splitted_df = fill_df(splitted_df, splitted_mv_bool, 'z MISSING_VALUE')
+        # splitted_df = fill_df(splitted_df, splitted_mv_bool, 'z MISSING_VALUE')
+        # Set missing values to blank
+        splitted_mv_bool = {k: mv != NOT_MISSING for k, mv in splitted_mv.items()}
+        splitted_df = fill_df(splitted_df, splitted_mv_bool, np.nan)
 
         # Ordinal encode
         splitted_df, splitted_mv = ordinal_encode(splitted_df, splitted_mv, keys=to_ordinal_encode_ids, order=order)
 
         # One hot encode
         splitted_df, splitted_mv, splitted_types = one_hot_encode(splitted_df, splitted_mv, splitted_types, keys=to_one_hot_encode_ids)
-
-        # Set missing values to blank
-        splitted_mv_bool = {k: mv != NOT_MISSING for k, mv in splitted_mv.items()}
-        splitted_df = fill_df(splitted_df, splitted_mv_bool, np.nan)
 
         # Date encode
         splitted_df, splitted_mv, splitted_types = date_encode(splitted_df, splitted_mv, splitted_types, keys=to_date_encode_exp, method='explode', dayfirst=True)
@@ -216,9 +215,9 @@ class Database(ABC):
         encoded_types = pd.concat(splitted_types.values())
 
         # Set types on encoded df
-        encoded_df = set_dtypes_features(encoded_df, encoded_types, {
-            CONTINUE_R: float,
-            CONTINUE_I: float})
+        # encoded_df = set_dtypes_features(encoded_df, encoded_types, {
+        #     CONTINUE_R: float,
+        #     CONTINUE_I: float,
 
         return encoded_df, encoded_mv, encoded_types
 
