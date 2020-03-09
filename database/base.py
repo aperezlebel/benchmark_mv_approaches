@@ -193,7 +193,7 @@ class Database(ABC):
             del splitted_mv[k]
 
         # Fill missing values otherwise the fit raises an error cause of Nans
-        splitted_mv_bool = {k: mv != NOT_MISSING for k, mv in splitted_mv.items()}
+        # splitted_mv_bool = {k: mv != NOT_MISSING for k, mv in splitted_mv.items()}
         # splitted_df = fill_df(splitted_df, splitted_mv_bool, 'z MISSING_VALUE')
         # Set missing values to blank
         splitted_mv_bool = {k: mv != NOT_MISSING for k, mv in splitted_mv.items()}
@@ -209,6 +209,8 @@ class Database(ABC):
         splitted_df, splitted_mv, splitted_types = date_encode(splitted_df, splitted_mv, splitted_types, keys=to_date_encode_exp, method='explode', dayfirst=True)
         splitted_df, splitted_mv, splitted_types = date_encode(splitted_df, splitted_mv, splitted_types, keys=to_date_encode_tim, method='timestamp', dayfirst=True)
 
+        splitted_df = fill_df(splitted_df, splitted_mv_bool, np.nan)
+
         # Merge encoded df
         encoded_df = pd.concat(splitted_df.values(), axis=1)
         encoded_mv = pd.concat(splitted_mv.values(), axis=1)
@@ -218,6 +220,7 @@ class Database(ABC):
         # encoded_df = set_dtypes_features(encoded_df, encoded_types, {
         #     CONTINUE_R: float,
         #     CONTINUE_I: float,
+        #     })
 
         return encoded_df, encoded_mv, encoded_types
 

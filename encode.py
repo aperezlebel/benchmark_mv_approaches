@@ -8,6 +8,7 @@ from sklearn.preprocessing import OrdinalEncoder, OneHotEncoder
 from datetime import datetime
 
 from database.constants import NOT_MISSING, BINARY, CONTINUE_I, MV_PLACEHOLDER
+from df_utils import fill_df
 
 
 def _df_type_handler(function, df_seq, keys=None, **kwargs):
@@ -62,9 +63,11 @@ def ordinal_encode(df, mv, keys=None, order=None):
 
         enc = OrdinalEncoder(categories=categories)
 
-        df = df.fillna(MV_PLACEHOLDER).astype(str)  # Cast to str
+        df = fill_df(df, mv != NOT_MISSING, MV_PLACEHOLDER)
+        # df = df.fillna(MV_PLACEHOLDER).astype(str)  # Cast to str
         # Fit transform the encoder
         data_encoded = enc.fit_transform(df)
+        df = fill_df(df, mv != NOT_MISSING, np.nan)
 
         df_encoded = pd.DataFrame(data_encoded,
                                   index=df.index, columns=df.columns)
@@ -90,10 +93,14 @@ def one_hot_encode(df, mv, types, keys=None):
     def encode(df, mv, types):
         enc = OneHotEncoder(sparse=False)
 
-        df = df.fillna(MV_PLACEHOLDER).astype(str)  # Cast to str
+        # df = df.fillna(MV_PLACEHOLDER).astype(str)  # Cast to str
+
+        df = fill_df(df, mv != NOT_MISSING, MV_PLACEHOLDER)
 
         # Fit transform the encoder
         data_encoded = enc.fit_transform(df)
+
+        df = fill_df(df, mv != NOT_MISSING, np.nan)
 
         feature_names = list(enc.get_feature_names(list(df.columns)))
 
@@ -116,6 +123,8 @@ def one_hot_encode(df, mv, types, keys=None):
 def date_encode(df, mv, types, keys=None, method='timestamp', dayfirst=False):
 
     def encode(df, mv, types, method='timestamp', dayfirst=False):
+        df = fill_df(df, mv != NOT_MISSING, np.nan)
+
         if method == 'timestamp':
             data = dict()
 
