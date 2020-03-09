@@ -196,22 +196,28 @@ class Database(ABC):
         # splitted_mv_bool = {k: mv != NOT_MISSING for k, mv in splitted_mv.items()}
         # splitted_df = fill_df(splitted_df, splitted_mv_bool, 'z MISSING_VALUE')
         # Set missing values to blank
+        logger.info('Encoding: Fill missing values.')
         splitted_mv_bool = {k: mv != NOT_MISSING for k, mv in splitted_mv.items()}
         splitted_df = fill_df(splitted_df, splitted_mv_bool, np.nan)
 
         # Ordinal encode
+        logger.info('Encoding: Ordinal encode.')
         splitted_df, splitted_mv = ordinal_encode(splitted_df, splitted_mv, keys=to_ordinal_encode_ids, order=order)
 
         # One hot encode
+        logger.info('Encoding: One hot encode.')
         splitted_df, splitted_mv, splitted_types = one_hot_encode(splitted_df, splitted_mv, splitted_types, keys=to_one_hot_encode_ids)
 
         # Date encode
+        logger.info('Encoding: Date encode.')
         splitted_df, splitted_mv, splitted_types = date_encode(splitted_df, splitted_mv, splitted_types, keys=to_date_encode_exp, method='explode', dayfirst=True)
         splitted_df, splitted_mv, splitted_types = date_encode(splitted_df, splitted_mv, splitted_types, keys=to_date_encode_tim, method='timestamp', dayfirst=True)
 
+        logger.info('Encoding: Fill missing values.')
         splitted_df = fill_df(splitted_df, splitted_mv_bool, np.nan)
 
         # Merge encoded df
+        logger.info('Encoding: Merge df.')
         encoded_df = pd.concat(splitted_df.values(), axis=1)
         encoded_mv = pd.concat(splitted_mv.values(), axis=1)
         encoded_types = pd.concat(splitted_types.values())
