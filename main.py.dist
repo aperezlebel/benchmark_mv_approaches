@@ -2,5 +2,5 @@ import main_prediction
 import test_fit_time
 
 
-def run():
-    main_prediction.run()
+def run(argv=None):
+    main_prediction.run(argv)

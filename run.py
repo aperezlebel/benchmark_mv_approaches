@@ -47,7 +47,7 @@ logging.basicConfig(
     datefmt='%Y-%m-%d %H:%M:%S',
 )
 logger.info('Started run')
-main.run()
+main.run(sys.argv)
 logger.info('Ended run')
 
 # print_file.close()

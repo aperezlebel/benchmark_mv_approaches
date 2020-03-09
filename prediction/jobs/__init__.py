@@ -1,1 +1,1 @@
-from .jobs import jobs
+from .jobs import jobs, get_job

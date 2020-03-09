@@ -10,7 +10,7 @@ from prediction.tasks import tasks
 logger = logging.getLogger(__name__)
 
 
-def run():
+def run(argv=None):
     task = tasks['UKBB/fluid_intelligence_light']
 
     logger.info('Getting X.')
