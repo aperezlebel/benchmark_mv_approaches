@@ -77,7 +77,6 @@ strategies.append(Strategy(
     learning_curve=learning_curve,
     learning_curve_params={
         'scoring': 'roc_auc_ovr_weighted',
-        'n_jobs': n_jobs,
         'train_sizes': np.linspace(0.1, 1, n_learning_trains)
     }
 ))
@@ -121,7 +120,6 @@ strategies.append(Strategy(
     learning_curve=learning_curve,
     learning_curve_params={
         'scoring': 'r2',
-        'n_jobs': n_jobs,
         'train_sizes': np.linspace(0.1, 1, n_learning_trains)
     }
 ))

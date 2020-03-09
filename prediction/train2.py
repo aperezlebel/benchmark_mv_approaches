@@ -13,6 +13,7 @@ from .DumpHelper import DumpHelper
 
 
 logger = logging.getLogger(__name__)
+logger.addHandler(logging.StreamHandler())  # Print also in console.
 
 
 # def impute(df, imputer):
@@ -98,7 +99,7 @@ def train(task, strategy):
         logger.info(f'Learning curve: starting with {strategy.outer_cv.n_splits} folds.')
         curve = learning_curve(estimator, X, y,
                                cv=strategy.outer_cv, return_times=True,
-                               verbose=1000,
+                               verbose=1000, n_jobs=1,
                                **strategy.learning_curve_params)
         dh.dump_learning_curve({
             'train_sizes_abs': curve[0],
