@@ -214,6 +214,7 @@ class Database(ABC):
         splitted_df, splitted_mv, splitted_types = date_encode(splitted_df, splitted_mv, splitted_types, keys=to_date_encode_tim, method='timestamp', dayfirst=True)
 
         logger.info('Encoding: Fill missing values.')
+        splitted_mv_bool = {k: mv != NOT_MISSING for k, mv in splitted_mv.items()}
         splitted_df = fill_df(splitted_df, splitted_mv_bool, np.nan)
 
         # Merge encoded df
