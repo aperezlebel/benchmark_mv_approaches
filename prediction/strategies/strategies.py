@@ -45,29 +45,29 @@ strategies.append(Strategy(
     name='Classification',
     estimator=HistGradientBoostingClassifier(),
     inner_cv=ShuffleSplit(n_splits=n_inner_splits, train_size=0.8, random_state=RS),
-    # search=GridSearchCV,
+    search=GridSearchCV,
+    param_space={
+        'learning_rate': [0.05, 0.1, 0.3],
+        'max_depth': [3, 6, 9]
+    },
+    search_params={
+        'scoring': 'roc_auc_ovr_weighted',
+        'verbose': 1000,
+        'n_jobs': n_jobs,
+        'return_train_score': True,
+    },
+    # search=RandomizedSearchCV,
     # param_space={
-    #     'learning_rate': [0.05, 0.1, 0.3],
-    #     'max_depth': [3, 6, 9]
+    #     'learning_rate': uniform(1e-5, 1),
+    #     'max_iter': range(10, 500)
     # },
     # search_params={
     #     'scoring': 'recall',
     #     'verbose': 1000,
     #     'n_jobs': n_jobs,
     #     'return_train_score': True,
+    #     'n_iter': n_iter
     # },
-    search=RandomizedSearchCV,
-    param_space={
-        'learning_rate': uniform(1e-5, 1),
-        'max_iter': range(10, 500)
-    },
-    search_params={
-        'scoring': 'recall',
-        'verbose': 1000,
-        'n_jobs': n_jobs,
-        'return_train_score': True,
-        'n_iter': n_iter
-    },
     outer_cv=KFold(n_splits=n_outer_splits, shuffle=True, random_state=RS),
     compute_importance=compute_importance,
     importance_params={
@@ -86,31 +86,31 @@ strategies.append(Strategy(
     name='Regression',
     estimator=HistGradientBoostingRegressor(loss='least_absolute_deviation'),
     inner_cv=ShuffleSplit(n_splits=n_inner_splits, train_size=0.8, random_state=RS),
-    # search=GridSearchCV,
-    # param_space={
-    #     'learning_rate': [0.05, 0.1, 0.3],
-    #     'max_depth': [3, 6, 9]
-    # },
-    # search_params={
-    #     'scoring': ['r2', 'neg_mean_absolute_error'],
-    #     'refit': 'r2',
-    #     'verbose': 1000,
-    #     'n_jobs': n_jobs,
-    #     'return_train_score': True,
-    # },
-    search=RandomizedSearchCV,
+    search=GridSearchCV,
     param_space={
-        'learning_rate': uniform(1e-5, 1),
-        'max_depth': range(3, 11)
+        'learning_rate': [0.05, 0.1, 0.3],
+        'max_depth': [3, 6, 9]
     },
     search_params={
         'scoring': ['r2', 'neg_mean_absolute_error'],
         'refit': 'r2',
         'verbose': 1000,
+        'n_jobs': n_jobs,
         'return_train_score': True,
-        'n_iter': n_iter,
-        'n_jobs': n_jobs
     },
+    # search=RandomizedSearchCV,
+    # param_space={
+    #     'learning_rate': uniform(1e-5, 1),
+    #     'max_depth': range(3, 11)
+    # },
+    # search_params={
+    #     'scoring': ['r2', 'neg_mean_absolute_error'],
+    #     'refit': 'r2',
+    #     'verbose': 1000,
+    #     'return_train_score': True,
+    #     'n_iter': n_iter,
+    #     'n_jobs': n_jobs
+    # },
     outer_cv=KFold(n_splits=n_outer_splits, shuffle=True, random_state=RS),
     compute_importance=compute_importance,
     importance_params={
