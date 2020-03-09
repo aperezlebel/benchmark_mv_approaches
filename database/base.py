@@ -163,6 +163,10 @@ class Database(ABC):
 
     @staticmethod
     def _encode_df(df, mv, types, order=None, encode=None):
+        # Remove extra features in types
+        common_features = [f for f in df.columns if f in types.index]
+        types = types[common_features]
+
         # Split the data frame according to the types of the features
         splitted_df = split_features(df, types)
 
