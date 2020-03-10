@@ -22,13 +22,15 @@ class UKBB(Database):
             '40284': data_folder+'ukb40284.csv',
         }
         sep = ','
+        encoding = 'ISO-8859-1'
 
         super().__init__(
             name='UK BioBank',
             acronym='UKBB',
             paths=paths,
             sep=sep,
-            load=load)
+            load=load,
+            encoding=encoding)
 
     @staticmethod
     def heuristic(series):
