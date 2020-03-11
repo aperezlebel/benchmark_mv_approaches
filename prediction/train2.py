@@ -2,12 +2,14 @@
 
 # from sklearn.experimental import enable_hist_gradient_boosting
 import logging
+import os
 import pandas as pd
 import numpy as np
 from copy import deepcopy
 from sklearn.inspection import permutation_importance
 from sklearn.model_selection import learning_curve, cross_val_predict
 from sklearn.pipeline import Pipeline
+from joblib import parallel_backend
 
 from .DumpHelper import DumpHelper
 
@@ -91,7 +93,11 @@ def train(task, strategy):
 
     # CV prediction
     logger.info(f'Started cross_val_predict with {strategy.outer_cv.n_splits} folds.')
-    y_pred = cross_val_predict(estimator, X, y, cv=strategy.outer_cv, n_jobs=1, verbose=1000)
+
+    with parallel_backend("loky", inner_max_num_threads=os.environ.get('OMP_NUM_THREADS')):
+        y_pred = cross_val_predict(estimator, X, y, cv=strategy.outer_cv, n_jobs=1, verbose=1000)
+
+    logger.info('Ended cross_val_predict.')
     dh.dump_prediction(y_pred, y)
 
     # Learning curve
@@ -101,6 +107,7 @@ def train(task, strategy):
                                cv=strategy.outer_cv, return_times=True,
                                verbose=1000, n_jobs=1,
                                **strategy.learning_curve_params)
+        logger.info('Ended learning curve.')
         dh.dump_learning_curve({
             'train_sizes_abs': curve[0],
             'train_scores': curve[1],
