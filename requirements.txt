@@ -1,9 +1,8 @@
 pandas
 numpy
 matplotlib
-joblib
+joblib==0.14.1
 sklearn
 pyyaml
 cython
-joblib==0.14.1
 python-dotenv
