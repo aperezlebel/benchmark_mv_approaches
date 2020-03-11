@@ -5,3 +5,4 @@ joblib
 sklearn
 pyyaml
 cython
+joblib==0.14.1
