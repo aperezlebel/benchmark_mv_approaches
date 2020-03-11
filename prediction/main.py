@@ -11,11 +11,11 @@ logger = logging.getLogger(__name__)
 logger.addHandler(logging.StreamHandler())  # Print also in console.
 
 def main(argv=None):
-    if argv is None:
+    if argv is None or len(argv) == 1:
         logger.info('Script executed without argv, reading from jobs.txt.')
         selected_jobs = jobs
     else:
-        if len(argv) <= 2:
+        if len(argv) == 2:
             raise ValueError('Must pass 0 or 2 arguments in command line.')
 
         task_name = argv[1]
