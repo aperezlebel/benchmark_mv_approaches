@@ -1,8 +1,12 @@
+"""Main script. Configure logger, load .env and run main."""
 import logging
 import sys
 import os
 import main
+from dotenv import load_dotenv
 
+
+################ CONFIGURE LOGGER ################
 logs_folder = 'logs/'
 
 logger = logging.getLogger(__name__)
@@ -46,6 +50,11 @@ logging.basicConfig(
     format='%(asctime)s.%(msecs)03d:%(levelname)s:%(module)s.%(funcName)s: %(message)s',
     datefmt='%Y-%m-%d %H:%M:%S',
 )
+
+################ LOAD ENV ################
+load_dotenv()
+
+################ RUN ################
 logger.info('Started run')
 main.run(sys.argv)
 logger.info('Ended run')
