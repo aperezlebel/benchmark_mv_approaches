@@ -6,9 +6,13 @@ cache_*
 imputed
 TraumaBase
 backup
+MIMICIII
 *pyc
-results
+sandbox
+UKBB
+results*
 custom/*
 !*.dist
+.DS_Store
 logs
 .env
