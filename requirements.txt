@@ -5,4 +5,3 @@ joblib==0.14.1
 sklearn
 pyyaml
 cython
-python-dotenv

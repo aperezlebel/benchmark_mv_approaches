@@ -2,7 +2,6 @@
 import logging
 import sys
 import os
-from dotenv import load_dotenv
 
 
 ################ CONFIGURE LOGGER ################
@@ -55,9 +54,6 @@ logging.basicConfig(
 )
 import main  # Delayed import because logger need to be inititialized
 
-################ LOAD ENV ################
-logger.info('Loading .env')
-load_dotenv()
 
 ################ RUN ################
 logger.info('Started run')
