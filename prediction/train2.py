@@ -116,11 +116,15 @@ def train(task, strategy):
             'score_times': curve[4],
         }, fold=None)
     else:
-        logger.info('Learning curve: skipping.')
+        logger.info('Learning curve: not wanted, skipping.')
 
 
     # ROC curve
-    if strategy.is_classification():
+    if not strategy.is_classification():
+        logger.info('ROC: not a classification, skipping.')
+    elif not strategy.roc:
+        logger.info('ROC: not wanted, skipping.')
+    else:
         logger.info('ROC: computing curve.')
         y_score = cross_val_predict(estimator, X, y, cv=strategy.outer_cv,
                                     n_jobs=1, method='decision_function',
@@ -131,8 +135,6 @@ def train(task, strategy):
         # y_score = estimator.decision_function(X_test)
         # dh.dump_probas(probas[:, 1], y, fold=None)
         dh.dump_roc(y_score, y, fold=None)
-    else:
-        logger.info('ROC: not a classification, skipping.')
 
     # # Feature importance
     # if strategy.compute_importance:

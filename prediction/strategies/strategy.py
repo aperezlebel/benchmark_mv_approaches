@@ -12,7 +12,7 @@ class Strategy():
     def __init__(self, estimator, inner_cv, outer_cv, param_space, search,
                  imputer=None, search_params=dict(), compute_importance=False,
                  importance_params=dict(), learning_curve=False,
-                 learning_curve_params=dict(), name=None):
+                 learning_curve_params=dict(), roc=False, name=None):
         self.estimator = estimator
         self.inner_cv = inner_cv
         self.outer_cv = outer_cv
@@ -23,6 +23,7 @@ class Strategy():
         self.importance_params = importance_params
         self.learning_curve = learning_curve
         self.learning_curve_params = learning_curve_params
+        self.roc = roc
 
         search_params['cv'] = self.inner_cv
         self.search = search(estimator, param_space, **search_params)
