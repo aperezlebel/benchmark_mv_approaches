@@ -12,6 +12,7 @@ logs_folder = 'logs/'
 logger = logging.getLogger(__name__)
 logger.addHandler(logging.StreamHandler())  # Print also in console.
 
+
 def get_and_increase_count():
     count_filepath = logs_folder+'count.txt'
 
@@ -43,8 +44,11 @@ def get_log_filepath(filename):
 # print_file = open(get_log_filepath('prediction_print.log'), 'w')
 # sys.stdout = print_file
 
+log_filepath = get_log_filepath('prediction.log')
+print(f'Dumping logs into {log_filepath}')
+
 logging.basicConfig(
-    filename=get_log_filepath('prediction.log'),
+    filename=log_filepath,
     filemode='w',
     level=logging.INFO,
     format='%(asctime)s.%(msecs)03d:%(levelname)s:%(module)s.%(funcName)s: %(message)s',
@@ -52,6 +56,7 @@ logging.basicConfig(
 )
 
 ################ LOAD ENV ################
+logger.info('Loading .env')
 load_dotenv()
 
 ################ RUN ################

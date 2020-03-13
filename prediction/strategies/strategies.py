@@ -2,6 +2,7 @@
 import yaml
 import os
 import numpy as np
+import logging
 from sklearn.model_selection import ShuffleSplit, GridSearchCV, \
     RandomizedSearchCV, KFold
 from sklearn.experimental import enable_hist_gradient_boosting
@@ -16,6 +17,8 @@ from sklearn.utils.fixes import loguniform
 
 from .strategy import Strategy
 
+
+logger = logging.getLogger(__name__)
 
 RS = 42
 strategies = list()
@@ -38,7 +41,19 @@ compute_importance = params.get('compute_importance', False)
 learning_curve = params.get('learning_curve', False)
 n_learning_trains = params.get('n_learning_trains', 5)
 iterative_imputer_max_iter = params.get('iterative_imputer_max_iter', 10)
+roc = params.get('roc', False)
 
+logger.info(f'Loaded strategy_params.yml with following parameters:')
+logger.info(f'n_outer_splits: {n_outer_splits}')
+logger.info(f'n_inner_splits: {n_inner_splits}')
+logger.info(f'n_jobs: {n_jobs}')
+logger.info(f'n_iter: {n_iter}')
+logger.info(f'n_repeats: {n_repeats}')
+logger.info(f'compute_importance: {compute_importance}')
+logger.info(f'learning_curve: {learning_curve}')
+logger.info(f'n_learning_trains: {n_learning_trains}')
+logger.info(f'iterative_imputer_max_iter: {iterative_imputer_max_iter}')
+logger.info(f'roc: {roc}')
 
 # A strategy to run a classification
 strategies.append(Strategy(
@@ -78,7 +93,8 @@ strategies.append(Strategy(
     learning_curve_params={
         'scoring': 'roc_auc_ovr_weighted',
         'train_sizes': np.linspace(0.1, 1, n_learning_trains)
-    }
+    },
+    roc=roc
 ))
 
 
@@ -119,7 +135,8 @@ strategies.append(Strategy(
     learning_curve_params={
         'scoring': 'roc_auc_ovr_weighted',
         'train_sizes': np.linspace(0.1, 1, n_learning_trains)
-    }
+    },
+    roc=roc
 ))
 
 # A strategy to run a regression
@@ -162,7 +179,8 @@ strategies.append(Strategy(
     learning_curve_params={
         'scoring': 'r2',
         'train_sizes': np.linspace(0.1, 1, n_learning_trains)
-    }
+    },
+    roc=roc
 ))
 
 

@@ -4,8 +4,10 @@ import numpy as np
 import os
 import yaml
 import shutil
+import logging
 
 results_folder = 'results/'
+logger = logging.getLogger(__name__)
 
 def _dump_yaml(data, filepath):
     data = listify(data)
@@ -70,6 +72,9 @@ class DumpHelper:
         self.task_folder = (f'{self.db_folder}{self.task.meta.name}_'
                             f'{dump_count}/')
         self.strat_folder = f'{self.task_folder}{strat.name}/'
+
+        logger.info(f'Strat folder: {self.strat_folder}')
+        logger.info(f'Task folder: {self.task_folder}')
 
         self._dump_infos()
         self._dump_features()
