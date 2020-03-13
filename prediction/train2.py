@@ -93,8 +93,9 @@ def train(task, strategy):
 
     # CV prediction
     logger.info(f'Started cross_val_predict with {strategy.outer_cv.n_splits} folds.')
-
-    with parallel_backend("loky", inner_max_num_threads=os.environ.get('OMP_NUM_THREADS')):
+    num = os.environ.get("OMP_NUM_THREADS")
+    logger.info(f'inner_max_num_threads={num}')
+    with parallel_backend("loky", inner_max_num_threads=num):
         y_pred = cross_val_predict(estimator, X, y, cv=strategy.outer_cv, n_jobs=1, verbose=1000)
 
     logger.info('Ended cross_val_predict.')
