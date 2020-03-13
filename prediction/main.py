@@ -10,7 +10,7 @@ from .train3 import train as train3
 logger = logging.getLogger(__name__)
 logger.addHandler(logging.StreamHandler())  # Print also in console.
 
-def main(argv=None):
+def run(argv=None):
     if argv is None or len(argv) == 1:
         logger.info('Script executed without argv, reading from jobs.txt.')
         selected_jobs = jobs
