@@ -92,11 +92,32 @@ def train(task, strategy):
     estimator = Pipeline(steps)
 
     # CV prediction
-    logger.info(f'Started cross_val_predict with {strategy.outer_cv.n_splits} folds.')
+    logger.info(f'Outer CV with {strategy.outer_cv.n_splits} folds.')
     # num = os.environ.get("OMP_NUM_THREADS")
     # logger.info(f'inner_max_num_threads={num}')
     # with parallel_backend("loky", inner_max_num_threads=num):
-    y_pred = cross_val_predict(estimator, X, y, cv=strategy.outer_cv, n_jobs=1, verbose=1000)
+    if strategy.is_classification() and strategy.roc:
+        logger.info('Started cross_val_predict using method="predict_proba"')
+        probas = cross_val_predict(estimator, X, y, cv=strategy.outer_cv, n_jobs=1,
+                                   verbose=1000, method='predict_proba')
+        y_pred = np.argmax(probas, axis=1)
+        # id_y_pred = np.argmax(probas, axis=1)
+        # y_pred = [estimator.classes_[id] for id in id_y_pred]
+        dh.dump_probas(y, probas, classes=None)  #classes=estimator.classes_)
+    else:
+        if not strategy.is_classification():
+            logger.info('ROC: not a classification.')
+        elif not strategy.roc:
+            logger.info('ROC: not wanted.')
+
+        logger.info('Started cross_val_predict using method="predict"')
+        y_pred = cross_val_predict(estimator, X, y, cv=strategy.outer_cv,
+                                   n_jobs=1, verbose=1000)
+    #     logger.info('ROC: not a classification, skipping.')
+    # elif not strategy.roc:
+    #     logger.info('ROC: not wanted, skipping.')
+    # else:
+    #     logger.info('ROC: computing curve.')
 
     logger.info('Ended cross_val_predict.')
     dh.dump_prediction(y_pred, y)
@@ -121,21 +142,21 @@ def train(task, strategy):
 
 
     # ROC curve
-    if not strategy.is_classification():
-        logger.info('ROC: not a classification, skipping.')
-    elif not strategy.roc:
-        logger.info('ROC: not wanted, skipping.')
-    else:
-        logger.info('ROC: computing curve.')
-        y_score = cross_val_predict(estimator, X, y, cv=strategy.outer_cv,
-                                    n_jobs=1, method='decision_function',
-                                    verbose=1000)
-        # probas = cross_val_predict(estimator, X, y, cv=strategy.outer_cv, method='predict_proba')
-        # print(probas)
+    # if not strategy.is_classification():
+    #     logger.info('ROC: not a classification, skipping.')
+    # elif not strategy.roc:
+    #     logger.info('ROC: not wanted, skipping.')
+    # else:
+    #     logger.info('ROC: computing curve.')
+    #     y_score = cross_val_predict(estimator, X, y, cv=strategy.outer_cv,
+    #                                 n_jobs=1, method='decision_function',
+    #                                 verbose=1000)
+    #     # probas = cross_val_predict(estimator, X, y, cv=strategy.outer_cv, method='predict_proba')
+    #     # print(probas)
 
-        # y_score = estimator.decision_function(X_test)
-        # dh.dump_probas(probas[:, 1], y, fold=None)
-        dh.dump_roc(y_score, y, fold=None)
+    #     # y_score = estimator.decision_function(X_test)
+    #     # dh.dump_probas(probas[:, 1], y, fold=None)
+    #     dh.dump_roc(y_score, y, fold=None)
 
     # # Feature importance
     # if strategy.compute_importance:

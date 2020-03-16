@@ -231,6 +231,22 @@ class DumpHelper:
 
         self._dump(df, 'roc.csv', fold=fold)
 
+    def dump_probas(self, y_true, probas, classes=None, fold=None):
+        y_true = np.array(y_true)
+        probas = np.array(probas)
+        n_classes = probas.shape[1]
+
+        if classes is None:
+            classes = range(n_classes)
+
+        cols = ['y_true'] + [f'proba_{c}' for c in classes]
+
+        data = np.concatenate([y_true.reshape(-1, 1), probas], axis=1)
+
+        df = pd.DataFrame(data, columns=cols)
+
+        self._dump(df, 'probas.csv', fold=fold)
+
     def dump_importance(self, importance, fold=None):
         data = {
             'importances_mean': importance.importances_mean,
