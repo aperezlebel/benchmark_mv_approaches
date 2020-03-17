@@ -228,10 +228,10 @@ class Database(ABC):
         encoded_types = pd.concat(splitted_types.values())
 
         # Set types on encoded df
-        # encoded_df = set_dtypes_features(encoded_df, encoded_types, {
-        #     CONTINUE_R: float,
-        #     CONTINUE_I: float,
-        #     })
+        encoded_df = set_dtypes_features(encoded_df, encoded_types, {
+            CONTINUE_R: float,
+            CONTINUE_I: float,
+        })
 
         return encoded_df, encoded_mv, encoded_types
 
