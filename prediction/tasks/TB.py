@@ -1,4 +1,5 @@
 """Build prediction tasks for the TB database."""
+import numpy as np
 
 from .taskMeta import TaskMeta
 
@@ -71,6 +72,9 @@ def transform_df_platelet(df, **kwargs):
     df['HR.max'] = df['Fréquence cardiaque (FC) maximum']
     df['SBP.min'] = df['Pression Artérielle Systolique (PAS) minimum']
     df['DBP.min'] = df['Pression Artérielle Diastolique (PAD) minimum']
+
+    # Replace potential infinite values by Nans (divide may have created infs)
+    df.replace([np.inf, -np.inf], np.nan, inplace=True)
 
     # Drop rows with missing values in the feature to predict
     return df.dropna(axis=0, subset=[predict])
