@@ -23,6 +23,7 @@ class UKBB(Database):
         }
         sep = ','
         encoding = 'ISO-8859-1'
+        encode = ['date']
 
         super().__init__(
             name='UK BioBank',
@@ -30,7 +31,8 @@ class UKBB(Database):
             paths=paths,
             sep=sep,
             load=load,
-            encoding=encoding)
+            encoding=encoding,
+            encode=encode)
 
     @staticmethod
     def heuristic(series):
@@ -44,8 +46,8 @@ class UKBB(Database):
 
         return series_mv
 
-    def _encode(self, df_names):
-        super()._encode(df_names, encode=['date'])
+    # def _encode(self, df_names):
+    #     super()._encode(df_names)
 
     def _to_drop(self, df_name):
         if df_name == '24440':

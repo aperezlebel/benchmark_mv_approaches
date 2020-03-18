@@ -17,13 +17,15 @@ class TB(Database):
             '20000': data_folder+'Traumabase_20000.csv'
         }
         sep = ';'
+        encode = 'all'
 
         super().__init__(
             name='TraumaBase',
             acronym='TB',
             paths=paths,
             sep=sep,
-            load=load
+            load=load,
+            encode=encode
             )
 
     @staticmethod
@@ -77,8 +79,8 @@ class TB(Database):
 
         return series_mv
 
-    def _encode(self, df_names):
-        super()._encode(df_names)
+    # def _encode(self, df_names):
+    #     super()._encode(df_names)
 
     def _to_drop(self, df_name):
         return None

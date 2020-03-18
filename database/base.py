@@ -22,7 +22,7 @@ class Database(ABC):
 
     @abstractmethod
     def __init__(self, name='', acronym='', paths=dict(), sep=',', load=None,
-                 encoding='utf-8'):
+                 encoding='utf-8', encode=None):
         self.dataframes = dict()
         self.missing_values = dict()
         self.feature_types = dict()
@@ -37,6 +37,7 @@ class Database(ABC):
         self.frame_paths = paths
         self._sep = sep
         self._encoding = encoding
+        self.encode = encode
 
         if load is not None:
             self.load(load)
@@ -83,7 +84,7 @@ class Database(ABC):
             to_drop = self._to_drop(name)
             if to_drop is None:
                 continue
-            print(f'{name}: Dropping {len(to_drop)} cols out of {df.shape[1]}')
+            logger.info(f'{name}: Dropping {len(to_drop)} cols out of {df.shape[1]}')
             df.drop(to_drop, axis=1, inplace=True)
             self.feature_types[name].drop(to_drop, inplace=True)
 
@@ -99,9 +100,13 @@ class Database(ABC):
             p = self.frame_paths[name]
 
             logger.info(f'Loading {name} data frame.')
-            self.dataframes[name] = pd.read_csv(p, sep=self._sep,
-                                                encoding=self._encoding)
+            # dtype = None
+            df = pd.read_csv(p, sep=self._sep,
+                             encoding=self._encoding)
                                                 # dtype=dtype)
+                             encoding=self._encoding)
+            df = pd.read_csv(p, sep=self._sep,
+            self.dataframes[name] = df
 
     @abstractmethod
     def heuristic(self, series):
@@ -163,6 +168,7 @@ class Database(ABC):
 
     @staticmethod
     def _encode_df(df, mv, types, order=None, encode=None):
+        logger.info(f'Encode mode: {encode}')
         # Remove extra features in types
         common_features = [f for f in df.columns if f in types.index]
         types = types[common_features]
@@ -181,15 +187,24 @@ class Database(ABC):
         to_one_hot_encode_ids = []
         to_delete_ids = [NOT_A_FEATURE]
 
-        if encode is None or 'ordinal' in encode or 'all' in encode:
+        if not isinstance(encode, list):
+            encode = [encode]
+
+        if encode is not None and ('ordinal' in encode or 'all' in encode):
             to_ordinal_encode_ids = [ORDINAL, BINARY]
 
-        if encode is None or 'one_hot' in encode or 'all' in encode:
+        if encode is not None and ('one_hot' in encode or 'all' in encode):
             to_one_hot_encode_ids = [CATEGORICAL]
 
-        if encode is None or 'date' in encode or 'all' in encode:
+        if encode is not None and ('date' in encode or 'all' in encode):
             to_date_encode_exp = [DATE_EXPLODED]
             to_date_encode_tim = [DATE_TIMESTAMP]
+
+        logger.info(f'Keys, ordinal encode: {to_ordinal_encode_ids}')
+        logger.info(f'Keys, one hot encode: {to_one_hot_encode_ids}')
+        logger.info(f'Keys, date encode exp: {to_date_encode_exp}')
+        logger.info(f'Keys, date encode tim: {to_date_encode_tim}')
+        logger.info(f'Keys, to delete: {to_delete_ids}')
 
         # Delete unwanted tables
         for k in to_delete_ids:
@@ -235,8 +250,8 @@ class Database(ABC):
 
         return encoded_df, encoded_mv, encoded_types
 
-    @abstractmethod
-    def _encode(self, df_names, encode=None):
+    # @abstractmethod
+    def _encode(self, df_names):
         logger.info(f'Encoding data frames for {self.acronym}.')
         for name in df_names:
             logger.info(f'Encoding {name}.')
@@ -251,7 +266,7 @@ class Database(ABC):
                 order = None
                 if name in self.ordinal_orders:
                     order = self.ordinal_orders[name]
-                encoded = self._encode_df(df, mv, types, order=order, encode=encode)
+                encoded = self._encode_df(df, mv, types, order=order, encode=self.encode)
                 self.encoded_dataframes[name] = encoded[0]
                 self.encoded_missing_values[name] = encoded[1]
                 self.encoded_feature_types[name] = encoded[2]
