@@ -16,4 +16,3 @@ custom/*
 .DS_Store
 logs
 .env
-main.py

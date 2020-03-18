@@ -1,7 +1,0 @@
-import prediction
-import test_fit_time
-import test_imputation
-
-
-def run(argv=None):
-    prediction.run(argv)
