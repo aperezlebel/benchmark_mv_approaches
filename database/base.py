@@ -104,8 +104,6 @@ class Database(ABC):
             df = pd.read_csv(p, sep=self._sep,
                              encoding=self._encoding)
                                                 # dtype=dtype)
-                             encoding=self._encoding)
-            df = pd.read_csv(p, sep=self._sep,
             self.dataframes[name] = df
 
     @abstractmethod
