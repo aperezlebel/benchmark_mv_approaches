@@ -9,7 +9,7 @@ from sklearn.experimental import enable_hist_gradient_boosting
 from sklearn.ensemble import HistGradientBoostingClassifier, \
     HistGradientBoostingRegressor, RandomForestClassifier
 from sklearn.experimental import enable_iterative_imputer
-from sklearn.impute import SimpleImputer, IterativeImputer
+from sklearn.impute import SimpleImputer, IterativeImputer, KNNImputer
 from copy import deepcopy
 
 from scipy.stats import uniform
@@ -193,6 +193,9 @@ imputers = {
     'Iterative': IterativeImputer(max_iter=iterative_imputer_max_iter),
     'Iterative+mask': IterativeImputer(add_indicator=True,
                                        max_iter=iterative_imputer_max_iter),
+    'KNN': KNNImputer(),
+    'KNN+mask': KNNImputer(add_indicator=True),
+
 }
 
 # Add imputed versions of the previosu strategies
