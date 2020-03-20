@@ -97,16 +97,25 @@ def train(task, strategy):
         # CV prediction
         logger.info('Fitting estimator on train folds.')
         estimator.fit(X_train, y_train)
-        logger.info('Predicting test fold with fitted estimator.')
-        y_pred = estimator.predict(X_test)
-        dh.dump_prediction(y_pred, y_test, fold=i)
+        logger.info('Estimator fitted.')
 
-        if strategy.is_classification():
-            logger.info('ROC: computing y_score.')
-            y_score = estimator.decision_function(X_test)
-            dh.dump_roc(y_score, y_test, fold=i)
+        if strategy.is_classification() and strategy.roc:
+            logger.info('Computing probas on test fold.')
+            probas = estimator.predict_proba(X_test)
+            logger.info('Probas computed.')
+            y_pred = np.argmax(probas, axis=1)
+            dh.dump_probas(y_test, probas, classes=None, fold=i)
         else:
-            logger.info('ROC: not a classification, skipping.')
+            if not strategy.is_classification():
+                logger.info('ROC: not a classification.')
+            elif not strategy.roc:
+                logger.info('ROC: not wanted.')
+
+            logger.info('Computing y_pred on test fold.')
+            y_pred = estimator.predict(X_test)
+            logger.info('y_pred computed.')
+
+        dh.dump_prediction(y_pred, y_test, fold=i)
 
     # Learning curve
     if strategy.learning_curve:
