@@ -1,5 +1,6 @@
 
 import logging
+import argparse
 from sklearn.experimental import enable_hist_gradient_boosting
 from sklearn.ensemble import HistGradientBoostingRegressor, \
     HistGradientBoostingClassifier
@@ -10,16 +11,27 @@ from prediction.tasks import tasks
 
 logger = logging.getLogger(__name__)
 
+# Parser config
+parser = argparse.ArgumentParser(description='Test fit time.')
+parser.add_argument('program')
+parser.add_argument('task_name', nargs='?', default=None)
+parser.add_argument('clf', nargs='?', default=None)
+
 
 def run(argv=None):
-    if argv is None or len(argv) < 2:
+    """Emulate a HP search and monitor fit time."""
+    args = parser.parse_args(argv)
+
+    task_name = args.task_name
+    clf = args.clf
+
+    if task_name is None or clf is None:
         logger.info('No argv given.')
-        task = tasks['TB/shock_hemo']
+        task_name = 'TB/shock_hemo'
         clf = 'HGBC'
-    else:
-        task = tasks[argv[1]]
-        clf = argv[2]
-        logger.info(f'Argv given. Task {task.meta.tag}. Clf {clf}.')
+
+    task = tasks[task_name]
+    logger.info(f'Argv given. Task {task.meta.tag}. Clf {clf}.')
 
     logger.info('Getting X.')
     X = task.X
