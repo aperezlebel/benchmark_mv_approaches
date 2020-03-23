@@ -43,7 +43,6 @@ def get_log_filepath(filename):
 # sys.stdout = print_file
 
 log_filepath = get_log_filepath('prediction.log')
-print(f'Dumping logs into {log_filepath}')
 
 logging.basicConfig(
     filename=log_filepath,
@@ -57,6 +56,7 @@ import main  # Delayed import because logger need to be inititialized
 
 ################ RUN ################
 logger.info('Started run')
+print(f'Dumping logs into {log_filepath}')
 main.run(sys.argv)
 logger.info('Ended run')
 
