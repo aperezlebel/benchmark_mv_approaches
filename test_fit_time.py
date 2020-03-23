@@ -80,9 +80,15 @@ def run(argv=None):
         imp.fit(X_train2, y_train2)
         t_fit_imp = time()
         logger.info('Imputer fitted.')
+
+        logger.info('Transforming X_train')
+        imp.transform(X_train2)
+        t_tra1_imp = time()
+        logger.info('X_train transformed')
+
         logger.info('Transforming X_test')
         imp.transform(X_test2)
-        t_tra_imp = time()
+        t_tra2_imp = time()
         logger.info('X_test transformed')
 
     t_fits = [time()]
@@ -99,6 +105,8 @@ def run(argv=None):
                     learning_rate=learning_rate,
                     max_depth=max_depth
                 )
+            else:
+                raise ValueError(f'Unknown estimator {est}')
 
             logger.info(f'Params: LR {learning_rate} MD {max_depth}')
             logger.info('Fitting estimator.')
@@ -117,7 +125,8 @@ def run(argv=None):
         'X_test_shape': [repr(X_test2.shape)],
         'time_X_ready': [t_X_ready-t0],
         'time_fit_imp': np.around([0 if imp is None else t_fit_imp-t_X_ready], 2),
-        'time_tra_imp': np.around([0 if imp is None else t_tra_imp-t_X_ready], 2),
+        'time_tra1_imp': np.around([0 if imp is None else t_tra1_imp-t_X_ready], 2),
+        'time_tra2_imp': np.around([0 if imp is None else t_tra2_imp-t_tra1_imp], 2),
         'time_fits': [repr(np.around(t_fits.tolist(), 2))],
         'time_fits_mean': [np.around(t_fits.mean(), 2)]
     }
