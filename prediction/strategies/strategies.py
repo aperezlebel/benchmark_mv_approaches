@@ -42,6 +42,7 @@ learning_curve = params.get('learning_curve', False)
 n_learning_trains = params.get('n_learning_trains', 5)
 iterative_imputer_max_iter = params.get('iterative_imputer_max_iter', 10)
 roc = params.get('roc', False)
+param_space = params.get('param_space', None)
 
 logger.info(f'Loaded strategy_params.yml with following parameters:')
 logger.info(f'n_outer_splits: {n_outer_splits}')
@@ -54,6 +55,13 @@ logger.info(f'learning_curve: {learning_curve}')
 logger.info(f'n_learning_trains: {n_learning_trains}')
 logger.info(f'iterative_imputer_max_iter: {iterative_imputer_max_iter}')
 logger.info(f'roc: {roc}')
+logger.info(f'param_space: {param_space}')
+
+if param_space is None:
+    param_space = {
+        'learning_rate': [0.05, 0.1, 0.3],
+        'max_depth': [3, 6, 9]
+    }
 
 # A strategy to run a classification
 strategies.append(Strategy(
@@ -61,10 +69,7 @@ strategies.append(Strategy(
     estimator=HistGradientBoostingClassifier(),
     inner_cv=ShuffleSplit(n_splits=n_inner_splits, train_size=0.8, random_state=RS),
     search=GridSearchCV,
-    param_space={
-        'learning_rate': [0.05, 0.1, 0.3],
-        'max_depth': [3, 6, 9]
-    },
+    param_space=param_space,
     search_params={
         'scoring': 'roc_auc_ovr_weighted',
         'verbose': 1000,
@@ -145,10 +150,7 @@ strategies.append(Strategy(
     estimator=HistGradientBoostingRegressor(loss='least_absolute_deviation'),
     inner_cv=ShuffleSplit(n_splits=n_inner_splits, train_size=0.8, random_state=RS),
     search=GridSearchCV,
-    param_space={
-        'learning_rate': [0.05, 0.1, 0.3],
-        'max_depth': [3, 6, 9]
-    },
+    param_space=param_space,
     search_params={
         'scoring': ['r2', 'neg_mean_absolute_error'],
         'refit': 'r2',
