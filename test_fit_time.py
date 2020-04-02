@@ -13,6 +13,7 @@ from sklearn.impute import SimpleImputer, IterativeImputer, KNNImputer
 from sklearn.model_selection import train_test_split
 
 from prediction.tasks import tasks
+from prediction.strategies import param_space
 
 
 logger = logging.getLogger(__name__)
@@ -92,8 +93,9 @@ def run(argv=None):
         logger.info('X_test transformed')
 
     t_fits = [time()]
-    for learning_rate in [0.05, 0.1, 0.3]:
-        for max_depth in [3, 6, 9]:
+
+    for learning_rate in param_space['learning_rate']:
+        for max_depth in param_space['max_depth']:
             if est == 'HGBC':
                 estimator = HistGradientBoostingClassifier(
                     learning_rate=learning_rate,

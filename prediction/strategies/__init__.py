@@ -1,1 +1,1 @@
-from .strategies import strategies
+from .strategies import strategies, param_space
