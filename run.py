@@ -2,6 +2,8 @@
 import logging
 import sys
 import os
+import random
+import string
 
 
 ################ CONFIGURE LOGGER ################
@@ -36,7 +38,8 @@ count = get_and_increase_count()
 
 
 def get_log_filepath(filename):
-    return f'{logs_folder}{count}_{filename}'
+    slug = ''.join(random.choices(string.ascii_uppercase + string.digits, k=3))
+    return f'{logs_folder}{count}_{slug}_{filename}'
 
 
 # print_file = open(get_log_filepath('prediction_print.log'), 'w')
