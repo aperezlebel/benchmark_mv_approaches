@@ -3,6 +3,7 @@ import yaml
 import os
 import numpy as np
 import logging
+from copy import deepcopy
 from sklearn.model_selection import ShuffleSplit, GridSearchCV, \
     RandomizedSearchCV, KFold
 from sklearn.experimental import enable_hist_gradient_boosting
@@ -10,8 +11,7 @@ from sklearn.ensemble import HistGradientBoostingClassifier, \
     HistGradientBoostingRegressor, RandomForestClassifier
 from sklearn.experimental import enable_iterative_imputer
 from sklearn.impute import SimpleImputer, IterativeImputer, KNNImputer
-from copy import deepcopy
-
+from sklearn.linear_model import RidgeCV
 from scipy.stats import uniform
 from sklearn.utils.fixes import loguniform
 
@@ -195,6 +195,11 @@ imputers = {
     'Iterative': IterativeImputer(max_iter=iterative_imputer_max_iter),
     'Iterative+mask': IterativeImputer(add_indicator=True,
                                        max_iter=iterative_imputer_max_iter),
+    'IterativeR': IterativeImputer(estimator=RidgeCV(),
+                                   max_iter=iterative_imputer_max_iter),
+    'IterativeR+mask': IterativeImputer(estimator=RidgeCV(),
+                                        add_indicator=True,
+                                        max_iter=iterative_imputer_max_iter),
     'KNN': KNNImputer(),
     'KNN+mask': KNNImputer(add_indicator=True),
 

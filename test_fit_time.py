@@ -11,6 +11,7 @@ from sklearn.ensemble import HistGradientBoostingRegressor, \
 from sklearn.experimental import enable_iterative_imputer
 from sklearn.impute import SimpleImputer, IterativeImputer, KNNImputer
 from sklearn.model_selection import train_test_split
+from sklearn.linear_model import RidgeCV
 
 from prediction.tasks import tasks
 from prediction.strategies import param_space
@@ -40,6 +41,11 @@ def run(argv=None):
         'Iterative': IterativeImputer(max_iter=args.max_iter),
         'Iterative+mask': IterativeImputer(add_indicator=True,
                                            max_iter=args.max_iter),
+        'IterativeR': IterativeImputer(estimator=RidgeCV(),
+                                       max_iter=args.max_iter),
+        'IterativeR+mask': IterativeImputer(estimator=RidgeCV(),
+                                            add_indicator=True,
+                                            max_iter=args.max_iter),
         'KNN': KNNImputer(),
         'KNN+mask': KNNImputer(add_indicator=True),
 
