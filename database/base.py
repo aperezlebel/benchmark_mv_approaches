@@ -103,6 +103,7 @@ class Database(ABC):
             # dtype = None
             df = pd.read_csv(p, sep=self._sep,
                              encoding=self._encoding)
+            logger.info(f'df {name} loaded with shape {df.shape}')
                                                 # dtype=dtype)
             self.dataframes[name] = df
 
@@ -268,3 +269,5 @@ class Database(ABC):
                 self.encoded_dataframes[name] = encoded[0]
                 self.encoded_missing_values[name] = encoded[1]
                 self.encoded_feature_types[name] = encoded[2]
+
+                logger.info(f'df {name} encoded with shape {encoded[0].shape}')

@@ -1,8 +1,13 @@
 """Implement the Task class."""
 import pandas as pd
 import numpy as np
+import logging
 
 from database import dbs
+
+
+logger = logging.getLogger(__name__)
+logger.addHandler(logging.StreamHandler())  # Print also in console.
 
 
 class Task:
@@ -20,10 +25,13 @@ class Task:
         db.load(self.meta.df_name)
 
         df = db.encoded_dataframes[self.meta.df_name]
+        logger.info(f'df loaded in Task, before transform shape: {df.shape}')
         self._df = self.meta.transform_df(df)
 
         self._check()
         self._set_drop()
+
+        logger.info(f'df loaded in Task, after transform shape: {self._df.shape}')
 
         return self._df
 
@@ -79,7 +87,9 @@ class Task:
     def df(self):
         """Full transformed data frame."""
         self._load_df()
-        return self._df.drop(self._drop, axis=1)
+        df = self._df.drop(self._drop, axis=1)
+        logger.info(f'df shape after dropping cols: {df.shape}')
+        return df
 
     @property
     def X(self):

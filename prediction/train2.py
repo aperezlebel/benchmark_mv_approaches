@@ -76,6 +76,8 @@ def train(task, strategy):
 
     logger.info(f'Started task "{task.meta.tag}" '
                 f'using "{strategy.name}" strategy on "{task.meta.db}".')
+    logger.info(f'X shape: {X.shape}')
+    logger.info(f'y shape: {y.shape}')
 
     dh = DumpHelper(task, strategy)  # Used to dump results
 
