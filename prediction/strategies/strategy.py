@@ -4,6 +4,9 @@ import numpy as np
 from dataclasses import dataclass, field
 from typing import Any, Callable
 from sklearn.base import BaseEstimator, RegressorMixin, ClassifierMixin
+from sklearn.pipeline import Pipeline
+
+from ..FakeStep import FakeStep
 
 
 class Strategy():
@@ -25,11 +28,16 @@ class Strategy():
         self.learning_curve_params = learning_curve_params
         self.roc = roc
 
-        search_params['cv'] = self.inner_cv
-        self.search = search(estimator, param_space, **search_params)
-
         if not all(p in estimator.get_params().keys() for p in param_space.keys()):
             raise ValueError('Given parmameters must be params of estimator.')
+
+        search_params['cv'] = self.inner_cv
+        estimator = Pipeline([
+            ('log1', FakeStep('searchHP')),
+            ('model', estimator)
+        ])
+        param_space = {f'model__{k}': v for k, v in param_space.items()}
+        self.search = search(estimator, param_space, **search_params)
 
     @property
     def name(self):

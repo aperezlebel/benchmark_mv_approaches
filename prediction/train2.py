@@ -12,6 +12,7 @@ from sklearn.pipeline import Pipeline
 from joblib import parallel_backend
 
 from .DumpHelper import DumpHelper
+from .FakeStep import FakeStep
 
 
 logger = logging.getLogger(__name__)
@@ -82,12 +83,17 @@ def train(task, strategy):
     if strategy.imputer is not None:
         logger.info('Creating pipeline with imputer.')
         steps = [
+            ('log1', FakeStep('imputer')),
             ('imputer', strategy.imputer),
+            ('log2', FakeStep('searchCV_estimator')),
             ('searchCV_estimator', strategy.search)
         ]
     else:
         logger.info('Creating pipeline without imputer.')
-        steps = [('searchCV_estimator', strategy.search)]
+        steps = [
+            ('log1', FakeStep('searchCV_estimator')),
+            ('searchCV_estimator', strategy.search)
+        ]
 
     estimator = Pipeline(steps)
 
