@@ -116,6 +116,7 @@ def train(task, strategy):
             logger.info('y_pred computed.')
 
         dh.dump_prediction(y_pred, y_test, fold=i)
+        dh.dump_best_params(estimator['searchCV_estimator'].best_params_, fold=i)
 
     # Learning curve
     if strategy.learning_curve:
