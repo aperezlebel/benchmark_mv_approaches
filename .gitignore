@@ -14,5 +14,5 @@ results*
 custom/*
 !*.dist
 .DS_Store
-logs
+logs*
 .env
