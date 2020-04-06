@@ -7,8 +7,8 @@ from prediction.strategies import strategies
 
 def strategies_available():
     print('\nStrategies available:')
-    for name in strategies.keys():
-        print('\t'+name)
+    for i, name in enumerate(strategies.keys()):
+        print(f'\t{i}: '+name)
     print()
 
 

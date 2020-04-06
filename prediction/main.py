@@ -31,8 +31,17 @@ def run(argv=None):
         logger.info('No task or strategy given. Reading from jobs.txt.')
         selected_jobs = jobs
     else:
-        logger.info(f'Argv given. Run task {task_name} using {strategy_name}.')
+        logger.info(f'Argv given. Task: {task_name} ; Strategy name/id: {strategy_name}')
+
+        # Try to convert to int if id passed
+        try:
+            strategy_name = int(strategy_name)
+        except ValueError: # If error, then it's a name and not an id.
+            pass
+
         selected_jobs = [get_job(task_name, strategy_name)]
+
+        logger.info(f'Run task {task_name} using {selected_jobs[0][1].name}')
 
     for task, strategy in selected_jobs:
         _ = args.train(task, strategy)
