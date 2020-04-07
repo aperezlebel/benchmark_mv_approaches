@@ -2,7 +2,7 @@
 import pandas as pd
 
 from dataclasses import dataclass
-from typing import List, Callable
+from typing import List, Callable, Dict
 
 
 @dataclass(frozen=True)
@@ -15,8 +15,10 @@ class TaskMeta():
     predict: str
     drop: List[str] = None
     drop_contains: List[str] = None
+    keep_contains: List[str] = None
     keep: List[str] = None
-    transform: Callable[[pd.DataFrame], pd.DataFrame] = lambda x: x
+    rename: Dict[str, str] = None  #lambda x: x
+    transform: Callable[[pd.DataFrame], pd.DataFrame] = None  #lambda x: x
 
     def get_infos(self):
         """
@@ -24,7 +26,8 @@ class TaskMeta():
 
         Used to next dump task infos in a file.
         """
-        props = ['db', 'df_name', 'predict', 'drop', 'drop_contains', 'keep']
+        props = ['db', 'df_name', 'predict', 'drop', 'drop_contains', 'rename',
+                 'keep_contains', 'keep']
         return dict(filter(lambda x: x[0] in props, self.__dict__.items()))
 
     @property
@@ -32,4 +35,7 @@ class TaskMeta():
         return f'{self.db}/{self.name}'
 
     def transform_df(self, df):
+        if self.transform is None:
+            return None
+
         return self.transform(df, meta=self)

@@ -24,23 +24,46 @@ class Task:
         db = dbs[self.meta.db]
         db.load(self.meta.df_name)
 
-        df = db.encoded_dataframes[self.meta.df_name]
-        logger.info(f'df loaded in Task, before transform shape: {df.shape}')
-        self._df = self.meta.transform_df(df)
+        df_name = self.meta.df_name
+
+        if self.meta.rename is None:
+            logger.info('transform_be is None, reading from encoded df.')
+            df = db.encoded_dataframes[df_name]
+            parent = db.encoded_parent[df_name]
+        else:
+            logger.info('transform_be is set, using transform_encode.')
+            df, parent = db.rename_encode(df_name, self.meta.rename)
+
+        logger.info(f'df loaded in Task, encoded shape: {df.shape}')
+
+        if self.meta.transform_df is not None:
+            df = self.meta.transform_df(df)
+            logger.info(f'df loaded in Task, transformed shape: {df.shape}')
+
+        self._df = df
+        self._parent = parent
 
         self._check()
         self._set_drop()
-
-        logger.info(f'df loaded in Task, after transform shape: {self._df.shape}')
 
         return self._df
 
     def _check(self):
         """Check if drop, drop_contains and keep contains feature of the df."""
         predict = self.meta.predict
-        drop = self.meta.drop
+
+        parent = self._parent
+
+        drop = None
+        keep = None
+
+        if self.meta.drop is not None:
+            drop = [f for f in parent.index if parent[f] in self.meta.drop]
+
+        if self.meta.keep is not None:
+            keep = [f for f in parent.index if parent[f] in self.meta.keep]
+
         drop_contains = self.meta.drop_contains
-        keep = self.meta.keep
         cols = self._df.columns
 
         if predict not in cols:
@@ -54,7 +77,6 @@ class Task:
                 if not isinstance(features, list):
                     raise ValueError('drop or keep must be a list or None.')
                 elif not all(f in cols for f in features):
-                    print(features)
                     raise ValueError('Drop/keep must contains column names.')
                 elif predict in features:
                     raise ValueError('predict should not be in drop or keep.')
@@ -64,6 +86,7 @@ class Task:
         predict = self.meta.predict
         drop = self.meta.drop
         drop_contains = self.meta.drop_contains
+        keep_contains = self.meta.keep_contains
         keep = self.meta.keep
         cols = self._df.columns
 

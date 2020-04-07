@@ -31,6 +31,7 @@ class Database(ABC):
         self.encoded_dataframes = dict()
         self.encoded_missing_values = dict()
         self.encoded_feature_types = dict()
+        self.encoded_parent = dict()
 
         self.name = name
         self.acronym = acronym
@@ -171,6 +172,7 @@ class Database(ABC):
         # Remove extra features in types
         common_features = [f for f in df.columns if f in types.index]
         types = types[common_features]
+        parent = pd.Series(df.columns, index=df.columns)
 
         # Split the data frame according to the types of the features
         splitted_df = split_features(df, types)
@@ -180,6 +182,9 @@ class Database(ABC):
 
         # Split the feature types in the same way
         splitted_types = split_features(types, types)
+
+        # Split the parent features
+        splitted_parent = split_features(parent, types)
 
         # Choose which tables go in which pipeline
         to_ordinal_encode_ids = []
@@ -224,12 +229,12 @@ class Database(ABC):
 
         # One hot encode
         logger.info('Encoding: One hot encode.')
-        splitted_df, splitted_mv, splitted_types = one_hot_encode(splitted_df, splitted_mv, splitted_types, keys=to_one_hot_encode_ids)
+        splitted_df, splitted_mv, splitted_types, splitted_parent = one_hot_encode(splitted_df, splitted_mv, splitted_types, splitted_parent, keys=to_one_hot_encode_ids)
 
         # Date encode
         logger.info('Encoding: Date encode.')
-        splitted_df, splitted_mv, splitted_types = date_encode(splitted_df, splitted_mv, splitted_types, keys=to_date_encode_exp, method='explode', dayfirst=True)
-        splitted_df, splitted_mv, splitted_types = date_encode(splitted_df, splitted_mv, splitted_types, keys=to_date_encode_tim, method='timestamp', dayfirst=True)
+        splitted_df, splitted_mv, splitted_types, splitted_parent = date_encode(splitted_df, splitted_mv, splitted_types, splitted_parent, keys=to_date_encode_exp, method='explode', dayfirst=True)
+        splitted_df, splitted_mv, splitted_types, splitted_parent = date_encode(splitted_df, splitted_mv, splitted_types, splitted_parent, keys=to_date_encode_tim, method='timestamp', dayfirst=True)
 
         logger.info('Encoding: Fill missing values.')
         splitted_mv_bool = {k: mv != NOT_MISSING for k, mv in splitted_mv.items()}
@@ -240,6 +245,7 @@ class Database(ABC):
         encoded_df = pd.concat(splitted_df.values(), axis=1)
         encoded_mv = pd.concat(splitted_mv.values(), axis=1)
         encoded_types = pd.concat(splitted_types.values())
+        encoded_parent = pd.concat(splitted_parent.values())
 
         # Set types on encoded df
         encoded_df = set_dtypes_features(encoded_df, encoded_types, {
@@ -247,7 +253,7 @@ class Database(ABC):
             CONTINUE_I: float,
         })
 
-        return encoded_df, encoded_mv, encoded_types
+        return encoded_df, encoded_mv, encoded_types, encoded_parent
 
     # @abstractmethod
     def _encode(self, df_names):
@@ -269,5 +275,63 @@ class Database(ABC):
                 self.encoded_dataframes[name] = encoded[0]
                 self.encoded_missing_values[name] = encoded[1]
                 self.encoded_feature_types[name] = encoded[2]
+                self.encoded_parent[name] = encoded[3]
+
+                logger.info(f'df {name} encoded with shape {encoded[0].shape}')
+
+    def _rename(self, obj, rename):
+        rename_from = rename.keys()
+
+        if isinstance(obj, pd.DataFrame):
+            df = obj.copy()
+            cols_to_rename = [c for c in df.columns if c in set(rename_from)]
+
+            for c in cols_to_rename:
+                df[rename[c]] = df[c]
+
+            df.drop(cols_to_rename, axis=1, inplace=True)
+            return df
+
+        if isinstance(obj, pd.Series):
+            series = obj.copy()
+            cols_to_rename = [c for c in series.index if c in set(rename_from)]
+
+            for c in cols_to_rename:
+                series[rename[c]] = series[c]
+
+            series.drop(cols_to_rename, inplace=True)
+
+            return series
+
+        if isinstance(obj, dict):
+            d = obj.copy()
+
+            cols_to_rename = [c for c in obj.keys() if c in set(rename_from)]
+
+            for c in cols_to_rename:
+                d[rename[c]] = obj[c]
+                d.pop(c)
+
+            return d
+
+    def rename_encode(self, df_name, rename, encode='all'):
+        df = self.dataframes[df_name]
+
+        mv = self.missing_values[df_name]
+        types = self.feature_types[df_name]
+        order = None
+        if df_name in self.ordinal_orders:
+            order = self.ordinal_orders[df_name]
+
+        df = self._rename(df, rename)
+        mv = self._rename(mv, rename)
+        types = self._rename(types, rename)
+        if order is not None:
+            order = self._rename(order, rename)
+
+        df, _, _, parent = self._encode_df(df, mv, types, order=order, encode=encode)
+
+        return df, parent
+
 
                 logger.info(f'df {name} encoded with shape {encoded[0].shape}')

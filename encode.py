@@ -88,9 +88,9 @@ def ordinal_encode(df, mv, keys=None, order=None):
     return _df_type_handler(encode, (df, mv), keys, order=order)
 
 
-def one_hot_encode(df, mv, types, keys=None):
+def one_hot_encode(df, mv, types, parent, keys=None):
 
-    def encode(df, mv, types):
+    def encode(df, mv, types, parent):
         enc = OneHotEncoder(sparse=False)
 
         # df = df.fillna(MV_PLACEHOLDER).astype(str)  # Cast to str
@@ -104,6 +104,12 @@ def one_hot_encode(df, mv, types, keys=None):
 
         feature_names = list(enc.get_feature_names(list(df.columns)))
 
+        parent = pd.Series()
+
+        for i, c in enumerate(df.columns):
+            for suffix in enc.categories_[i]:
+                parent[f'{c}_{suffix}'] = c
+
         df_encoded = pd.DataFrame(data_encoded,
                                   index=df.index,
                                   columns=feature_names
@@ -115,14 +121,14 @@ def one_hot_encode(df, mv, types, keys=None):
 
         types_encoded = pd.Series(BINARY, index=feature_names)
 
-        return df_encoded, mv_encoded, types_encoded
+        return df_encoded, mv_encoded, types_encoded, parent
 
-    return _df_type_handler(encode, (df, mv, types), keys=keys)
+    return _df_type_handler(encode, (df, mv, types, parent), keys=keys)
 
 
-def date_encode(df, mv, types, keys=None, method='timestamp', dayfirst=False):
+def date_encode(df, mv, types, parent, keys=None, method='timestamp', dayfirst=False):
 
-    def encode(df, mv, types, method='timestamp', dayfirst=False):
+    def encode(df, mv, types, parent, method='timestamp', dayfirst=False):
         df = fill_df(df, mv != NOT_MISSING, np.nan)
 
         if method == 'timestamp':
@@ -141,6 +147,7 @@ def date_encode(df, mv, types, keys=None, method='timestamp', dayfirst=False):
         elif method == 'explode':
             df_data = dict()
             mv_data = dict()
+            parent = pd.Series()
 
             for feature_name in df.columns:
                 dt = pd.to_datetime(df[feature_name], dayfirst=dayfirst).dt
@@ -153,11 +160,15 @@ def date_encode(df, mv, types, keys=None, method='timestamp', dayfirst=False):
                 mv_data[f'{feature_name}_month'] = mv[feature_name]
                 mv_data[f'{feature_name}_day'] = mv[feature_name]
 
+                parent[f'{feature_name}_year'] = feature_name
+                parent[f'{feature_name}_month'] = feature_name
+                parent[f'{feature_name}_day'] = feature_name
+
             df_encoded = pd.DataFrame(df_data, index=df.index)
             mv_encoded = pd.DataFrame(mv_data, index=df.index)
             types_encoded = pd.Series(CONTINUE_I, index=df_encoded.columns)
 
-        return df_encoded, mv_encoded, types_encoded
+        return df_encoded, mv_encoded, types_encoded, parent
 
-    return _df_type_handler(encode, (df, mv, types), keys=keys, method=method,
+    return _df_type_handler(encode, (df, mv, types, parent), keys=keys, method=method,
                             dayfirst=dayfirst)
