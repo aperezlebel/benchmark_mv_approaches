@@ -1,6 +1,8 @@
 """Build prediction tasks for the TB database."""
 import numpy as np
 
+from df_utils import get_columns
+
 from .taskMeta import TaskMeta
 
 tasks_meta = list()
@@ -150,4 +152,122 @@ tasks_meta.append(TaskMeta(
         'RT.cristalloides'
     ],
     transform=transform_df_shock_hemo
+))
+
+# Task 4: Tranexamic acid prediction (https://arxiv.org/abs/1910.10624)
+rename_acid = {
+    'Numéro de centre': 'Trauma.center',
+    'Anomalie pupillaire (Pré-hospitalier)': 'Pupil.anomaly.ph',
+    'Anomalie pupillaire (Phase hospitalière)': 'Pupil.anomaly.h',
+    'Osmothérapie': 'Osmotherapy',
+}
+
+
+def transform_df_acid(df, **kwargs):
+    """Build df with appropiate features for tranexamic acid prediction."""
+    predict = kwargs['meta'].predict
+
+    df = df.copy()
+
+    # Temp features (will be dropped)
+    df['SBP.min'] = df['Pression Artérielle Systolique (PAS) minimum']
+    df['SBP.MICU'] = df['Pression Artérielle Systolique (PAS) à l arrivée du SMUR']
+    df['DBP.min'] = df['Pression Artérielle Diastolique (PAD) minimum']
+    df['DBP.MICU'] = df['Pression Artérielle Diastolique (PAD) à l arrivée du SMUR']
+    df['HR.max'] = df['Fréquence cardiaque (FC) maximum']
+    df['HR.MICU'] = df['Fréquence cardiaque (FC) à l arrivée du SMUR']
+    df['Shock.index.h'] = df['FC en phase hospitalière'].divide(df['Pression Artérielle Systolique - PAS'])
+
+    # Persistent features
+    # df['Trauma.center'] = df['Numéro de centre']
+    df['SBP.ph'] = np.minimum(df['SBP.min'], df['SBP.MICU'])
+    df['DBP.ph'] = np.minimum(df['DBP.min'], df['DBP.MICU'])
+    df['HR.ph'] = np.maximum(df['HR.max'], df['HR.MICU'])
+    df['Cardiac.arrest.ph'] = df['Arrêt cardio-respiratoire (massage)']
+    df['HemoCue.init'] = df['Hémocue initial']
+    df['SpO2.min'] = df['SpO2 min']
+    df['Vasopressor.therapy'] = df['Catécholamines max dans choc hémorragique']
+    df['Cristalloid.volume'] = df['Cristalloïdes']
+    df['Colloid.volume'] = df['Colloïdes']
+    df['Shock.index.ph'] = df['Fréquence cardiaque (FC) à l arrivée du SMUR'].divide(df['Pression Artérielle Systolique (PAS) à l arrivée du SMUR'])
+    df['AIS.external'] = df['ISS  / External']
+    df['Delta.shock.index'] = df['Shock.index.h'] - df['Shock.index.ph']
+    df['Delta.hemoCue'] = df['Delta Hémocue']
+
+    df['Anticoagulant.therapy'] = df['Traitement anticoagulant']
+    df['Antiplatelet.therapy'] = df['Traitement antiagrégants']
+    df['GCS.init'] = df['Glasgow initial']
+    df['GCS'] = df['Score de Glasgow en phase hospitalière']
+    df['GCS.motor.init'] = df['Glasgow moteur initial']
+    df['GCS.motor'] = df['Glasgow moteur']
+    # df['Pupil.anomaly.ph'] = df['Anomalie pupillaire (Pré-hospitalier)']
+    # df['Pupil.anomaly.h'] = df['Anomalie pupillaire (Phase hospitalière)']
+    # df['Osmotherapy'] = df['Osmothérapie']
+    df['Improv.anomaly.osmo'] = df['Régression mydriase sous osmothérapie']
+    df['Medcare.time.ph'] = df['Délai « arrivée sur les lieux - arrivée hôpital »']
+    df['FiO2'] = df['FiO2']
+    df['Temperature.min'] = df['Température min']
+    df['TCD.PI.max'] = df['DTC IP max (sur les premières 24 heures d HTIC)']
+    df['IICP'] = df['HTIC (>25 PIC simple sédation)']
+    df['EVD'] = df['Dérivation ventriculaire externe (DVE)']
+    df['Decompressive.craniectomy'] = df['Craniectomie dé-compressive']
+    df['Neurosurgery.day0'] = df['Bloc dans les premières 24h  / Neurochirurgie (ex. : Craniotomie ou DVE)']
+    df['AIS.head'] = df['ISS  / Head_neck']
+    df['AIS.face'] = df['ISS  / Face']
+    df['ISS'] = df['Score ISS']
+    df['ISS.II'] = df['Total Score IGS']
+
+    # Replace potential infinite values by Nans (divide may have created infs)
+    df.replace([np.inf, -np.inf], np.nan, inplace=True)
+
+    # Drop rows with missing values in the feature to predict
+    # df[df_mv[predict] != 0] = np.nan
+    return df.dropna(axis=0, subset=[predict])
+
+
+tasks_meta.append(TaskMeta(
+    name='acid',
+    db='TB',
+    df_name='20000',
+    predict='Acide tranexamique',
+    keep=[
+        'Trauma.center',
+        'SBP.ph',
+        'DBP.ph',
+        'HR.ph',
+        'Cardiac.arrest.ph',
+        'HemoCue.init',
+        'SpO2.min',
+        'Vasopressor.therapy',
+        'Cristalloid.volume',
+        'Colloid.volume',
+        'Shock.index.ph',
+        'AIS.external',
+        'Delta.shock.index',
+        'Delta.hemoCue',
+        'Anticoagulant.therapy',
+        'Antiplatelet.therapy',
+        'GCS.init',
+        'GCS',
+        'GCS.motor.init',
+        'GCS.motor',
+        'Pupil.anomaly.ph',
+        'Pupil.anomaly.h',
+        'Osmotherapy',
+        'Improv.anomaly.osmo',
+        'Medcare.time.ph',
+        'FiO2',
+        'Temperature.min',
+        'TCD.PI.max',
+        'IICP',
+        'EVD',
+        'Decompressive.craniectomy',
+        'Neurosurgery.day0',
+        'AIS.head',
+        'AIS.face',
+        'ISS',
+        'ISS.II',
+    ],
+    rename=rename_acid,
+    transform=transform_df_acid,
 ))
