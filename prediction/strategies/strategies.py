@@ -20,7 +20,6 @@ from .strategy import Strategy
 
 logger = logging.getLogger(__name__)
 
-RS = 42
 strategies = list()
 
 # Load some params from custom file
@@ -43,6 +42,7 @@ n_learning_trains = params.get('n_learning_trains', 5)
 iterative_imputer_max_iter = params.get('iterative_imputer_max_iter', 10)
 roc = params.get('roc', False)
 param_space = params.get('param_space', None)
+RS = params.get('RS', 42)
 
 logger.info(f'Loaded strategy_params.yml with following parameters:')
 logger.info(f'n_outer_splits: {n_outer_splits}')
@@ -56,6 +56,7 @@ logger.info(f'n_learning_trains: {n_learning_trains}')
 logger.info(f'iterative_imputer_max_iter: {iterative_imputer_max_iter}')
 logger.info(f'roc: {roc}')
 logger.info(f'param_space: {param_space}')
+logger.info(f'RS: {RS}')
 
 if param_space is None:
     param_space = {

@@ -8,6 +8,7 @@ n_outer_splits: 2  # Number of splits of the outer CV
 n_inner_splits: 2  # Number of splits of the inner CV
 iterative_imputer_max_iter: 10  # Max # of imputation rounds for iterative imp
 roc: False  # Whether to compute the scores/probas for the roc
+random_state: 42  # The random state to use for every splitting function
 param_space:  # The space to use for HP tuning for HGBC and HGBR
   learning_rate:
   - 0.05
