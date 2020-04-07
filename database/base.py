@@ -332,6 +332,3 @@ class Database(ABC):
         df, _, _, parent = self._encode_df(df, mv, types, order=order, encode=encode)
 
         return df, parent
-
-
-                logger.info(f'df {name} encoded with shape {encoded[0].shape}')
