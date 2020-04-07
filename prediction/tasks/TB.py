@@ -1,8 +1,6 @@
 """Build prediction tasks for the TB database."""
 import numpy as np
 
-from df_utils import get_columns
-
 from .taskMeta import TaskMeta
 
 tasks_meta = list()
