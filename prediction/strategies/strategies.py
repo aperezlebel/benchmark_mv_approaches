@@ -67,7 +67,7 @@ if param_space is None:
 # A strategy to run a classification
 strategies.append(Strategy(
     name='Classification',
-    estimator=HistGradientBoostingClassifier(),
+    estimator=HistGradientBoostingClassifier(random_state=RS),
     inner_cv=ShuffleSplit(n_splits=n_inner_splits, train_size=0.8, random_state=RS),
     search=GridSearchCV,
     param_space=param_space,
@@ -106,7 +106,7 @@ strategies.append(Strategy(
 
 strategies.append(Strategy(
     name='Classification_RFC',
-    estimator=RandomForestClassifier(n_jobs=1),
+    estimator=RandomForestClassifier(n_jobs=1, random_state=RS),
     inner_cv=ShuffleSplit(n_splits=n_inner_splits, train_size=0.8, random_state=RS),
     search=GridSearchCV,
     param_space={
@@ -148,7 +148,7 @@ strategies.append(Strategy(
 # A strategy to run a regression
 strategies.append(Strategy(
     name='Regression',
-    estimator=HistGradientBoostingRegressor(loss='least_absolute_deviation'),
+    estimator=HistGradientBoostingRegressor(loss='least_absolute_deviation', random_state=RS),
     inner_cv=ShuffleSplit(n_splits=n_inner_splits, train_size=0.8, random_state=RS),
     search=GridSearchCV,
     param_space=param_space,
@@ -193,14 +193,18 @@ imputers = {
     'Mean+mask': SimpleImputer(strategy='mean', add_indicator=True),
     'Med': SimpleImputer(strategy='median'),
     'Med+mask': SimpleImputer(strategy='median', add_indicator=True),
-    'Iterative': IterativeImputer(max_iter=iterative_imputer_max_iter),
+    'Iterative': IterativeImputer(max_iter=iterative_imputer_max_iter,
+                                  random_state=RS),
     'Iterative+mask': IterativeImputer(add_indicator=True,
-                                       max_iter=iterative_imputer_max_iter),
+                                       max_iter=iterative_imputer_max_iter,
+                                       random_state=RS),
     'IterativeR': IterativeImputer(estimator=RidgeCV(),
-                                   max_iter=iterative_imputer_max_iter),
+                                   max_iter=iterative_imputer_max_iter,
+                                   random_state=RS),
     'IterativeR+mask': IterativeImputer(estimator=RidgeCV(),
                                         add_indicator=True,
-                                        max_iter=iterative_imputer_max_iter),
+                                        max_iter=iterative_imputer_max_iter,
+                                        random_state=RS),
     'KNN': KNNImputer(),
     'KNN+mask': KNNImputer(add_indicator=True),
 
