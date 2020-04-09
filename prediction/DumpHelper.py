@@ -58,20 +58,25 @@ def listify(d):
         return d
 
 
+def get_RS_tag(RS):
+    return '' if RS is None else f'RS{RS}_'
+
 class DumpHelper:
     _count = None
 
-    def __init__(self, task, strat):
+    def __init__(self, task, strat, RS=None):
         self.task = task
         self.strat = strat
+        self.RS = RS
 
         self.db_folder = f'{results_folder}{self.task.meta.db}/'
 
         dump_count = self._get_dump_count()
+        RS_tag = get_RS_tag(RS)
 
         self.task_folder = (f'{self.db_folder}{self.task.meta.name}_'
                             f'{dump_count}/')
-        self.strat_folder = f'{self.task_folder}{strat.name}/'
+        self.strat_folder = f'{self.task_folder}{RS_tag}{strat.name}/'
 
         logger.info(f'Strat folder: {self.strat_folder}')
         logger.info(f'Task folder: {self.task_folder}')

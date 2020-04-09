@@ -51,7 +51,7 @@ logger = logging.getLogger(__name__)
 #     return pd.DataFrame(data_imputed, index=df.index, columns=columns)
 
 
-def train(task, strategy):
+def train(task, strategy, RS=None):
     """Train a model following a strategy on prediction task.
 
     Parameters:

@@ -18,6 +18,8 @@ parser.add_argument('strategy_name', nargs='?', default=None)
 parser.add_argument('--train3', dest='train', const=train3, default=train2,
                     nargs='?',
                     help='Whether to use train2 or train3 for prediction.')
+parser.add_argument('--RS', dest='RS', default=None, nargs='?',
+                    help='The random state to use.')
 
 
 def run(argv=None):
@@ -26,6 +28,7 @@ def run(argv=None):
 
     task_name = args.task_name
     strategy_name = args.strategy_name
+    RS = args.RS
 
     if task_name is None or strategy_name is None:
         logger.info('No task or strategy given. Reading from jobs.txt.')
@@ -43,5 +46,7 @@ def run(argv=None):
 
         logger.info(f'Run task {task_name} using {selected_jobs[0][1].name}')
 
+    logger.info(f'Asked RS: {RS}')
+
     for task, strategy in selected_jobs:
-        _ = args.train(task, strategy)
+        _ = args.train(task, strategy, RS=RS)

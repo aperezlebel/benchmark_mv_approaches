@@ -55,7 +55,7 @@ logger.addHandler(logging.StreamHandler())  # Print also in console.
 #     return pd.DataFrame(data_imputed, index=df.index, columns=columns)
 
 
-def train(task, strategy):
+def train(task, strategy, RS=None):
     """Train a model following a strategy on prediction task.
 
     Parameters:
@@ -79,7 +79,10 @@ def train(task, strategy):
     logger.info(f'X shape: {X.shape}')
     logger.info(f'y shape: {y.shape}')
 
-    dh = DumpHelper(task, strategy)  # Used to dump results
+    logger.info(f'Resetting strategy RS to {RS}')
+    strategy.reset_RS(RS)  # Must be done before init DumpHelper
+
+    dh = DumpHelper(task, strategy, RS=RS)  # Used to dump results
 
     # Create pipeline
     if strategy.imputer is not None:

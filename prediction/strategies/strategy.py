@@ -1,4 +1,5 @@
 """Implement the Strategy class."""
+import logging
 import sklearn
 import numpy as np
 from dataclasses import dataclass, field
@@ -7,6 +8,10 @@ from sklearn.base import BaseEstimator, RegressorMixin, ClassifierMixin
 from sklearn.pipeline import Pipeline
 
 from ..FakeStep import FakeStep
+
+
+logger = logging.getLogger(__name__)
+logger.addHandler(logging.StreamHandler())  # Print also in console.
 
 
 class Strategy():
@@ -102,3 +107,14 @@ class Strategy():
             'learning_curve_params': self.learning_curve_params,
             'sklearn_version': sklearn.__version__
         }
+
+    def reset_RS(self, RS):
+        if RS is None:
+            return  # Nothing to do
+
+        RS = int(RS)
+
+        for obj in [self.estimator, self.inner_cv, self.outer_cv, self.imputer]:
+            if obj is not None and hasattr(obj, 'random_state'):
+                logger.info(f'Reset RS for {obj.__class__.__name__} to {RS}.')
+                obj.random_state = RS

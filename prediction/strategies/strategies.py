@@ -42,7 +42,9 @@ n_learning_trains = params.get('n_learning_trains', 5)
 iterative_imputer_max_iter = params.get('iterative_imputer_max_iter', 10)
 roc = params.get('roc', False)
 param_space = params.get('param_space', None)
-RS = params.get('random_state', 42)
+
+# Default RS
+RS = 42
 
 logger.info(f'Loaded strategy_params.yml with following parameters:')
 logger.info(f'n_outer_splits: {n_outer_splits}')
