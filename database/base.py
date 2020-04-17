@@ -50,22 +50,126 @@ class Database(ABC):
     def is_loaded(self, df_name):
         return df_name in self.dataframes
 
-    def load(self, df_names):
-        if isinstance(df_names, str):
-            df_names = [df_names]
+    def load(self, meta):
+        self._load_feature_types(meta)
+        self._load_db(meta)
+        self._load_ordinal_orders(meta)
+        self._find_missing_values(meta)
+        self._encode(meta)
 
-        if not isinstance(df_names, list):
-            raise ValueError('Table names to load must be list or str.')
+    @staticmethod
+    def get_drop_and_keep_meta(features, meta):
+        """Give which feature to keep and which to drop from a TaskMeta.
 
-        # Remove dfs already loaded
-        df_names = [n for n in df_names if n not in self.dataframes]
+        Prameters
+        ---------
+        features : list or pd.Series or pd.DataFrame
+            Gives the universal set of features, i.e the features to consider.
+        meta : TaskMeta object
+            Object having keep, drop, keep_contains, drop_contains parameters.
 
-        self._load_feature_types(df_names)
-        self._load_db(df_names)
-        self._drop(df_names)
-        self._load_ordinal_orders(df_names)
-        self._find_missing_values(df_names)
-        self._encode(df_names)
+        Returns
+        -------
+        to_keep : set
+            Set containing the features to keep
+        to_drop : set
+            Set containing the feature to drop
+
+        """
+        return Database.get_drop_and_keep(
+            features=features,
+            keep=meta.keep,
+            keep_contains=meta.keep_contains,
+            drop=meta.drop,
+            drop_contains=meta.drop_contains,
+            predict=meta.predict
+        )
+
+    @staticmethod
+    def get_drop_and_keep(features, keep=None, keep_contains=None, drop=None,
+                          drop_contains=None, predict=None):
+        """Give which feature to keep and which to drop from a TaskMeta.
+
+        Prameters
+        ---------
+        features : list or pd.Series or pd.DataFrame
+            Gives the universal set of features, i.e the features to consider.
+        keep : list of str
+            List of features to keep.
+        keep_contains : list of str
+            List of patterns of features to keep.
+        drop : list of str
+            List of features to drop.
+        drop_contains : list of str
+            List of patterns of features to drop.
+
+        Returns
+        -------
+        to_keep : set
+            Set containing the features to keep
+        to_drop : set
+            Set containing the feature to drop
+
+        """
+        # Check features
+        if isinstance(features, pd.DataFrame):
+            features = features.columns
+
+        elif isinstance(features, pd.Series):
+            features = features.index
+
+        elif isinstance(features, list):
+            features = pd.Index(features)
+
+        else:
+            raise ValueError('features must be df, series or list.')
+
+        # Check keep and drop
+        if any((keep, keep_contains)) and any((drop, drop_contains)):
+            raise ValueError('Cannot use keep and drop at the same time.')
+
+        # Case where neither keep nor drop is given
+        if not any((keep, keep_contains, drop, drop_contains)):
+            return set(features), set()
+
+        if any((keep, keep_contains)):
+            method = 'keep'
+            select = [] if keep is None else keep
+            if predict is not None:
+                select += [predict]
+            select_contains = [] if keep_contains is None else keep_contains
+
+        elif any((drop, drop_contains)):
+            method = 'drop'
+            select = [] if drop is None else drop
+            select_contains = [] if drop_contains is None else drop_contains
+
+        # Convert select_contains based on patterns to explicit selection
+        select_array = np.logical_or.reduce(
+            np.array([features.str.contains(p) for p in select_contains])
+        )
+        select_series = pd.Series(select_array, index=features)
+        select_extra = list(select_series[select_series].index)
+
+        # Merge select and select_extra
+        select = set(select + select_extra)
+
+        # Keep only the features present in features (non existing features
+        # may have been given in keep/drop...)
+        select = select.intersection(set(features))
+
+        # Transform drop selection into keep selection
+        select_complement = set(features) - select
+        # select_complement = Database.get_complement(select, list(features))
+
+        if method == 'drop':
+            if predict is not None and predict in select:
+                raise ValueError('Feature to predict is in features to drop.')
+
+            return select_complement, select
+
+        assert method == 'keep'
+        return select, select_complement
 
     def __getitem__(self, name):
         """Get data frame giving its name."""
@@ -75,38 +179,50 @@ class Database(ABC):
         """Get data frames' names."""
         return list(self.dataframes.keys())
 
-    @abstractmethod
-    def _to_drop(self, df_name):
-        pass
-
-    def _drop(self, df_names):
-        for name in df_names:
-            df = self.dataframes[name]
-            to_drop = self._to_drop(name)
-            if to_drop is None:
-                continue
-            logger.info(f'{name}: Dropping {len(to_drop)} cols out of {df.shape[1]}')
-            df.drop(to_drop, axis=1, inplace=True)
-            self.feature_types[name].drop(to_drop, inplace=True)
-
-    def _load_db(self, df_names):
-        logger.info(f'Loading dataframes for {self.acronym}.')
+    def _load_db(self, meta):
+        df_name = meta.df_name
+        logger.info(f'Loading {df_name} data frame.')
         available_paths = self.available_paths
-        for name in df_names:
-            if name not in available_paths:
-                raise ValueError(
-                    f'{name} not an available name.\n'
-                    f'Available name and paths are {available_paths}.'
-                )
-            p = self.frame_paths[name]
 
-            logger.info(f'Loading {name} data frame.')
-            # dtype = None
-            df = pd.read_csv(p, sep=self._sep,
-                             encoding=self._encoding)
-            logger.info(f'df {name} loaded with shape {df.shape}')
-                                                # dtype=dtype)
-            self.dataframes[name] = df
+
+        if df_name not in available_paths:
+            raise ValueError(
+                f'{df_name} not an available name.\n'
+                f'Available name and paths are {available_paths}.'
+            )
+        p = self.frame_paths[df_name]
+
+        # dtype = None
+        # if self._dtype is not None:
+        #     dtype = self._dtype.get(df_name, None)
+
+        # Load only the features of the database (avoid load time)
+        features = pd.read_csv(p, sep=self._sep, encoding=self._encoding,
+                               nrows=0)
+
+        # Compute index where feature to predict is Nan
+        df_predict = pd.read_csv(p, sep=self._sep, encoding=self._encoding,
+                                 usecols=[meta.predict], squeeze=True)
+        logger.info(f'Raw DB of shape [{df_predict.size} x {features.shape[1]}]')
+        df_predict_mv = get_missing_values(df_predict, self.heuristic)
+        index_to_drop = df_predict.index[df_predict_mv != 0]+1
+        logger.info(f'Rows to drop because NA in predict {len(index_to_drop)}')
+
+        # Compute the features to keep
+        to_keep, to_drop = self.get_drop_and_keep_meta(features, meta)
+        logger.info(f'Features to drop as specified in meta {len(to_drop)}')
+
+        # Load only the features needed: save a lot of time and space
+        df = pd.read_csv(p, sep=self._sep, encoding=self._encoding,
+                         usecols=to_keep, skiprows=index_to_drop)
+
+        logger.info(f'df {meta.tag} loaded with shape {df.shape}')
+        # dtype=dtype)
+
+        # Replace potential infinite values by Nans
+        # df.replace([np.inf, -np.inf], np.nan, inplace=True)
+
+        self.dataframes[meta.tag] = df
 
     @abstractmethod
     def heuristic(self, series):
@@ -127,44 +243,55 @@ class Database(ABC):
         """
         pass
 
-    def _load_feature_types(self, df_names):
+    def _load_feature_types(self, meta):
         logger.info(f'Loading feature types for {self.acronym}.')
+        df_name = meta.df_name
 
-        for name in df_names:
-            logger.info(f'Loading feature types of {name} data frame.')
-            try:
-                self.feature_types[name] = _load_feature_types(self, name,
-                                                               anonymized=False)
-            # except FileNotFoundError:
-            #     print(f'{name}: features types not found. Ignored.')
-            except ValueError:
-                print(
-                    f'{name}: error while loading feature type. '
-                    f'Check if lengths match. Ignored.'
-                )
+        try:
+            types = _load_feature_types(self, df_name, anonymized=False)
+        except ValueError:
+            print(
+                f'{df_name}: error while loading feature type. '
+                f'Check if lengths match. Ignored.'
+            )
+            return
 
-    def _load_ordinal_orders(self, df_names):
+        _, to_drop = self.get_drop_and_keep_meta(types, meta)
+        types.drop(labels=to_drop, inplace=True)
+        self.feature_types[meta.tag] = types
+
+
+    def _load_ordinal_orders(self, meta):
         logger.info(f'Loading ordinal orders for {self.acronym}.')
-        for name in df_names:
-            logger.info(f'Loading ordinal orders of {name}.')
-            filepath = f'{METADATA_PATH}/ordinal_orders/{self.acronym}/{name}.yml'
+        df_name = meta.df_name
 
-            if not os.path.exists(filepath):
-                print(f'Order file not found. No order loaded for {name}.')
-                continue
+        logger.info(f'Loading ordinal orders of {df_name}.')
+        filepath = f'{METADATA_PATH}/ordinal_orders/{self.acronym}/{df_name}.yml'
 
-            with open(filepath, 'r') as file:
-                try:
-                    self.ordinal_orders[name] = yaml.safe_load(file)
-                except yaml.YAMLError as exc:
-                    print(f'{exc}. No order loaded for {name}.')
+        if not os.path.exists(filepath):
+            print(f'Order file not found. No order loaded for {df_name}.')
+            return
 
-    def _find_missing_values(self, df_names):
-        logger.info(f'Finding missing values for {self.acronym}.')
-        for name in df_names:
-            logger.info(f'Finding missing values of {name}.')
-            df = self.dataframes[name]
-            self.missing_values[name] = get_missing_values(df, self.heuristic)
+        with open(filepath, 'r') as file:
+            try:
+                order = yaml.safe_load(file)
+            except yaml.YAMLError as exc:
+                print(f'{exc}. No order loaded for {df_name}.')
+                return
+
+            features = list(order.keys())
+            _, to_drop = self.get_drop_and_keep_meta(features, meta)
+
+            # Drop useless features
+            for f in to_drop:
+                order.pop(f)
+
+            self.ordinal_orders[meta.tag] = order
+
+    def _find_missing_values(self, meta):
+        logger.info(f'Finding missing values of {meta.tag}.')
+        df = self.dataframes[meta.tag]
+        self.missing_values[meta.tag] = get_missing_values(df, self.heuristic)
 
     @staticmethod
     def _encode_df(df, mv, types, order=None, encode=None):
@@ -212,8 +339,8 @@ class Database(ABC):
 
         # Delete unwanted tables
         for k in to_delete_ids:
-            del splitted_df[k]
-            del splitted_mv[k]
+            splitted_df.pop(k, None)
+            splitted_mv.pop(k, None)
 
         # Fill missing values otherwise the fit raises an error cause of Nans
         # splitted_mv_bool = {k: mv != NOT_MISSING for k, mv in splitted_mv.items()}
@@ -256,28 +383,33 @@ class Database(ABC):
         return encoded_df, encoded_mv, encoded_types, encoded_parent
 
     # @abstractmethod
-    def _encode(self, df_names):
-        logger.info(f'Encoding data frames for {self.acronym}.')
-        for name in df_names:
-            logger.info(f'Encoding {name}.')
-            df = self.dataframes[name]
-            if name not in self.feature_types:
-                print(f'{name}: feature types missing. Encoding ignored.')
-            elif name not in self.missing_values:
-                print(f'{name}: missing values df missing. Encoding ignored.')
-            else:
-                types = self.feature_types[name]
-                mv = self.missing_values[name]
-                order = None
-                if name in self.ordinal_orders:
-                    order = self.ordinal_orders[name]
-                encoded = self._encode_df(df, mv, types, order=order, encode=self.encode)
-                self.encoded_dataframes[name] = encoded[0]
-                self.encoded_missing_values[name] = encoded[1]
-                self.encoded_feature_types[name] = encoded[2]
-                self.encoded_parent[name] = encoded[3]
+    def _encode(self, meta):
+        # logger.info(f'Encoding data frames for {self.acronym}.')
+        tag = meta.tag
+        df = self.dataframes[tag]
+        logger.info(f'Encoding {tag}.')
 
-                logger.info(f'df {name} encoded with shape {encoded[0].shape}')
+        if tag not in self.feature_types:
+            print(f'{tag}: feature types missing. Encoding ignored.')
+
+        elif tag not in self.missing_values:
+            print(f'{tag}: missing values df missing. Encoding ignored.')
+
+        else:
+            types = self.feature_types[tag]
+            mv = self.missing_values[tag]
+            order = None
+            if tag in self.ordinal_orders:
+                order = self.ordinal_orders[tag]
+
+            encoded = self._encode_df(df, mv, types, order=order, encode=self.encode)
+
+            self.encoded_dataframes[tag] = encoded[0]
+            self.encoded_missing_values[tag] = encoded[1]
+            self.encoded_feature_types[tag] = encoded[2]
+            self.encoded_parent[tag] = encoded[3]
+
+            logger.info(f'df {tag} encoded with shape {encoded[0].shape}')
 
     def _rename(self, obj, rename):
         rename_from = rename.keys()
@@ -314,14 +446,14 @@ class Database(ABC):
 
             return d
 
-    def rename_encode(self, df_name, rename, encode='all'):
-        df = self.dataframes[df_name]
+    def rename_encode(self, tag, rename, encode='all'):
+        df = self.dataframes[tag]
 
-        mv = self.missing_values[df_name]
-        types = self.feature_types[df_name]
+        mv = self.missing_values[tag]
+        types = self.feature_types[tag]
         order = None
-        if df_name in self.ordinal_orders:
-            order = self.ordinal_orders[df_name]
+        if tag in self.ordinal_orders:
+            order = self.ordinal_orders[tag]
 
         df = self._rename(df, rename)
         mv = self._rename(mv, rename)

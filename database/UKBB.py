@@ -20,6 +20,7 @@ class UKBB(Database):
             '35375': data_folder+'ukb35375.csv',
             '38276': data_folder+'ukb38276.csv',
             '40284': data_folder+'ukb40284.csv',
+            '40663': data_folder+'ukb40663.csv',
         }
         sep = ','
         encoding = 'ISO-8859-1'
@@ -45,15 +46,4 @@ class UKBB(Database):
         print(series.name, end='\r')
 
         return series_mv
-
-    # def _encode(self, df_names):
-    #     super()._encode(df_names)
-
-    def _to_drop(self, df_name):
-        if df_name == '24440':
-            types = self.feature_types[df_name]
-            return list(types[types == CATEGORICAL].index)
-
-
-
 

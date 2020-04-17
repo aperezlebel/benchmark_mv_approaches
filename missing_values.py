@@ -23,6 +23,9 @@ def get_missing_values(df, heuristic):
         1: Not applicable, 2: Not available).
 
     """
+    if isinstance(df, pd.Series):
+        return heuristic(df)
+
     # Compute the Series storing the types of missing values
     columns = [heuristic(df.iloc[:, index]) for index in range(df.shape[1])]
     # Concat the Series into a data frame

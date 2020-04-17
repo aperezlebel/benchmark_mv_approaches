@@ -20,24 +20,9 @@ tasks_meta.append(TaskMeta(
     predict="Décès",
     drop=[
         "Date de décès (à l'hôpital après sortie de réanimation)",
-        "Cause du décès_A survécu",
-        "Cause du décès_Autre (précisez ci-dessous)",
-        "Cause du décès_Choc hémorragique",
-        "Cause du décès_Choc septique",
-        "Cause du décès_Défaillance multi-viscérale",
-        "Cause du décès_LATA",
-        "Cause du décès_Mort encéphalique",
-        "Cause du décès_Trauma cranien",
-        "Cause du décès_z MISSING_VALUE",
-        "Transfert secondaire, pourquoi ?_Pas de transfert",
-        "Transfert secondaire, pourquoi ?_Plateau technique insuffisant",
-        "Transfert secondaire, pourquoi ?_Rapprochement familial",
-        "Transfert secondaire, pourquoi ?_z MISSING_VALUE",
-        "Sortie_Autre réanimation",
-        "Sortie_Centre de rééducation",
-        "Sortie_Domicile",
-        "Sortie_Service hospitalier",
-        "Sortie_z MISSING_VALUE",
+        "Cause du décès",
+        "Transfert secondaire, pourquoi ?",
+        "Sortie",
         "Glasgow de sortie",
         "Nombre de jours à l'hôpital",
         "Durée de séjour en réa- si date de sortie connue, durée de séjour = (date sortie - date d entrée)- si date de sortie inconnue, d",
@@ -76,8 +61,7 @@ def transform_df_platelet(df, **kwargs):
     # Replace potential infinite values by Nans (divide may have created infs)
     df.replace([np.inf, -np.inf], np.nan, inplace=True)
 
-    # Drop rows with missing values in the feature to predict
-    return df.dropna(axis=0, subset=[predict])
+    return df
 
 
 tasks_meta.append(TaskMeta(
@@ -86,6 +70,26 @@ tasks_meta.append(TaskMeta(
     df_name='20000',
     predict='Plaquettes',
     keep=[
+        'Age du patient (ans)',
+        'FC en phase hospitalière',
+        'Pression Artérielle Systolique - PAS',
+        'Pression Artérielle Diastolique - PAD',
+        'Delta Hémocue',
+        'Délai « arrivée sur les lieux - arrivée hôpital »',
+        'Lactates',
+        'Température',
+        'FC en phase hospitalière',
+        'Cristalloïdes',
+        'Colloïdes',
+        'Choc hémorragique (? 4 CGR sur 6h)',
+        'Fréquence cardiaque (FC) à l arrivée du SMUR',
+        'Pression Artérielle Systolique (PAS) à l arrivée du SMUR',
+        'Pression Artérielle Diastolique (PAD) à l arrivée du SMUR',
+        'Fréquence cardiaque (FC) maximum',
+        'Pression Artérielle Systolique (PAS) minimum',
+        'Pression Artérielle Diastolique (PAD) minimum',
+    ],
+    keep_after_transform=[
         'Age',
         'SI',
         'MBP',
@@ -125,9 +129,7 @@ def transform_df_shock_hemo(df, **kwargs):
     df['RT.colloides'] = df['Colloïdes']
     df['RT.cristalloides'] = df['Cristalloïdes']
 
-    # Drop rows with missing values in the feature to predict
-    # df[df_mv[predict] != 0] = np.nan
-    return df.dropna(axis=0, subset=[predict])
+    return df
 
 
 tasks_meta.append(TaskMeta(
@@ -136,6 +138,22 @@ tasks_meta.append(TaskMeta(
     df_name='20000',
     predict='Choc hémorragique (? 4 CGR sur 6h)',
     keep=[
+        'Age du patient (ans)',
+        'BMI',
+        'Fréquence cardiaque (FC) à l arrivée du SMUR',
+        'Pression Artérielle Systolique (PAS) à l arrivée du SMUR',
+        'Pression Artérielle Diastolique (PAD) à l arrivée du SMUR',
+        'Pression Artérielle Systolique (PAS) minimum',
+        'Pression Artérielle Diastolique (PAD) minimum',
+        'Fréquence cardiaque (FC) maximum',
+        'Glasgow moteur initial',
+        'Glasgow initial',
+        'Hémocue initial',
+        'SpO2 min',
+        'Colloïdes',
+        'Cristalloïdes',
+    ],
+    keep_after_transform=[
         'Age',
         'BMI',
         'FC.SMUR',
@@ -177,7 +195,6 @@ def transform_df_acid(df, **kwargs):
     df['Shock.index.h'] = df['FC en phase hospitalière'].divide(df['Pression Artérielle Systolique - PAS'])
 
     # Persistent features
-    # df['Trauma.center'] = df['Numéro de centre']
     df['SBP.ph'] = np.minimum(df['SBP.min'], df['SBP.MICU'])
     df['DBP.ph'] = np.minimum(df['DBP.min'], df['DBP.MICU'])
     df['HR.ph'] = np.maximum(df['HR.max'], df['HR.MICU'])
@@ -198,9 +215,6 @@ def transform_df_acid(df, **kwargs):
     df['GCS'] = df['Score de Glasgow en phase hospitalière']
     df['GCS.motor.init'] = df['Glasgow moteur initial']
     df['GCS.motor'] = df['Glasgow moteur']
-    # df['Pupil.anomaly.ph'] = df['Anomalie pupillaire (Pré-hospitalier)']
-    # df['Pupil.anomaly.h'] = df['Anomalie pupillaire (Phase hospitalière)']
-    # df['Osmotherapy'] = df['Osmothérapie']
     df['Improv.anomaly.osmo'] = df['Régression mydriase sous osmothérapie']
     df['Medcare.time.ph'] = df['Délai « arrivée sur les lieux - arrivée hôpital »']
     df['FiO2'] = df['FiO2']
@@ -218,9 +232,7 @@ def transform_df_acid(df, **kwargs):
     # Replace potential infinite values by Nans (divide may have created infs)
     df.replace([np.inf, -np.inf], np.nan, inplace=True)
 
-    # Drop rows with missing values in the feature to predict
-    # df[df_mv[predict] != 0] = np.nan
-    return df.dropna(axis=0, subset=[predict])
+    return df
 
 
 tasks_meta.append(TaskMeta(
@@ -229,6 +241,47 @@ tasks_meta.append(TaskMeta(
     df_name='20000',
     predict='Acide tranexamique',
     keep=[
+        'Pression Artérielle Systolique (PAS) minimum',
+        'Pression Artérielle Systolique (PAS) à l arrivée du SMUR',
+        'Pression Artérielle Diastolique (PAD) minimum',
+        'Pression Artérielle Diastolique (PAD) à l arrivée du SMUR',
+        'Fréquence cardiaque (FC) maximum',
+        'Fréquence cardiaque (FC) à l arrivée du SMUR',
+        'FC en phase hospitalière',
+        'Pression Artérielle Systolique - PAS',
+        'Numéro de centre',
+        'Arrêt cardio-respiratoire (massage)',
+        'Hémocue initial',
+        'SpO2 min',
+        'Catécholamines max dans choc hémorragique',
+        'Cristalloïdes',
+        'Colloïdes',
+        'ISS  / External',
+        'Delta Hémocue',
+        'Traitement anticoagulant',
+        'Traitement antiagrégants',
+        'Glasgow initial',
+        'Score de Glasgow en phase hospitalière',
+        'Glasgow moteur initial',
+        'Glasgow moteur',
+        'Anomalie pupillaire (Pré-hospitalier)',
+        'Anomalie pupillaire (Phase hospitalière)',
+        'Osmothérapie',
+        'Régression mydriase sous osmothérapie',
+        'Délai « arrivée sur les lieux - arrivée hôpital »',
+        'FiO2',
+        'Température min',
+        'DTC IP max (sur les premières 24 heures d HTIC)',
+        'HTIC (>25 PIC simple sédation)',
+        'Dérivation ventriculaire externe (DVE)',
+        'Craniectomie dé-compressive',
+        'Bloc dans les premières 24h  / Neurochirurgie (ex. : Craniotomie ou DVE)',
+        'ISS  / Head_neck',
+        'ISS  / Face',
+        'Score ISS',
+        'Total Score IGS',
+    ],
+    keep_after_transform=[
         'Trauma.center',
         'SBP.ph',
         'DBP.ph',

@@ -13,10 +13,12 @@ class TaskMeta():
     db: str
     df_name: str
     predict: str
+    keep: List[str] = None
+    keep_contains: List[str] = None
     drop: List[str] = None
     drop_contains: List[str] = None
-    keep_contains: List[str] = None
-    keep: List[str] = None
+    keep_after_transform: List[str] = None
+    drop_after_transform: List[str] = None
     rename: Dict[str, str] = None  #lambda x: x
     transform: Callable[[pd.DataFrame], pd.DataFrame] = None  #lambda x: x
 
