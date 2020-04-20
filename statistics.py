@@ -1,5 +1,6 @@
 """Compute statistics about missing values on a databse."""
 
+import argparse
 import pandas as pd
 import matplotlib
 matplotlib.use('MacOSX')
@@ -7,6 +8,8 @@ import seaborn as sns
 import matplotlib.pyplot as plt
 
 from missing_values import get_missing_values
+from prediction.tasks import tasks
+from database import dbs
 
 
 def describe_missing_values(df_mv, show=False):
@@ -421,10 +424,49 @@ def describe_missing_values(df_mv, show=False):
     plt.show()
 
 
+parser = argparse.ArgumentParser(description='Statistics on missing values.')
+parser.add_argument('program')
+parser.add_argument('--tag', dest='task_tag', default=None, nargs='?',
+                    help='The task tag')
+parser.add_argument('--name', dest='db_df_name', default=None, nargs='?',
+                    help='The db and df name')
+parser.add_argument('--hide', dest='hide', default=False, const=True, nargs='?',
+                    help='Whether to plot the stats or print')
+
+
+def run(argv=None):
+    """Show some statistics on the given df."""
+    args = parser.parse_args(argv)
+
+    task_tag = args.task_tag
+    db_df_name = args.db_df_name
+    plot = not args.hide
+
+    if task_tag is not None:
+        task = tasks[task_tag]
+        db_name, tag = task.meta.db, task.meta.tag
+        db = dbs[db_name]
+        db.load(task.meta)
+        mv = db.missing_values[tag]
+
+    elif db_df_name is not None:
+        db_name, df_name = db_df_name.split('/')
+        db = dbs[db_name]
+        db.load(df_name)
+        mv = db.missing_values[df_name]
+
+    else:
+        raise ValueError('Incomplete arguments')
+
+    describe_missing_values(mv, show=plot)
+
+
 if __name__ == '__main__':
-    from database import NHIS, TB
-    # df = NHIS['family']
-    df = TB['20000']
-    df_mv = get_missing_values(df, TB.heuristic)
+    from database import dbs
+
+    TB = dbs['TB']
+    TB.load('20000')
+
+    df_mv = TB.missing_values['20000']
 
     describe_missing_values(df_mv, show=True)

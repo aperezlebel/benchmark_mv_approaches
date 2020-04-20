@@ -1,5 +1,6 @@
 import prediction
 import test_fit_time
+import statistics
 
 
 def run(argv=None):
@@ -7,5 +8,7 @@ def run(argv=None):
         prediction.run(argv[1:])
     elif argv[1] == 'test_fit_time':
         test_fit_time.run(argv[1:])
+    elif argv[1] == 'stats':
+        statistics.run(argv[1:])
     else:
         raise ValueError(f'Unrecognized argument {argv[1]}')
