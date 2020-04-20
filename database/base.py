@@ -180,10 +180,13 @@ class Database(ABC):
         return list(self.dataframes.keys())
 
     def _load_db(self, meta):
-        df_name = meta.df_name
+        if isinstance(meta, str):
+            df_name, tag = meta, meta
+        else:
+            df_name, tag = meta.df_name, meta.tag
+
         logger.info(f'Loading {df_name} data frame.')
         available_paths = self.available_paths
-
 
         if df_name not in available_paths:
             raise ValueError(
@@ -196,33 +199,41 @@ class Database(ABC):
         # if self._dtype is not None:
         #     dtype = self._dtype.get(df_name, None)
 
-        # Load only the features of the database (avoid load time)
-        features = pd.read_csv(p, sep=self._sep, encoding=self._encoding,
-                               nrows=0)
+        if not isinstance(meta, str):
+            # Load only the features of the database (avoid load time)
+            features = pd.read_csv(p, sep=self._sep, encoding=self._encoding,
+                                   nrows=0)
 
-        # Compute index where feature to predict is Nan
-        df_predict = pd.read_csv(p, sep=self._sep, encoding=self._encoding,
-                                 usecols=[meta.predict], squeeze=True)
-        logger.info(f'Raw DB of shape [{df_predict.size} x {features.shape[1]}]')
-        df_predict_mv = get_missing_values(df_predict, self.heuristic)
-        index_to_drop = df_predict.index[df_predict_mv != 0]+1
-        logger.info(f'Rows to drop because NA in predict {len(index_to_drop)}')
+            # Compute index where feature to predict is Nan
+            df_predict = pd.read_csv(p, sep=self._sep, encoding=self._encoding,
+                                     usecols=[meta.predict], squeeze=True)
+            logger.info(
+                f'Raw DB of shape [{df_predict.size} x {features.shape[1]}]')
+            df_predict_mv = get_missing_values(df_predict, self.heuristic)
+            index_to_drop = df_predict.index[df_predict_mv != 0]+1
+            logger.info(
+                f'Rows to drop because NA in predict {len(index_to_drop)}')
 
-        # Compute the features to keep
-        to_keep, to_drop = self.get_drop_and_keep_meta(features, meta)
-        logger.info(f'Features to drop as specified in meta {len(to_drop)}')
+            # Compute the features to keep
+            to_keep, to_drop = self.get_drop_and_keep_meta(features, meta)
+            logger.info(
+                f'Features to drop as specified in meta {len(to_drop)}')
+
+        else:
+            to_keep = None
+            index_to_drop = None
 
         # Load only the features needed: save a lot of time and space
         df = pd.read_csv(p, sep=self._sep, encoding=self._encoding,
                          usecols=to_keep, skiprows=index_to_drop)
 
-        logger.info(f'df {meta.tag} loaded with shape {df.shape}')
+        logger.info(f'df {tag} loaded with shape {df.shape}')
         # dtype=dtype)
 
         # Replace potential infinite values by Nans
         # df.replace([np.inf, -np.inf], np.nan, inplace=True)
 
-        self.dataframes[meta.tag] = df
+        self.dataframes[tag] = df
 
     @abstractmethod
     def heuristic(self, series):
@@ -245,7 +256,11 @@ class Database(ABC):
 
     def _load_feature_types(self, meta):
         logger.info(f'Loading feature types for {self.acronym}.')
-        df_name = meta.df_name
+
+        if isinstance(meta, str):
+            df_name, tag = meta, meta
+        else:
+            df_name, tag = meta.df_name, meta.tag
 
         try:
             types = _load_feature_types(self, df_name, anonymized=False)
@@ -256,6 +271,11 @@ class Database(ABC):
             )
             return
 
+        if not isinstance(meta, str):
+            _, to_drop = self.get_drop_and_keep_meta(types, meta)
+            types.drop(labels=to_drop, inplace=True)
+
+        self.feature_types[tag] = types
         _, to_drop = self.get_drop_and_keep_meta(types, meta)
         types.drop(labels=to_drop, inplace=True)
         self.feature_types[meta.tag] = types
@@ -263,7 +283,11 @@ class Database(ABC):
 
     def _load_ordinal_orders(self, meta):
         logger.info(f'Loading ordinal orders for {self.acronym}.')
-        df_name = meta.df_name
+
+        if isinstance(meta, str):
+            df_name, tag = meta, meta
+        else:
+            df_name, tag = meta.df_name, meta.tag
 
         logger.info(f'Loading ordinal orders of {df_name}.')
         filepath = f'{METADATA_PATH}/ordinal_orders/{self.acronym}/{df_name}.yml'
@@ -279,6 +303,7 @@ class Database(ABC):
                 print(f'{exc}. No order loaded for {df_name}.')
                 return
 
+        if not isinstance(meta, str):
             features = list(order.keys())
             _, to_drop = self.get_drop_and_keep_meta(features, meta)
 
@@ -286,12 +311,13 @@ class Database(ABC):
             for f in to_drop:
                 order.pop(f)
 
-            self.ordinal_orders[meta.tag] = order
+        self.ordinal_orders[tag] = order
 
     def _find_missing_values(self, meta):
-        logger.info(f'Finding missing values of {meta.tag}.')
-        df = self.dataframes[meta.tag]
-        self.missing_values[meta.tag] = get_missing_values(df, self.heuristic)
+        tag = meta if isinstance(meta, str) else meta.tag
+        logger.info(f'Finding missing values of {tag}.')
+        df = self.dataframes[tag]
+        self.missing_values[tag] = get_missing_values(df, self.heuristic)
 
     @staticmethod
     def _encode_df(df, mv, types, order=None, encode=None):
@@ -382,10 +408,8 @@ class Database(ABC):
 
         return encoded_df, encoded_mv, encoded_types, encoded_parent
 
-    # @abstractmethod
     def _encode(self, meta):
-        # logger.info(f'Encoding data frames for {self.acronym}.')
-        tag = meta.tag
+        tag = meta if isinstance(meta, str) else meta.tag
         df = self.dataframes[tag]
         logger.info(f'Encoding {tag}.')
 
