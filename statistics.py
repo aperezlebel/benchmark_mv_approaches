@@ -12,7 +12,7 @@ from prediction.tasks import tasks
 from database import dbs
 
 
-def describe_missing_values(df_mv, show=False):
+def get_indicators_mv(df_mv):
     # 1: Statistics on the full database
     n_rows, n_cols = df_mv.shape
     n_values = n_rows*n_cols
@@ -32,47 +32,20 @@ def describe_missing_values(df_mv, show=False):
     f_mv = 100*n_mv/n_values
     f_not_mv = 100*n_not_mv/n_values
 
-    # Print these statistics
-    print(
-        f'\n'
-        f'Statistics on the full data frame:\n'
-        f'---------------------------------\n'
-        f'[{n_rows} rows x {n_cols} columns]\n'
-        f'{n_values} values\n'
-        f'N NMV:    {f_not_mv:.1f}% or {n_not_mv}\n'
-        f'N MV:     {f_mv:.1f}% or {n_mv}\n'
-        f'    N MV 1:   {f_mv1:.1f}% or {n_mv1}\n'
-        f'    N MV 2:   {f_mv2:.1f}% or {n_mv2}\n'
-    )
-
-    # If asked, plot these statistics
-    if show:
-        _, ax = plt.subplots(figsize=(10, 4))
-
-        df_show = pd.DataFrame({
-            'MV1': [n_mv1],
-            'MV2': [n_mv2],
-            'MV': [n_mv],
-            'V': [n_values],
-            'type': ['Full data frame']
-            })
-
-        sns.set_color_codes('pastel')
-        sns.barplot(x='V', y='type', data=df_show, color='b',
-                    label=f'Not missing ({f_not_mv:.1f}%)')
-
-        sns.set_color_codes('muted')
-        sns.barplot(x='MV', y='type', data=df_show, color='b',
-                    label=f'Missing - Not applicable ({f_mv1:.1f}%)')
-
-        sns.set_color_codes('dark')
-        sns.barplot(x='MV2', y='type', data=df_show, color='b',
-                    label=f'Missing - Not available ({f_mv2:.1f}%)')
-
-        ax.legend(ncol=1, loc='lower right', frameon=True,
-                  title='Type of values')
-        ax.set(ylabel='', xlabel=f'Number of values (Total {n_values})')
-        sns.despine(left=True, bottom=True)
+    # Store the indicators in a df
+    df_1 = pd.DataFrame({
+        'n_rows': [n_rows],
+        'n_cols': [n_cols],
+        'n_values': [n_values],
+        'n_mv': [n_mv],
+        'n_mv1': [n_mv1],
+        'n_mv2': [n_mv2],
+        'n_not_mv': [n_not_mv],
+        'f_mv': [f_mv],
+        'f_mv1': [f_mv1],
+        'f_mv2': [f_mv2],
+        'f_not_mv': [f_not_mv],
+    })
 
     # 2: Number of features with missing values
     # For each feature, tells if it contains MV of type 1
@@ -105,50 +78,19 @@ def describe_missing_values(df_mv, show=False):
     f_f_w_mv_1a2 = 100*n_f_w_mv_1a2/n_cols
     f_f_wo_mv = 100*n_f_wo_mv/n_cols
 
-    print(
-        f'\n'
-        f'Statistics on features:\n'
-        f'-----------------------\n'
-        f'N features: {n_cols}\n'
-        f'N features with MV:              {n_f_w_mv} ({f_f_w_mv:.1f}%)\n'
-        f'    N features with MV1 only:    {n_f_w_mv1_o} ({f_f_w_mv1_o:.1f}%)\n'
-        f'    N features with MV2 only:    {n_f_w_mv2_o} ({f_f_w_mv2_o:.1f}%)\n'
-        f'    N features with MV1 and MV2: {n_f_w_mv_1a2} ({f_f_w_mv_1a2:.1f}%)\n'
-    )
-
-    if show:
-        # Plot proportion of features with missing values
-        df_show = pd.DataFrame({
-            'N MV': [n_f_w_mv],
-            'N MV1 only': [n_f_w_mv1_o],
-            'N MV2 only': [n_f_w_mv2_o],
-            'N MV 1 xor 2': [n_f_w_mv1_o + n_f_w_mv2_o],
-            'N F': [n_cols],
-            'type': ['Full data frame']
-            })
-
-        _, ax = plt.subplots(figsize=(10, 4))
-
-        sns.set_color_codes('pastel')
-        sns.barplot(x='N F', y='type', data=df_show, color='lightgray',
-                    label=f'No missing values ({n_f_wo_mv} • {f_f_wo_mv:.1f}%)')
-
-        sns.set_color_codes('pastel')
-        sns.barplot(x='N MV', y='type', data=df_show, color='g',
-                    label=f'Not applicable and not available ({n_f_w_mv_1a2} • {f_f_w_mv_1a2:.1f}%)')
-
-        sns.set_color_codes('muted')
-        sns.barplot(x='N MV 1 xor 2', y='type', data=df_show, color='g',
-                    label=f'Not applicable only ({n_f_w_mv1_o} • {f_f_w_mv1_o:.1f}%)')
-
-        sns.set_color_codes('dark')
-        sns.barplot(x='N MV2 only', y='type', data=df_show, color='g',
-                    label=f'Not available only ({n_f_w_mv2_o} • {f_f_w_mv2_o:.1f}%)')
-
-        ax.legend(ncol=1, loc='lower right', frameon=True,
-                  title='Type of missing values contained in the feature')
-        ax.set(ylabel='', xlabel=f'Number of features (Total {n_cols})')
-        sns.despine(left=True, bottom=True)
+    # Store the indicators in a df
+    df_2 = pd.DataFrame({
+        'n_f_w_mv': [n_f_w_mv],
+        'n_f_w_mv1_o': [n_f_w_mv1_o],
+        'n_f_w_mv2_o': [n_f_w_mv2_o],
+        'n_f_w_mv_1a2': [n_f_w_mv_1a2],
+        'n_f_wo_mv': [n_f_wo_mv],
+        'f_f_w_mv': [f_f_w_mv],
+        'f_f_w_mv1_o': [f_f_w_mv1_o],
+        'f_f_w_mv2_o': [f_f_w_mv2_o],
+        'f_f_w_mv_1a2': [f_f_w_mv_1a2],
+        'f_f_wo_mv': [f_f_wo_mv],
+    })
 
     # 3: Statistics feature-wise
     n_mv1_fw = df_mv1.sum().to_frame('N MV1')  # Number of MV 1 by feature
@@ -163,45 +105,8 @@ def describe_missing_values(df_mv, show=False):
     # Sort by number of missing values
     n_mv_fw.sort_values('N MV', ascending=False, inplace=True)
 
-    with pd.option_context('display.max_rows', None):
-        print(
-            f'\n'
-            f'Statistics feature-wise:\n'
-            f'------------------------\n'
-            f'\n'
-            f'{n_mv_fw}'
-        )
-
-    if show:
-        # Plot proportion of missing values in each feature
-        # Copy index in a column for the barplot method
-        n_mv_fw['feature'] = n_mv_fw.index
-
-        # Add the total number of values for each feature
-        n_mv_fw['N V'] = n_rows
-
-        # Get rid of the features with no missing values
-        n_mv_fw_l = n_mv_fw[(n_mv_fw['N MV1'] != 0) | (n_mv_fw['N MV2'] != 0)]
-
-        _, ax = plt.subplots(figsize=(8, 8))
-
-        sns.set_color_codes('pastel')
-        sns.barplot(x='N V', y='feature', data=n_mv_fw_l,
-                    color='b', label=f'Not missing')
-
-        sns.set_color_codes('muted')
-        sns.barplot(x='N MV', y='feature', data=n_mv_fw_l,
-                    color='b', label=f'Missing - Not applicable')
-
-        sns.set_color_codes("dark")
-        sns.barplot(x='N MV2', y='feature', data=n_mv_fw_l,
-                    color="b", label=f'Missing - Not available')
-
-        ax.legend(ncol=1, loc='lower right', frameon=True,
-                  title='Type of values')
-        ax.set(ylabel='', xlabel='Number of values')
-        ax.tick_params(labelsize=5)
-        sns.despine(left=True, bottom=True)
+    # Store the indicators in a df
+    df_3 = n_mv_fw
 
     # 4: Rows without missing values
     # For each row, tells if it contains MV of type 1
@@ -234,51 +139,19 @@ def describe_missing_values(df_mv, show=False):
     f_r_w_mv_1a2 = 100*n_r_w_mv_1a2/n_rows
     f_r_wo_mv = 100*n_r_wo_mv/n_rows
 
-    print(
-        f'\n'
-        f'Statistics on rows:\n'
-        f'-------------------\n'
-        f'N rows: {n_rows}\n'
-        f'N rows without MV:         {n_r_wo_mv} ({f_r_wo_mv:.2f}%)\n'
-        f'N rows with MV:            {n_r_w_mv} ({f_r_w_mv:.2f}%)\n'
-        f'  N rows with MV1 only:    {n_r_w_mv1_o} ({f_r_w_mv1_o:.2f}%)\n'
-        f'  N rows with MV2 only:    {n_r_w_mv2_o} ({f_r_w_mv2_o:.2f}%)\n'
-        f'  N rows with MV1 and MV2: {n_r_w_mv_1a2} ({f_r_w_mv_1a2:.2f}%)\n'
-    )
-
-    if show:
-        # Plot proportion of features with missing values
-        df_show = pd.DataFrame({
-            'N MV': [n_r_w_mv],
-            'N MV1 only': [n_r_w_mv1_o],
-            'N MV2 only': [n_r_w_mv2_o],
-            'N MV 1 xor 2': [n_r_w_mv1_o + n_r_w_mv2_o],
-            'N R': [n_rows],
-            'type': ['Full data frame']
-            })
-
-        _, ax = plt.subplots(figsize=(10, 4))
-
-        sns.set_color_codes('pastel')
-        sns.barplot(x='N R', y='type', data=df_show, color='lightgray',
-                    label=f'No missing values ({n_r_wo_mv} • {f_r_wo_mv:.2f}%)')
-
-        sns.set_color_codes('pastel')
-        sns.barplot(x='N MV', y='type', data=df_show, color='r',
-                    label=f'Not applicable and not available ({n_r_w_mv_1a2} • {f_r_w_mv_1a2:.2f}%)')
-
-        sns.set_color_codes('muted')
-        sns.barplot(x='N MV 1 xor 2', y='type', data=df_show, color='r',
-                    label=f'Not applicable only ({n_r_w_mv1_o} • {f_r_w_mv1_o:.2f}%)')
-
-        sns.set_color_codes('dark')
-        sns.barplot(x='N MV2 only', y='type', data=df_show, color='r',
-                    label=f'Not available only ({n_r_w_mv2_o} • {f_r_w_mv2_o:.2f}%)')
-
-        ax.legend(ncol=1, loc='lower right', frameon=True,
-                  title='Type of missing values contained in the row')
-        ax.set(ylabel='', xlabel=f'Number of rows (Total {n_rows})')
-        sns.despine(left=True, bottom=True)
+    # Store the indicators in a df
+    df_4 = pd.DataFrame({
+        'n_r_w_mv': [n_r_w_mv],
+        'n_r_w_mv1_o': [n_r_w_mv1_o],
+        'n_r_w_mv2_o': [n_r_w_mv2_o],
+        'n_r_w_mv_1a2': [n_r_w_mv_1a2],
+        'n_r_wo_mv': [n_r_wo_mv],
+        'f_r_w_mv': [f_r_w_mv],
+        'f_r_w_mv1_o': [f_r_w_mv1_o],
+        'f_r_w_mv2_o': [f_r_w_mv2_o],
+        'f_r_w_mv_1a2': [f_r_w_mv_1a2],
+        'f_r_wo_mv': [f_r_wo_mv],
+    })
 
     # 5: Number of rows affected if we remove features with MV
     df_f_w_mv1 = df_f_w_mv['MV1']  # Series of features having MV1
@@ -320,17 +193,342 @@ def describe_missing_values(df_mv, show=False):
     f_r_a_rm_mv2_o = 100*n_r_a_rm_mv2_o/n_rows  # MV2 only
     f_r_a_rm_mv_1a2 = 100*n_r_a_rm_mv_1a2/n_rows  # MV1 and MV2
 
-    print(
-        f'N rows losing information if we remove features with :\n'
-        f'    MV1:          {n_r_a_rm_mv1} ({f_r_a_rm_mv1:.2f}%)\n'
-        f'    MV2:          {n_r_a_rm_mv2} ({f_r_a_rm_mv2:.2f}%)\n'
-        f'    MV:           {n_r_a_rm_mv_1o2} ({f_r_a_rm_mv_1o2:.2f}%)\n'
-        f'    MV1 only:     {n_r_a_rm_mv1_o} ({f_r_a_rm_mv1_o:.2f}%)\n'
-        f'    MV2 only:     {n_r_a_rm_mv2_o} ({f_r_a_rm_mv2_o:.2f}%)\n'
-        f'    MV1 and MV2:  {n_r_a_rm_mv_1a2} ({f_r_a_rm_mv_1a2:.2f}%)\n'
-    )
+    # Store the indicators in a df
+    df_5 = pd.DataFrame({
+        'n_r_a_rm_mv1': [n_r_a_rm_mv1],
+        'n_r_a_rm_mv2': [n_r_a_rm_mv2],
+        'n_r_a_rm_mv_1o2': [n_r_a_rm_mv_1o2],
+        'n_r_a_rm_mv1_o': [n_r_a_rm_mv1_o],
+        'n_r_a_rm_mv2_o': [n_r_a_rm_mv2_o],
+        'n_r_a_rm_mv_1a2': [n_r_a_rm_mv_1a2],
+        'f_r_a_rm_mv1': [f_r_a_rm_mv1],
+        'f_r_a_rm_mv2': [f_r_a_rm_mv2],
+        'f_r_a_rm_mv_1o2': [f_r_a_rm_mv_1o2],
+        'f_r_a_rm_mv1_o': [f_r_a_rm_mv1_o],
+        'f_r_a_rm_mv2_o': [f_r_a_rm_mv2_o],
+        'f_r_a_rm_mv_1a2': [f_r_a_rm_mv_1a2],
+    })
+
+    # 6: Proportion of information lost when removing features with MV
+    # Number
+    n_v_lost_mv1 = (~df_mv1_dropped).sum().sum()
+    n_v_lost_mv2 = (~df_mv2_dropped).sum().sum()
+    n_v_lost_mv_1o2 = (~df_mv_1o2_dropped).sum().sum()
+    n_v_lost_mv1_o = (~df_mv1_o_dropped).sum().sum()
+    n_v_lost_mv2_o = (~df_mv2_o_dropped).sum().sum()
+    n_v_lost_mv_1a2 = (~df_mv_1a2_dropped).sum().sum()
+
+    # Frequencies
+    f_v_lost_mv1 = 100*n_v_lost_mv1/n_values
+    f_v_lost_mv2 = 100*n_v_lost_mv2/n_values
+    f_v_lost_mv_1o2 = 100*n_v_lost_mv_1o2/n_values
+    f_v_lost_mv1_o = 100*n_v_lost_mv1_o/n_values
+    f_v_lost_mv2_o = 100*n_v_lost_mv2_o/n_values
+    f_v_lost_mv_1a2 = 100*n_v_lost_mv_1a2/n_values
+
+    # Store the indicators in a df
+    df_6 = pd.DataFrame({
+        'n_v_lost_mv1': [n_v_lost_mv1],
+        'n_v_lost_mv2': [n_v_lost_mv2],
+        'n_v_lost_mv_1o2': [n_v_lost_mv_1o2],
+        'n_v_lost_mv1_o': [n_v_lost_mv1_o],
+        'n_v_lost_mv2_o': [n_v_lost_mv2_o],
+        'n_v_lost_mv_1a2': [n_v_lost_mv_1a2],
+        'f_v_lost_mv1': [f_v_lost_mv1],
+        'f_v_lost_mv2': [f_v_lost_mv2],
+        'f_v_lost_mv_1o2': [f_v_lost_mv_1o2],
+        'f_v_lost_mv1_o': [f_v_lost_mv1_o],
+        'f_v_lost_mv2_o': [f_v_lost_mv2_o],
+        'f_v_lost_mv_1a2': [f_v_lost_mv_1a2],
+    })
+
+    return {
+        'global': df_1,
+        'features': df_2,
+        'feature-wise': df_3,
+        'rows': df_4,
+        'rm_rows': df_5,
+        'rm_features': df_6,
+    }
+
+
+# Plot functions: each indicator has a differebt way of beaing plotted
+def plot_global(indicators, plot=False, show=True, ax=None):
+    """Plot statistics on the full database."""
+    # Get required indicators
+    df = indicators['global']
+
+    n_rows = df.at[0, 'n_rows']
+    n_cols = df.at[0, 'n_cols']
+    n_values = df.at[0, 'n_values']
+    n_mv = df.at[0, 'n_mv']
+    n_mv1 = df.at[0, 'n_mv1']
+    n_mv2 = df.at[0, 'n_mv2']
+    n_not_mv = df.at[0, 'n_not_mv']
+    f_mv = df.at[0, 'f_mv']
+    f_mv1 = df.at[0, 'f_mv1']
+    f_mv2 = df.at[0, 'f_mv2']
+    f_not_mv = df.at[0, 'f_not_mv']
+
+    # Print these statistics
+    if show:
+        print(
+            f'\n'
+            f'Statistics on the full data frame:\n'
+            f'---------------------------------\n'
+            f'[{n_rows} rows x {n_cols} columns]\n'
+            f'{n_values} values\n'
+            f'N NMV:    {f_not_mv:.1f}% or {n_not_mv}\n'
+            f'N MV:     {f_mv:.1f}% or {n_mv}\n'
+            f'    N MV 1:   {f_mv1:.1f}% or {n_mv1}\n'
+            f'    N MV 2:   {f_mv2:.1f}% or {n_mv2}\n'
+        )
+
+    # If asked, plot these statistics
+    if plot:
+        if ax is None:
+            _, ax = plt.subplots(figsize=(10, 4))
+
+        df_show = pd.DataFrame({
+            'MV1': [n_mv1],
+            'MV2': [n_mv2],
+            'MV': [n_mv],
+            'V': [n_values],
+            'type': ['Full data frame']
+            })
+
+        sns.set_color_codes('pastel')
+        sns.barplot(x='V', y='type', data=df_show, color='b', ax=ax,
+                    label=f'Not missing ({f_not_mv:.1f}%)')
+
+        sns.set_color_codes('muted')
+        sns.barplot(x='MV', y='type', data=df_show, color='b', ax=ax,
+                    label=f'Missing - Not applicable ({f_mv1:.1f}%)')
+
+        sns.set_color_codes('dark')
+        sns.barplot(x='MV2', y='type', data=df_show, color='b', ax=ax,
+                    label=f'Missing - Not available ({f_mv2:.1f}%)')
+
+        ax.legend(ncol=1, loc='lower right', frameon=True,
+                  title='Type of values')
+        ax.set(ylabel='', xlabel=f'Number of values (Total {n_values})')
+        sns.despine(left=True, bottom=True, ax=ax)
+
+
+def plot_features(indicators, plot=False, show=True, ax=None):
+    """Plot the number of features with missing values."""
+    # Get required indicators
+    df = pd.concat([indicators['features'], indicators['global']], axis=1)
+
+    n_f_w_mv = df.at[0, 'n_f_w_mv']
+    n_f_w_mv1_o = df.at[0, 'n_f_w_mv1_o']
+    n_f_w_mv2_o = df.at[0, 'n_f_w_mv2_o']
+    n_f_w_mv_1a2 = df.at[0, 'n_f_w_mv_1a2']
+    n_f_wo_mv = df.at[0, 'n_f_wo_mv']
+    f_f_w_mv = df.at[0, 'f_f_w_mv']
+    f_f_w_mv1_o = df.at[0, 'f_f_w_mv1_o']
+    f_f_w_mv2_o = df.at[0, 'f_f_w_mv2_o']
+    f_f_w_mv_1a2 = df.at[0, 'f_f_w_mv_1a2']
+    f_f_wo_mv = df.at[0, 'f_f_wo_mv']
+
+    n_cols = df.at[0, 'n_cols']
 
     if show:
+        print(
+            f'\n'
+            f'Statistics on features:\n'
+            f'-----------------------\n'
+            f'N features: {n_cols}\n'
+            f'N features with MV:              {n_f_w_mv} ({f_f_w_mv:.1f}%)\n'
+            f'    N features with MV1 only:    {n_f_w_mv1_o} ({f_f_w_mv1_o:.1f}%)\n'
+            f'    N features with MV2 only:    {n_f_w_mv2_o} ({f_f_w_mv2_o:.1f}%)\n'
+            f'    N features with MV1 and MV2: {n_f_w_mv_1a2} ({f_f_w_mv_1a2:.1f}%)\n'
+        )
+
+    if plot:
+        # Plot proportion of features with missing values
+        df_show = pd.DataFrame({
+            'N MV': [n_f_w_mv],
+            'N MV1 only': [n_f_w_mv1_o],
+            'N MV2 only': [n_f_w_mv2_o],
+            'N MV 1 xor 2': [n_f_w_mv1_o + n_f_w_mv2_o],
+            'N F': [n_cols],
+            'type': ['Full data frame']
+            })
+
+        if ax is None:
+            _, ax = plt.subplots(figsize=(10, 4))
+
+        sns.set_color_codes('pastel')
+        sns.barplot(x='N F', y='type', data=df_show, color='lightgray', ax=ax,
+                    label=f'No missing values ({n_f_wo_mv} • {f_f_wo_mv:.1f}%)')
+
+        sns.set_color_codes('pastel')
+        sns.barplot(x='N MV', y='type', data=df_show, color='g', ax=ax,
+                    label=f'Not applicable and not available ({n_f_w_mv_1a2} • {f_f_w_mv_1a2:.1f}%)')
+
+        sns.set_color_codes('muted')
+        sns.barplot(x='N MV 1 xor 2', y='type', data=df_show, color='g', ax=ax,
+                    label=f'Not applicable only ({n_f_w_mv1_o} • {f_f_w_mv1_o:.1f}%)')
+
+        sns.set_color_codes('dark')
+        sns.barplot(x='N MV2 only', y='type', data=df_show, color='g', ax=ax,
+                    label=f'Not available only ({n_f_w_mv2_o} • {f_f_w_mv2_o:.1f}%)')
+
+        ax.legend(ncol=1, loc='lower right', frameon=True,
+                  title='Type of missing values contained in the feature')
+        ax.set(ylabel='', xlabel=f'Number of features (Total {n_cols})')
+        sns.despine(left=True, bottom=True, ax=ax)
+
+
+def plot_feature_wise(indicators, plot=False, show=True, ax=None):
+    """Plot the statistics feature-wise."""
+    n_mv_fw = indicators['feature-wise']
+
+    n_rows = indicators['global'].at[0, 'n_rows']
+
+    if show:
+        with pd.option_context('display.max_rows', None):
+            print(
+                f'\n'
+                f'Statistics feature-wise:\n'
+                f'------------------------\n'
+                f'\n'
+                f'{n_mv_fw}'
+            )
+
+    if plot:
+        # Plot proportion of missing values in each feature
+        # Copy index in a column for the barplot method
+        n_mv_fw['feature'] = n_mv_fw.index
+
+        # Add the total number of values for each feature
+        n_mv_fw['N V'] = n_rows
+
+        # Get rid of the features with no missing values
+        n_mv_fw_l = n_mv_fw[(n_mv_fw['N MV1'] != 0) | (n_mv_fw['N MV2'] != 0)]
+
+        if ax is None:
+            _, ax = plt.subplots(figsize=(8, 8))
+
+        sns.set_color_codes('pastel')
+        sns.barplot(x='N V', y='feature', data=n_mv_fw_l, ax=ax,
+                    color='b', label=f'Not missing')
+
+        sns.set_color_codes('muted')
+        sns.barplot(x='N MV', y='feature', data=n_mv_fw_l, ax=ax,
+                    color='b', label=f'Missing - Not applicable')
+
+        sns.set_color_codes("dark")
+        sns.barplot(x='N MV2', y='feature', data=n_mv_fw_l, ax=ax,
+                    color="b", label=f'Missing - Not available')
+
+        ax.legend(ncol=1, loc='lower right', frameon=True,
+                  title='Type of values')
+        ax.set(ylabel='', xlabel='Number of values')
+        ax.tick_params(labelsize=5)
+        sns.despine(left=True, bottom=True, ax=ax)
+
+
+def plot_rows(indicators, plot=False, show=True, ax=None):
+    """Plot stats on rows without missing values."""
+    # Get required indicators
+    df = pd.concat([indicators['rows'], indicators['global']], axis=1)
+
+    n_r_wo_mv = df.at[0, 'n_r_wo_mv']
+    n_r_w_mv = df.at[0, 'n_r_w_mv']
+    n_r_w_mv1_o = df.at[0, 'n_r_w_mv1_o']
+    n_r_w_mv2_o = df.at[0, 'n_r_w_mv2_o']
+    n_r_w_mv_1a2 = df.at[0, 'n_r_w_mv_1a2']
+    f_r_wo_mv = df.at[0, 'f_r_wo_mv']
+    f_r_w_mv = df.at[0, 'f_r_w_mv']
+    f_r_w_mv1_o = df.at[0, 'f_r_w_mv1_o']
+    f_r_w_mv2_o = df.at[0, 'f_r_w_mv2_o']
+    f_r_w_mv_1a2 = df.at[0, 'f_r_w_mv_1a2']
+
+    n_rows = df.at[0, 'n_rows']
+
+    if show:
+        print(
+            f'\n'
+            f'Statistics on rows:\n'
+            f'-------------------\n'
+            f'N rows: {n_rows}\n'
+            f'N rows without MV:         {n_r_wo_mv} ({f_r_wo_mv:.2f}%)\n'
+            f'N rows with MV:            {n_r_w_mv} ({f_r_w_mv:.2f}%)\n'
+            f'  N rows with MV1 only:    {n_r_w_mv1_o} ({f_r_w_mv1_o:.2f}%)\n'
+            f'  N rows with MV2 only:    {n_r_w_mv2_o} ({f_r_w_mv2_o:.2f}%)\n'
+            f'  N rows with MV1 and MV2: {n_r_w_mv_1a2} ({f_r_w_mv_1a2:.2f}%)\n'
+        )
+
+    if plot:
+        # Plot proportion of features with missing values
+        df_show = pd.DataFrame({
+            'N MV': [n_r_w_mv],
+            'N MV1 only': [n_r_w_mv1_o],
+            'N MV2 only': [n_r_w_mv2_o],
+            'N MV 1 xor 2': [n_r_w_mv1_o + n_r_w_mv2_o],
+            'N R': [n_rows],
+            'type': ['Full data frame']
+            })
+
+        if ax is None:
+            _, ax = plt.subplots(figsize=(10, 4))
+
+        sns.set_color_codes('pastel')
+        sns.barplot(x='N R', y='type', data=df_show, color='lightgray', ax=ax,
+                    label=f'No missing values ({n_r_wo_mv} • {f_r_wo_mv:.2f}%)')
+
+        sns.set_color_codes('pastel')
+        sns.barplot(x='N MV', y='type', data=df_show, color='r', ax=ax,
+                    label=f'Not applicable and not available ({n_r_w_mv_1a2} • {f_r_w_mv_1a2:.2f}%)')
+
+        sns.set_color_codes('muted')
+        sns.barplot(x='N MV 1 xor 2', y='type', data=df_show, color='r', ax=ax,
+                    label=f'Not applicable only ({n_r_w_mv1_o} • {f_r_w_mv1_o:.2f}%)')
+
+        sns.set_color_codes('dark')
+        sns.barplot(x='N MV2 only', y='type', data=df_show, color='r', ax=ax,
+                    label=f'Not available only ({n_r_w_mv2_o} • {f_r_w_mv2_o:.2f}%)')
+
+        ax.legend(ncol=1, loc='lower right', frameon=True,
+                  title='Type of missing values contained in the row')
+        ax.set(ylabel='', xlabel=f'Number of rows (Total {n_rows})')
+        sns.despine(left=True, bottom=True, ax=ax)
+
+
+def plot_rm_rows(indicators, plot=False, show=True, ax=None):
+    """Plot number of rows affected if we remove features with MV."""
+    # Get required indicators
+    df = pd.concat([indicators['rm_rows'], indicators['global']], axis=1)
+
+    n_r_a_rm_mv1 = df.at[0, 'n_r_a_rm_mv1']
+    n_r_a_rm_mv2 = df.at[0, 'n_r_a_rm_mv2']
+    n_r_a_rm_mv_1o2 = df.at[0, 'n_r_a_rm_mv_1o2']
+    n_r_a_rm_mv1_o = df.at[0, 'n_r_a_rm_mv1_o']
+    n_r_a_rm_mv2_o = df.at[0, 'n_r_a_rm_mv2_o']
+    n_r_a_rm_mv_1a2 = df.at[0, 'n_r_a_rm_mv_1a2']
+    f_r_a_rm_mv1 = df.at[0, 'f_r_a_rm_mv1']
+    f_r_a_rm_mv2 = df.at[0, 'f_r_a_rm_mv2']
+    f_r_a_rm_mv_1o2 = df.at[0, 'f_r_a_rm_mv_1o2']
+    f_r_a_rm_mv1_o = df.at[0, 'f_r_a_rm_mv1_o']
+    f_r_a_rm_mv2_o = df.at[0, 'f_r_a_rm_mv2_o']
+    f_r_a_rm_mv_1a2 = df.at[0, 'f_r_a_rm_mv_1a2']
+
+    n_rows = df.at[0, 'n_rows']
+
+    if show:
+        print(
+            f'N rows losing information if we remove features with :\n'
+            f'    MV1:          {n_r_a_rm_mv1} ({f_r_a_rm_mv1:.2f}%)\n'
+            f'    MV2:          {n_r_a_rm_mv2} ({f_r_a_rm_mv2:.2f}%)\n'
+            f'    MV:           {n_r_a_rm_mv_1o2} ({f_r_a_rm_mv_1o2:.2f}%)\n'
+            f'    MV1 only:     {n_r_a_rm_mv1_o} ({f_r_a_rm_mv1_o:.2f}%)\n'
+            f'    MV2 only:     {n_r_a_rm_mv2_o} ({f_r_a_rm_mv2_o:.2f}%)\n'
+            f'    MV1 and MV2:  {n_r_a_rm_mv_1a2} ({f_r_a_rm_mv_1a2:.2f}%)\n'
+        )
+
+    if plot:
         # Plot number of rows losing information when removing features with MV
         df_show = pd.DataFrame({
             'N rows affected': [
@@ -352,44 +550,51 @@ def describe_missing_values(df_mv, show=False):
 
         df_show.sort_values('N rows affected', ascending=False, inplace=True)
 
-        _, ax = plt.subplots(figsize=(10, 4))
+        if ax is None:
+            _, ax = plt.subplots(figsize=(10, 4))
 
         sns.set_color_codes('muted')
-        sns.barplot(x='N rows affected', y='type', data=df_show, color='r')
+        sns.barplot(x='N rows affected', y='type', data=df_show, color='r', ax=ax)
 
         ax.set_title('Number of rows losing information by'
                      '\nremoving features containing missing values of type:')
         ax.set(ylabel='', xlabel=f'Number of rows (Total {n_rows})')
-        sns.despine(left=True, bottom=True)
+        sns.despine(left=True, bottom=True, ax=ax)
 
-    # 6: Proportion of information lost when removing features with MV
-    # Number
-    n_v_lost_mv1 = (~df_mv1_dropped).sum().sum()
-    n_v_lost_mv2 = (~df_mv2_dropped).sum().sum()
-    n_v_lost_mv_1o2 = (~df_mv_1o2_dropped).sum().sum()
-    n_v_lost_mv1_o = (~df_mv1_o_dropped).sum().sum()
-    n_v_lost_mv2_o = (~df_mv2_o_dropped).sum().sum()
-    n_v_lost_mv_1a2 = (~df_mv_1a2_dropped).sum().sum()
 
-    # Frequencies
-    f_v_lost_mv1 = 100*n_v_lost_mv1/n_values
-    f_v_lost_mv2 = 100*n_v_lost_mv2/n_values
-    f_v_lost_mv_1o2 = 100*n_v_lost_mv_1o2/n_values
-    f_v_lost_mv1_o = 100*n_v_lost_mv1_o/n_values
-    f_v_lost_mv2_o = 100*n_v_lost_mv2_o/n_values
-    f_v_lost_mv_1a2 = 100*n_v_lost_mv_1a2/n_values
+def plot_rm_features(indicators, plot=False, show=True, ax=None):
+    """Plot the part of information lost when removing features with MV."""
+    # Get required indicators
+    df = pd.concat([indicators['rm_features'], indicators['global']], axis=1)
 
-    print(
-        f'N values lost if we remove features with :\n'
-        f'    MV1:          {n_v_lost_mv1} ({f_v_lost_mv1:.2f}%)\n'
-        f'    MV2:          {n_v_lost_mv2} ({f_v_lost_mv2:.2f}%)\n'
-        f'    MV:           {n_v_lost_mv_1o2} ({f_v_lost_mv_1o2:.2f}%)\n'
-        f'    MV1 only:     {n_v_lost_mv1_o} ({f_v_lost_mv1_o:.2f}%)\n'
-        f'    MV2 only:     {n_v_lost_mv2_o} ({f_v_lost_mv2_o:.2f}%)\n'
-        f'    MV1 and MV2:  {n_v_lost_mv_1a2} ({f_v_lost_mv_1a2:.2f}%)\n'
-    )
+    n_v_lost_mv1 = df.at[0, 'n_v_lost_mv1']
+    n_v_lost_mv2 = df.at[0, 'n_v_lost_mv2']
+    n_v_lost_mv_1o2 = df.at[0, 'n_v_lost_mv_1o2']
+    n_v_lost_mv1_o = df.at[0, 'n_v_lost_mv1_o']
+    n_v_lost_mv2_o = df.at[0, 'n_v_lost_mv2_o']
+    n_v_lost_mv_1a2 = df.at[0, 'n_v_lost_mv_1a2']
+    f_v_lost_mv1 = df.at[0, 'f_v_lost_mv1']
+    f_v_lost_mv2 = df.at[0, 'f_v_lost_mv2']
+    f_v_lost_mv_1o2 = df.at[0, 'f_v_lost_mv_1o2']
+    f_v_lost_mv1_o = df.at[0, 'f_v_lost_mv1_o']
+    f_v_lost_mv2_o = df.at[0, 'f_v_lost_mv2_o']
+    f_v_lost_mv_1a2 = df.at[0, 'f_v_lost_mv_1a2']
+
+    n_rows = df.at[0, 'n_rows']
+    n_values = df.at[0, 'n_values']
 
     if show:
+        print(
+            f'N values lost if we remove features with :\n'
+            f'    MV1:          {n_v_lost_mv1} ({f_v_lost_mv1:.2f}%)\n'
+            f'    MV2:          {n_v_lost_mv2} ({f_v_lost_mv2:.2f}%)\n'
+            f'    MV:           {n_v_lost_mv_1o2} ({f_v_lost_mv_1o2:.2f}%)\n'
+            f'    MV1 only:     {n_v_lost_mv1_o} ({f_v_lost_mv1_o:.2f}%)\n'
+            f'    MV2 only:     {n_v_lost_mv2_o} ({f_v_lost_mv2_o:.2f}%)\n'
+            f'    MV1 and MV2:  {n_v_lost_mv_1a2} ({f_v_lost_mv_1a2:.2f}%)\n'
+        )
+
+    if plot:
         # Plot number of values lost when removing features with MV
         df_show = pd.DataFrame({
             'N values lost': [
@@ -411,16 +616,34 @@ def describe_missing_values(df_mv, show=False):
 
         df_show.sort_values('N values lost', ascending=False, inplace=True)
 
-        _, ax = plt.subplots(figsize=(10, 4))
+        if ax is None:
+            _, ax = plt.subplots(figsize=(10, 4))
 
         sns.set_color_codes('muted')
-        sns.barplot(x='N values lost', y='type', data=df_show, color='b')
+        sns.barplot(x='N values lost', y='type', data=df_show, color='b', ax=ax)
 
-        ax.set_title('Number of actual values lost by'
+        ax.set_title('Number of non-missing values lost by'
                      '\nremoving features containing missing values of type:')
         ax.set(ylabel='', xlabel=f'Number of values (Total {n_values})')
-        sns.despine(left=True, bottom=True)
+        sns.despine(left=True, bottom=True, ax=ax)
 
+
+def describe_missing_values(df_mv, plot=False):
+    """Plot all the indicators."""
+    indicators = get_indicators_mv(df_mv)
+
+    _, axes = plt.subplots(3, 1, figsize=(10, 10))
+
+    plot_global(indicators, plot=plot, ax=axes[0])
+    plot_features(indicators, plot=plot, ax=axes[1])
+    plot_feature_wise(indicators, plot=plot)
+    plot_rows(indicators, plot=plot, ax=axes[2])
+
+    _, axes = plt.subplots(2, 1, figsize=(10, 8))
+
+    plot_rm_rows(indicators, plot=plot, ax=axes[0])
+    plot_rm_features(indicators, plot=plot, ax=axes[1])
+    plt.tight_layout()
     plt.show()
 
 
@@ -430,8 +653,8 @@ parser.add_argument('--tag', dest='task_tag', default=None, nargs='?',
                     help='The task tag')
 parser.add_argument('--name', dest='db_df_name', default=None, nargs='?',
                     help='The db and df name')
-parser.add_argument('--hide', dest='hide', default=False, const=True, nargs='?',
-                    help='Whether to plot the stats or print')
+parser.add_argument('--hide', dest='hide', default=False, const=True,
+                    nargs='?', help='Whether to plot the stats or print')
 
 
 def run(argv=None):
@@ -458,15 +681,4 @@ def run(argv=None):
     else:
         raise ValueError('Incomplete arguments')
 
-    describe_missing_values(mv, show=plot)
-
-
-if __name__ == '__main__':
-    from database import dbs
-
-    TB = dbs['TB']
-    TB.load('20000')
-
-    df_mv = TB.missing_values['20000']
-
-    describe_missing_values(df_mv, show=True)
+    describe_missing_values(mv, plot=plot)
