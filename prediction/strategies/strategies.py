@@ -11,7 +11,7 @@ from sklearn.ensemble import HistGradientBoostingClassifier, \
     HistGradientBoostingRegressor, RandomForestClassifier
 from sklearn.experimental import enable_iterative_imputer
 from sklearn.impute import SimpleImputer, IterativeImputer, KNNImputer
-from sklearn.linear_model import RidgeCV
+from sklearn.linear_model import RidgeCV, BayesianRidge
 from scipy.stats import uniform
 from sklearn.utils.fixes import loguniform
 
@@ -200,10 +200,10 @@ imputers = {
     'Iterative+mask': IterativeImputer(add_indicator=True,
                                        max_iter=iterative_imputer_max_iter,
                                        random_state=RS),
-    'IterativeR': IterativeImputer(estimator=RidgeCV(),
+    'IterativeL': IterativeImputer(estimator=BayesianRidge(lambda_init=5),
                                    max_iter=iterative_imputer_max_iter,
                                    random_state=RS),
-    'IterativeR+mask': IterativeImputer(estimator=RidgeCV(),
+    'IterativeL+mask': IterativeImputer(estimator=BayesianRidge(lambda_init=5),
                                         add_indicator=True,
                                         max_iter=iterative_imputer_max_iter,
                                         random_state=RS),
