@@ -42,6 +42,8 @@ n_learning_trains = params.get('n_learning_trains', 5)
 iterative_imputer_max_iter = params.get('iterative_imputer_max_iter', 10)
 roc = params.get('roc', False)
 param_space = params.get('param_space', None)
+train_set_steps = params.get('train_set_steps', [])
+min_test_set = params.get('min_test_set', 0.2)
 
 # Default RS
 RS = 42
@@ -59,6 +61,8 @@ logger.info(f'iterative_imputer_max_iter: {iterative_imputer_max_iter}')
 logger.info(f'roc: {roc}')
 logger.info(f'param_space: {param_space}')
 logger.info(f'RS: {RS}')
+logger.info(f'train_set_steps: {train_set_steps}')
+logger.info(f'min_test_set: {min_test_set}')
 
 if param_space is None:
     param_space = {
@@ -102,7 +106,9 @@ strategies.append(Strategy(
         'scoring': 'roc_auc_ovr_weighted',
         'train_sizes': np.linspace(0.1, 1, n_learning_trains)
     },
-    roc=roc
+    roc=roc,
+    train_set_steps=train_set_steps,
+    min_test_set=min_test_set,
 ))
 
 
@@ -144,7 +150,9 @@ strategies.append(Strategy(
         'scoring': 'roc_auc_ovr_weighted',
         'train_sizes': np.linspace(0.1, 1, n_learning_trains)
     },
-    roc=roc
+    roc=roc,
+    train_set_steps=train_set_steps,
+    min_test_set=min_test_set,
 ))
 
 # A strategy to run a regression
@@ -185,7 +193,9 @@ strategies.append(Strategy(
         'scoring': 'r2',
         'train_sizes': np.linspace(0.1, 1, n_learning_trains)
     },
-    roc=roc
+    roc=roc,
+    train_set_steps=train_set_steps,
+    min_test_set=min_test_set,
 ))
 
 

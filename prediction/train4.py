@@ -44,9 +44,9 @@ def train(task, strategy, RS=None):
     estimator = Pipeline(steps)
 
     # Size of the train set
-    for n in [5000, 15000, 60000, 200000]:
+    for n in strategy.train_set_steps:
         n_tot = X.shape[0]
-        if n_tot - n < 0.2*n_tot:
+        if n_tot - n < strategy.min_test_set*n_tot:
             # Size of the train set too small, skipping
             continue
 

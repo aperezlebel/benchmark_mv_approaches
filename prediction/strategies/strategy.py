@@ -20,7 +20,8 @@ class Strategy():
     def __init__(self, estimator, inner_cv, outer_cv, param_space, search,
                  imputer=None, search_params=dict(), compute_importance=False,
                  importance_params=dict(), learning_curve=False,
-                 learning_curve_params=dict(), roc=False, name=None):
+                 learning_curve_params=dict(), roc=False, name=None,
+                 train_set_steps=None, min_test_set=None):
         self.estimator = estimator
         self.inner_cv = inner_cv
         self.outer_cv = outer_cv
@@ -32,6 +33,8 @@ class Strategy():
         self.learning_curve = learning_curve
         self.learning_curve_params = learning_curve_params
         self.roc = roc
+        self.train_set_steps = train_set_steps
+        self.min_test_set = min_test_set
 
         if not all(p in estimator.get_params().keys() for p in param_space.keys()):
             raise ValueError('Given parmameters must be params of estimator.')
