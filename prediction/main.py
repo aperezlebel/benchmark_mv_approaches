@@ -5,6 +5,7 @@ import argparse
 from .jobs import jobs, get_job
 from .train2 import train as train2
 from .train3 import train as train3
+from .train4 import train as train4
 
 
 logger = logging.getLogger(__name__)
@@ -18,6 +19,9 @@ parser.add_argument('strategy_name', nargs='?', default=None)
 parser.add_argument('--train3', dest='train', const=train3, default=train2,
                     nargs='?',
                     help='Whether to use train2 or train3 for prediction.')
+parser.add_argument('--train4', dest='train', const=train4, default=train2,
+                    nargs='?',
+                    help='Whether to use train2 or train4 for prediction.')
 parser.add_argument('--RS', dest='RS', default=None, nargs='?',
                     help='The random state to use.')
 
