@@ -1,11 +1,14 @@
 import prediction
 import test_fit_time
 import statistics
+import selection
 
 
 def run(argv=None):
     if argv is None or argv[1] == 'prediction':
         prediction.run(argv[1:])
+    elif argv[1] == 'select':
+        selection.run(argv[1:])
     elif argv[1] == 'test_fit_time':
         test_fit_time.run(argv[1:])
     elif argv[1] == 'stats':

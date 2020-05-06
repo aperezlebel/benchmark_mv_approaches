@@ -76,10 +76,11 @@ class DumpHelper:
 
         self.task_folder = (f'{self.db_folder}{self.task.meta.name}_'
                             f'{dump_count}/')
-        self.strat_folder = f'{self.task_folder}{RS_tag}{strat.name}/'
-
-        logger.info(f'Strat folder: {self.strat_folder}')
         logger.info(f'Task folder: {self.task_folder}')
+
+        if strat is not None:
+            self.strat_folder = f'{self.task_folder}{RS_tag}{strat.name}/'
+            logger.info(f'Strat folder: {self.strat_folder}')
 
         self._dump_infos()
         self._dump_features()
@@ -111,17 +112,24 @@ class DumpHelper:
     def _dump_infos(self):
         """Dump the infos of the task and strategy used."""
 
-        # Create all necessary folders and ignore if already exist
-        os.makedirs(self.strat_folder, exist_ok=True)
+        if self.strat is not None:
+            # Create all necessary folders and ignore if already exist
+            os.makedirs(self.strat_folder, exist_ok=True)
 
-        # Clear strategy folder before dumping
-        shutil.rmtree(self.strat_folder)
+            # Clear strategy folder before dumping
+            shutil.rmtree(self.strat_folder)
 
-        # Create again an empty strategy folder
-        os.makedirs(self.strat_folder, exist_ok=True)
+            # Create again an empty strategy folder
+            os.makedirs(self.strat_folder, exist_ok=True)
 
-        _dump_infos(self.task, f'{self.task_folder}task_infos.yml')
-        _dump_infos(self.strat, f'{self.strat_folder}strat_infos.yml')
+            _dump_infos(self.task, f'{self.task_folder}task_infos.yml')
+            _dump_infos(self.strat, f'{self.strat_folder}strat_infos.yml')
+
+        else:
+            # Create all necessary folders and ignore if already exist
+            os.makedirs(self.task_folder, exist_ok=True)
+
+            _dump_infos(self.task, f'{self.task_folder}task_infos.yml')
 
     def _dump_features(self):
         filepath = self.task_folder+'features.yml'
@@ -213,13 +221,16 @@ class DumpHelper:
         filepath = self._filepath(filename)
         DumpHelper._append_fold(filepath, data, fold=fold)
 
-    def dump_prediction(self, y_pred, y_true, fold=None):
+    def dump_prediction(self, y_pred, y_true, fold=None, tag=None):
         df = pd.DataFrame({
             'y_pred': y_pred,
             'y_true': y_true,
         })
 
-        self._dump(df, 'prediction.csv', fold=fold)
+        if tag is None:
+            tag = ''
+
+        self._dump(df, f'{tag}_prediction.csv', fold=fold)
 
     def dump_best_params(self, best_params, fold=None):
         self._dump(best_params, 'best_params.yml', fold=fold)
@@ -236,7 +247,7 @@ class DumpHelper:
 
         self._dump(df, 'roc.csv', fold=fold)
 
-    def dump_probas(self, y_true, probas, classes=None, fold=None):
+    def dump_probas(self, y_true, probas, classes=None, fold=None, tag=None):
         y_true = np.array(y_true)
         probas = np.array(probas)
         n_classes = probas.shape[1]
@@ -250,7 +261,10 @@ class DumpHelper:
 
         df = pd.DataFrame(data, columns=cols)
 
-        self._dump(df, 'probas.csv', fold=fold)
+        if tag is None:
+            tag = ''
+
+        self._dump(df, f'{tag}_probas.csv', fold=fold)
 
     def dump_importance(self, importance, fold=None):
         data = {
@@ -262,3 +276,6 @@ class DumpHelper:
 
     def dump_learning_curve(self, learning_curve, fold=None):
         self._dump(learning_curve, 'learning_curve.yml', fold=fold)
+
+    def dump_pvals(self, pvals):
+        pvals.to_csv(self.task_folder+'pvals.csv', header=False)
