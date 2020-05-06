@@ -60,7 +60,8 @@ tasks_meta.append(TaskMeta(
         '20002-',  # large code
         '40006',
     ],
-    transform=transform_df_fluid_intelligence
+    transform=transform_df_fluid_intelligence,
+    classif=False,
 ))
 
 tasks_meta.append(TaskMeta(
@@ -108,7 +109,8 @@ tasks_meta.append(TaskMeta(
         '20002-',  # large code
         '40006',
     ],
-    transform=transform_df_fluid_intelligence
+    transform=transform_df_fluid_intelligence,
+    classif=False,
 ))
 
 

@@ -8,9 +8,7 @@ tasks_meta = list()
 
 # Task 1: Death prediction
 def transform_df_death(df, **kwargs):
-    predict = kwargs['meta'].predict
-    # Drop rows with missing values in the feature to predict
-    return df.dropna(axis=0, subset=[predict])
+    return df
 
 
 tasks_meta.append(TaskMeta(
@@ -29,7 +27,8 @@ tasks_meta.append(TaskMeta(
         "Nombre de jours de VM",
         "Procédure limitations de soins (LATA)",
     ],
-    transform=transform_df_death
+    transform=transform_df_death,
+    classif=True,
 ))
 
 
@@ -39,9 +38,8 @@ def transform_df_platelet(df, **kwargs):
 
     github.com/wjiang94/ABSLOPE/blob/master/ABSLOPE/OnlineSupp/OnlineSupp.pdf
     """
-    predict = kwargs['meta'].predict
-
     df = df.copy()
+
     df['Age'] = df['Age du patient (ans)']
     df['SI'] = df['FC en phase hospitalière'].divide(df['Pression Artérielle Systolique - PAS'])
     df['MBP'] = (2*df['Pression Artérielle Diastolique - PAD']+df['Pression Artérielle Systolique - PAS'])/3
@@ -106,16 +104,16 @@ tasks_meta.append(TaskMeta(
         'SBP.min',
         'DBP.min'
     ],
-    transform=transform_df_platelet
+    transform=transform_df_platelet,
+    classif=False,
 ))
 
 
 # Task 3: Hemorrhagic shock prediciton (https://arxiv.org/pdf/1805.04602)
 def transform_df_shock_hemo(df, **kwargs):
     """Build df with appropiate features for Hemmoohagic shock prediction."""
-    predict = kwargs['meta'].predict
-
     df = df.copy()
+
     df['Age'] = df['Age du patient (ans)']
     df['BMI'] = df['BMI']
     df['FC.SMUR'] = df['Fréquence cardiaque (FC) à l arrivée du SMUR']
@@ -167,7 +165,8 @@ tasks_meta.append(TaskMeta(
         'RT.colloides',
         'RT.cristalloides'
     ],
-    transform=transform_df_shock_hemo
+    transform=transform_df_shock_hemo,
+    classif=True,
 ))
 
 # Task 4: Tranexamic acid prediction (https://arxiv.org/abs/1910.10624)
@@ -181,8 +180,6 @@ rename_acid = {
 
 def transform_df_acid(df, **kwargs):
     """Build df with appropiate features for tranexamic acid prediction."""
-    predict = kwargs['meta'].predict
-
     df = df.copy()
 
     # Temp features (will be dropped)
@@ -321,4 +318,5 @@ tasks_meta.append(TaskMeta(
     ],
     rename=rename_acid,
     transform=transform_df_acid,
+    classif=True,
 ))

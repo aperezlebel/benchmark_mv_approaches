@@ -13,6 +13,7 @@ class TaskMeta():
     db: str
     df_name: str
     predict: str
+    classif: bool
     keep: List[str] = None
     keep_contains: List[str] = None
     drop: List[str] = None

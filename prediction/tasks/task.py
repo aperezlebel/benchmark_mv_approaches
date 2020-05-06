@@ -82,3 +82,6 @@ class Task:
         infos = self.meta.get_infos()
         infos['df_shape'] = None if self._df is None else repr(self._df.shape)
         return infos
+
+    def is_classif(self):
+        return self.meta.classif
