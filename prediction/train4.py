@@ -20,10 +20,14 @@ def train(task, strategy, RS=None):
     logger.info(f'X shape: {X.shape}')
     logger.info(f'y shape: {y.shape}')
 
-    logger.info(f'Resetting strategy RS to {RS}')
-    strategy.reset_RS(RS)  # Must be done before init DumpHelper
+    if RS is not None:
+        logger.info(f'Resetting strategy RS to {RS}')
+        strategy.reset_RS(RS)  # Must be done before init DumpHelper
 
     dh = DumpHelper(task, strategy, RS=RS)  # Used to dump results
+
+    if RS is None:
+        RS = 42
 
     # Create pipeline
     if strategy.imputer is not None:
