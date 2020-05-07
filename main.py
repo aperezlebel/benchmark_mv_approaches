@@ -2,6 +2,7 @@ import prediction
 import test_fit_time
 import statistics
 import selection
+import extraction
 
 
 def run(argv=None):
@@ -9,6 +10,8 @@ def run(argv=None):
         prediction.run(argv[1:])
     elif argv[1] == 'select':
         selection.run(argv[1:])
+    elif argv[1] == 'extract':
+        extraction.run(argv[1:])
     elif argv[1] == 'test_fit_time':
         test_fit_time.run(argv[1:])
     elif argv[1] == 'stats':
