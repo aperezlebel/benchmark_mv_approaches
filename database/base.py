@@ -9,13 +9,25 @@ import os
 
 from missing_values import get_missing_values
 from features_type import _load_feature_types
-from df_utils import split_features, fill_df, set_dtypes_features
+from df_utils import split_features, fill_df, set_dtypes_features, \
+    dtype_from_types
 from encode import ordinal_encode, one_hot_encode, date_encode
 from .constants import CATEGORICAL, ORDINAL, BINARY, CONTINUE_R, CONTINUE_I, \
     NOT_A_FEATURE, NOT_MISSING, DATE_TIMESTAMP, DATE_EXPLODED, METADATA_PATH
 
 
 logger = logging.getLogger(__name__)
+
+
+type_to_dtype = {
+    CATEGORICAL: 'category',
+    ORDINAL: 'category',
+    BINARY: 'category',
+    CONTINUE_R: np.float32,
+    CONTINUE_I: 'Int32',
+    # DATE_TIMESTAMP: 'datetime64',
+    # DATE_EXPLODED: 'datetime64'
+}
 
 
 class Database(ABC):
@@ -39,6 +51,7 @@ class Database(ABC):
         self._sep = sep
         self._encoding = encoding
         self.encode = encode
+        self._dtype = None
 
         if load is not None:
             self.load(load)
@@ -279,10 +292,15 @@ class Database(ABC):
             types.drop(labels=to_drop, inplace=True)
 
         self.feature_types[tag] = types
-        _, to_drop = self.get_drop_and_keep_meta(types, meta)
-        types.drop(labels=to_drop, inplace=True)
-        self.feature_types[meta.tag] = types
 
+    def _set_dtypes(self, meta):
+        logger.info(f'Setting dtypes for {self.acronym}.')
+        if self._dtype is None:
+            self._dtype = dict()
+
+        logger.info(f'Setting dtypes of {meta.tag}.')
+        types = self.feature_types[meta.tag]
+        self._dtype[meta.tag] = dtype_from_types(types, type_to_dtype)
 
     def _load_ordinal_orders(self, meta):
         logger.info(f'Loading ordinal orders for {self.acronym}.')
