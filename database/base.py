@@ -205,14 +205,17 @@ class Database(ABC):
                                    nrows=0)
 
             # Compute index where feature to predict is Nan
-            df_predict = pd.read_csv(p, sep=self._sep, encoding=self._encoding,
-                                     usecols=[meta.predict], squeeze=True)
-            logger.info(
-                f'Raw DB of shape [{df_predict.size} x {features.shape[1]}]')
-            df_predict_mv = get_missing_values(df_predict, self.heuristic)
-            index_to_drop = df_predict.index[df_predict_mv != 0]+1
-            logger.info(
-                f'Rows to drop because NA in predict {len(index_to_drop)}')
+            if meta.predict is not None and meta.predict in features:
+                df_predict = pd.read_csv(p, sep=self._sep, encoding=self._encoding,
+                                         usecols=[meta.predict], squeeze=True)
+                logger.info(
+                    f'Raw DB of shape [{df_predict.size} x {features.shape[1]}]')
+                df_predict_mv = get_missing_values(df_predict, self.heuristic)
+                index_to_drop = df_predict.index[df_predict_mv != 0]+1
+                logger.info(
+                    f'Rows to drop because NA in predict {len(index_to_drop)}')
+            else:
+                index_to_drop = None
 
             # Compute the features to keep
             to_keep, to_drop = self.get_drop_and_keep_meta(features, meta)
