@@ -242,7 +242,7 @@ def transform_df_beast(df, **kwargs):
     df['Cancer != C50'] = df['Cancer != C50'].astype(int)
     df['C56'] = df['C56'].astype(int)
 
-    return df
+    return df.dropna(axis=0, subset=['C50'])
 
 
 tasks_meta.append(TaskMeta(
@@ -279,6 +279,16 @@ tasks_meta.append(TaskMeta(
         'Cancer != C50',
         'C56',
     ],
+    transform=transform_df_beast,
+    classif=True,
+))
+
+
+tasks_meta.append(TaskMeta(
+    name='breast_plain',
+    db='UKBB',
+    df_name='breast_40663',
+    predict='C50',
     transform=transform_df_beast,
     classif=True,
 ))
