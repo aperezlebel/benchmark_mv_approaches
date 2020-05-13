@@ -327,6 +327,7 @@ tasks_meta.append(TaskMeta(
 ))
 
 
+# Task 3: Malignant melanomia of skin prediction
 def transform_df_melanomia_plain(df, **kwargs):
     # Malignant melanoma and neoplasms of skin
     df['C43-44'] = (
@@ -381,5 +382,37 @@ tasks_meta.append(TaskMeta(
     df_name='40663',
     predict='C43-44',
     transform=transform_df_melanomia_plain,
+    classif=True,
+))
+
+
+# Task 4: Parkinson disease prediction
+def transform_df_parkinson_plain(df, **kwargs):
+
+    # Parkinson disease
+    df['PD'] = (
+        cancer_ICD10(df, 'G20') | ICD10_equal(df, 'G20') |
+        cancer_ICD10(df, 'G210') | ICD10_equal(df, 'G210') |
+        cancer_ICD10(df, 'G211') | ICD10_equal(df, 'G211') |
+        cancer_ICD10(df, 'G212') | ICD10_equal(df, 'G212') |
+        cancer_ICD10(df, 'G213') | ICD10_equal(df, 'G213') |
+        cancer_ICD10(df, 'G214') | ICD10_equal(df, 'G214') |
+        cancer_ICD10(df, 'G218') | ICD10_equal(df, 'G218') |
+        cancer_ICD10(df, 'G219') | ICD10_equal(df, 'G219') |
+        cancer_ICD10(df, 'G22') | ICD10_equal(df, 'G22') |
+        cancer_ICD10(df, 'F023') | ICD10_equal(df, 'F023') |
+        cancer_ICD9(df, '3320') | ICD9_equal(df, '3320') |
+        cancer_ICD9(df, '3321') | ICD9_equal(df, '3321')
+    )
+
+    return df.dropna(axis=0, subset=['PD'])
+
+
+tasks_meta.append(TaskMeta(
+    name='parkinson_plain',
+    db='UKBB',
+    df_name='40663',
+    predict='PD',
+    transform=transform_df_parkinson_plain,
     classif=True,
 ))
