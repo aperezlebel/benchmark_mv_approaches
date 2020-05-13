@@ -33,7 +33,7 @@ def _html_to_types(html_file):
     table.set_index('UDI', inplace=True, verify_integrity=True)
     types = table['Type']
     types[types == 'Categorical (multiple)'] = CATEGORICAL
-    types[types == 'Categorical (single)'] = BINARY
+    types[types == 'Categorical (single)'] = CATEGORICAL
     types[types == 'Integer'] = CONTINUE_I
     types[types == 'Continuous'] = CONTINUE_R
     types[types == 'Time'] = DATE_EXPLODED

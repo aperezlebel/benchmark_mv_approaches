@@ -39,6 +39,6 @@ class TaskMeta():
 
     def transform_df(self, df):
         if self.transform is None:
-            return None
+            return df
 
         return self.transform(df, meta=self)

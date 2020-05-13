@@ -325,9 +325,15 @@ class Database(ABC):
     @staticmethod
     def _encode_df(df, mv, types, order=None, encode=None):
         logger.info(f'Encode mode: {encode}')
-        # Remove extra features in types
+
         common_features = [f for f in df.columns if f in types.index]
         types = types[common_features]
+
+        # Assign a defaut type for extra features in type
+        extra_features = [f for f in df.columns if f not in types.index]
+        extra_types = pd.Series(CONTINUE_R, index=extra_features)
+
+        types = pd.concat([types, extra_types])
         parent = pd.Series(df.columns, index=df.columns)
 
         # Split the data frame according to the types of the features
@@ -425,9 +431,7 @@ class Database(ABC):
         else:
             types = self.feature_types[tag]
             mv = self.missing_values[tag]
-            order = None
-            if tag in self.ordinal_orders:
-                order = self.ordinal_orders[tag]
+            order = self.ordinal_orders.get(tag, None)
 
             encoded = self._encode_df(df, mv, types, order=order, encode=self.encode)
 

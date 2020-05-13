@@ -3,6 +3,7 @@ import pandas as pd
 import numpy as np
 import logging
 
+from missing_values import get_missing_values
 from database import dbs
 from database.base import Database
 
@@ -56,8 +57,15 @@ class Task:
         to_drop = ({i for i, v in parent.items() if v in to_drop}.union(
                    (extra_features).intersection(to_drop)))
 
-        self._df = df.drop(to_drop, axis=1)
-        logger.info(f'df loaded in Task, after drop shape: {self._df.shape}')
+        df = df.drop(to_drop, axis=1)
+        logger.info(f'df loaded in Task, after drop shape: {df.shape}')
+
+        mv = get_missing_values(df, db.heuristic)
+        types = db.feature_types[tag]
+        order = db.ordinal_orders.get(tag, None)
+        df, _, _, _ = db._encode_df(df, mv, types, order=order, encode='all')
+
+        self._df = df
 
         self._parent = parent
 
