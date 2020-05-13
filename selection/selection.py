@@ -3,6 +3,7 @@ import argparse
 import pandas as pd
 import logging
 from sklearn.feature_selection import SelectKBest, f_classif, f_regression
+from joblib import Parallel, delayed
 
 from prediction.tasks import tasks
 from prediction.DumpHelper import DumpHelper
@@ -30,10 +31,6 @@ def run(argv=None):
 
     dh = DumpHelper(task, None)  # Used to dump results
 
-    pvals = dict()
-
-    n_tot = X.shape[1]
-
     if task.is_classif():
         logger.info('Classification, using f_classif')
         f_callable = f_classif
@@ -41,9 +38,9 @@ def run(argv=None):
         logger.info('Regression, using f_regression')
         f_callable = f_regression
 
-    for i, feature_name in enumerate(X):
-        logger.info(f'Feature {i+1} out of {n_tot}')
-        feature = X[feature_name]
+    def pval_one_feature(X, f, y, pvals):
+        logger.info(f'Feature {f}')
+        feature = X[f]
 
         # Drop rows wih missing values both in f and y
         idx_to_drop = feature.index[feature.isna()]
@@ -55,6 +52,11 @@ def run(argv=None):
 
         F, pval = f_callable(feature, y_dropped)
 
-        pvals[feature_name] = pval[0]
+        pvals[f] = pval[0]
 
-    dh.dump_pvals(pd.Series(pvals))
+    pvals = dict()
+    Parallel(n_jobs=-1, require='sharedmem')(delayed(pval_one_feature)
+                                             (X, f, y, pvals) for f in X)
+
+    series = pd.Series(pvals)
+    dh.dump_pvals(series)
