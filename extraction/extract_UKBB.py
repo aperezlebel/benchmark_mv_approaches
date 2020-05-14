@@ -8,6 +8,8 @@ logger = logging.getLogger(__name__)
 logger.addHandler(logging.StreamHandler())  # Print also in console.
 
 dump_folder = 'extracted/'
+sep = ','
+encoding = 'ISO-8859-1'
 
 
 def run_v2(argv=None):
@@ -24,7 +26,8 @@ def run_v2(argv=None):
     # Features to drop
     features_to_drop = features - features_to_keep
 
-    df = pd.read_csv('UKBB/ukbb_tabular/csv/ukb40663.csv', index_col='eid')
+    df = pd.read_csv('UKBB/ukbb_tabular/csv/ukb40663.csv', index_col='eid',
+                     sep=sep, encoding=encoding)
     df.drop(features_to_drop, axis=1, inplace=True)
 
     df.to_csv(f'ukb40663_filtered.csv', quoting=csv.QUOTE_ALL)
@@ -39,6 +42,6 @@ def run_v1(argv=None):
     features = set(df2['feature_name'])
 
     df = pd.read_csv('UKBB/ukbb_tabular/csv/ukb40663.csv', usecols=features,
-                     index_col='eid')
+                     index_col='eid', sep=sep, encoding=encoding)
 
     df.to_csv(f'ukb40663_filtered.csv', quoting=csv.QUOTE_ALL)
