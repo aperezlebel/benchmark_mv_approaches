@@ -320,7 +320,7 @@ def transform_df_breast_plain(df, **kwargs):
 tasks_meta.append(TaskMeta(
     name='breast_plain',
     db='UKBB',
-    df_name='40663',
+    df_name='40663_filtered',
     predict='C50',
     transform=transform_df_breast_plain,
     classif=True,
@@ -379,7 +379,7 @@ def transform_df_melanomia_plain(df, **kwargs):
 tasks_meta.append(TaskMeta(
     name='melanomia_plain',
     db='UKBB',
-    df_name='40663',
+    df_name='40663_filtered',
     predict='C43-44',
     transform=transform_df_melanomia_plain,
     classif=True,
@@ -411,7 +411,7 @@ def transform_df_parkinson_plain(df, **kwargs):
 tasks_meta.append(TaskMeta(
     name='parkinson_plain',
     db='UKBB',
-    df_name='40663',
+    df_name='40663_filtered',
     predict='PD',
     transform=transform_df_parkinson_plain,
     classif=True,
