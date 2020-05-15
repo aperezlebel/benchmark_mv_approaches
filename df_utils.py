@@ -121,6 +121,20 @@ def set_dtypes_features(df, groups, dtypes):
     return df.astype(_dtypes)
 
 
-if __name__ == '__main__':
-    from database import TB
-    print(split_features(TB['20000'], TB.feature_types['20000']))
+def dtype_from_types(types, type_to_dtype):
+    dtype = dict()
+
+    for f, t in types.items():
+        if t in type_to_dtype:
+            dtype[f] = type_to_dtype[t]
+
+    return dtype
+
+
+def get_columns(df):
+    if isinstance(df, pd.DataFrame):
+        return df.columns
+    elif isinstance(df, pd.Series):
+        return df.index
+    else:
+        raise ValueError(f'non supported type {type(df)}')
