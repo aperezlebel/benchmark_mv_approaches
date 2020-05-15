@@ -37,11 +37,11 @@ def run_v1(argv=None):
     """Train the choosen model(s) on the choosen task(s)."""
 
     # Features to keep
-    df2 = pd.read_csv('extracted/ukb40663_features_filtered.csv')
+    df2 = pd.read_csv('extracted/ukb40663_features_filtered_v2.csv')
 
     features = set(df2['feature_name'])
 
-    df = pd.read_csv('UKBB/ukbb_tabular/csv/ukb40663.csv', usecols=features,
+    df = pd.read_csv('UKBB/ukbb_tabular/csv/ukb40663_filtered.csv', usecols=features,
                      index_col='eid', sep=sep, encoding=encoding)
 
-    df.to_csv(f'ukb40663_filtered.csv', quoting=csv.QUOTE_ALL)
+    df.to_csv(f'extracted/ukb40663_filtered_v2.csv', quoting=csv.QUOTE_ALL)
