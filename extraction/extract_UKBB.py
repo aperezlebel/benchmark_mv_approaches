@@ -44,4 +44,7 @@ def run_v1(argv=None):
     df = pd.read_csv('UKBB/ukbb_tabular/csv/ukb40663_filtered.csv', usecols=features,
                      index_col='eid', sep=sep, encoding=encoding)
 
+    df_t = df.transpose()
+    df_t.to_csv(f'extracted/ukb40663_filtered_v2_transposed.csv', quoting=csv.QUOTE_ALL)
+
     df.to_csv(f'extracted/ukb40663_filtered_v2.csv', quoting=csv.QUOTE_ALL)
