@@ -220,15 +220,8 @@ def run(argv=None):
 
         print(f'"{name}"" ignored ')
 
-
-    def my_gen():
-        i = 0
-        while i < 10:
-            yield next(reader)
-            i+=1
-
     res = Parallel(n_jobs=1, require='sharedmem')(delayed(handler)
-                                                  (row, y) for row in my_gen())
+                                                  (row, y) for row in reader)
 
     res = [r for r in res if r is not None]
 
