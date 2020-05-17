@@ -160,9 +160,11 @@ def run(argv=None):
         # return x
         y_dropped = y.drop(set(y.index).intersection(idx_to_drop_x), axis=0)
 
-        y = x.to_numpy()
         x = x.to_numpy().reshape(-1, 1)
         y_dropped = y_dropped.to_numpy().reshape(-1)
+
+        if x.shape[0] == 0 or y_dropped.shape[0] == 0:
+            return None  # Array with no sample
 
         F, pval = f_callable(x, y_dropped)
 
