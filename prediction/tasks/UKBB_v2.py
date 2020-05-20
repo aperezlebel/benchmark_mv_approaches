@@ -1,4 +1,6 @@
 """Prediction tasks v2 for UKBB."""
+import pandas as pd
+
 from .task_v2 import TaskMeta
 from .transform import Transform
 
@@ -178,5 +180,30 @@ task_metas.append(TaskMeta(
     predict=breast_predict_transform,
     transform=breast_new_features_transform,
     select=breast_keep_transform,
+    encode=None,
+))
+
+
+# Task 1.2: Breast cancer prediction using pvals
+# ----------------------------------------------
+# Define which features to keep
+pvals = pd.read_csv('pvals/UKBB/breast_plain/pvals_filtered.csv', header=None,
+                    index_col=0, squeeze=True)
+pvals = pvals.sort_values()[:100]
+breast_top_pvals = list(pvals.index)
+
+breast_pvals_keep_transform = Transform(
+    output_features=breast_top_pvals
+)
+
+task_metas.append(TaskMeta(
+    name='breast_pvals',
+    db='UKBB',
+    df_name='40663_filtered',
+    classif=True,
+    idx_selection=breast_idx_transform,
+    predict=breast_predict_transform,
+    transform=None,
+    select=breast_pvals_keep_transform,
     encode=None,
 ))
