@@ -145,7 +145,7 @@ breast_new_features_transform = Transform(
 
 # Define the features to keep
 breast_keep_transform = Transform(
-    output_features=[
+    input_features=[
         '48-0.0',  # Waist circumpherence
         '2714-0.0',  # Age of menarche
         '3581-0.0',  # Age of menopause
@@ -180,7 +180,7 @@ task_metas.append(TaskMeta(
     predict=breast_predict_transform,
     transform=breast_new_features_transform,
     select=breast_keep_transform,
-    encode=None,
+    encode='all',
 ))
 
 
@@ -205,5 +205,5 @@ task_metas.append(TaskMeta(
     predict=breast_predict_transform,
     transform=None,
     select=breast_pvals_keep_transform,
-    encode=None,
+    encode='all',
 ))
