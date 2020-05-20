@@ -83,6 +83,14 @@ class Task(object):
 
         return self._y[self._f_y[0]]
 
+    def get_infos(self):
+        """Get infos on the task."""
+        infos = self.meta.get_infos()
+        infos['_X_base.shape'] = repr(getattr(self._X_base, 'shape', None))
+        infos['_X_extra.shape'] = repr(getattr(self._X_extra, 'shape', None))
+        infos['_y.shape'] = repr(getattr(self._y, 'shape', None))
+        return infos
+
     def _features_to_load(self, features):
         """From a set of features to load, find where they are."""
         f_init, f_y, f_transform = set(), set(), set()
