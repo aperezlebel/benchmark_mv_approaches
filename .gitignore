@@ -10,6 +10,7 @@ MIMICIII
 *pyc
 sandbox
 UKBB
+!pvals/*
 results*
 custom/*
 !*.dist
