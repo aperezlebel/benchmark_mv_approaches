@@ -93,8 +93,11 @@ def one_hot_encode(df, mv, types, parent, keys=None):
     def encode(df, mv, types, parent):
         enc = OneHotEncoder(sparse=False)
 
-        # df = df.fillna(MV_PLACEHOLDER).astype(str)  # Cast to str
+        # Cast to str to prevent: "argument must be a string or number" error
+        # which occurs when mixed types floats and str
+        df = df.astype(str)
 
+        # Fill missing values with a placeholder
         df = fill_df(df, mv != NOT_MISSING, MV_PLACEHOLDER)
 
         # Fit transform the encoder
