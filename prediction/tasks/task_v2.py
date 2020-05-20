@@ -4,8 +4,8 @@ from dataclasses import dataclass
 import logging
 
 from missing_values import get_missing_values
-from features_type import _load_feature_types
-from database import dbs
+# from features_type import _load_feature_types
+from database import dbs, _load_feature_types
 from .transform import Transform
 
 
