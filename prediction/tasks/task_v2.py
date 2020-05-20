@@ -64,7 +64,7 @@ class Task(object):
     @property
     def X(self):
         """Input dataset."""
-        if not all((self._X_base, self._X_extra)):
+        if self._X_base is None and self._X_extra is None:
             self._load()
 
         if self._X_base is None:
