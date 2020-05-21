@@ -287,10 +287,6 @@ class Database(ABC):
             )
             return
 
-        if not isinstance(meta, str):
-            _, to_drop = self.get_drop_and_keep_meta(types, meta)
-            types.drop(labels=to_drop, inplace=True)
-
         self.feature_types[tag] = types
 
     def _set_dtypes(self, meta):
@@ -323,14 +319,6 @@ class Database(ABC):
             except yaml.YAMLError as exc:
                 print(f'{exc}. No order loaded for {df_name}.')
                 return
-
-        if not isinstance(meta, str):
-            features = list(order.keys())
-            _, to_drop = self.get_drop_and_keep_meta(features, meta)
-
-            # Drop useless features
-            for f in to_drop:
-                order.pop(f)
 
         self.ordinal_orders[tag] = order
 
