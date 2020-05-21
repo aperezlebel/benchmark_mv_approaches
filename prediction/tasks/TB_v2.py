@@ -24,7 +24,6 @@ n_top_pvals = params.get('n_top_pvals', 100)
 # ------------------------
 death_predict_transform = Transform(
     input_features=['Décès'],
-    transform=None,
     output_features=['Décès'],
 )
 
