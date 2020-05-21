@@ -235,21 +235,25 @@ class Task(object):
             df = pd.read_csv(df_path, sep=sep, usecols=features_to_load,
                              encoding=encoding, skiprows=self._rows_to_drop)
 
-            # Step 7: Encode loaded features
-            if self.meta.encode:
-                mv = get_missing_values(df, db.heuristic)
-                types = _load_feature_types(db, df_name, anonymized=False)
-                db._load_ordinal_orders(self.meta)
-                order = db.ordinal_orders.get(self.meta.tag, None)
-                df, _, _, _ = db._encode_df(df, mv, types, order=order,
-                                            encode=self.meta.encode)
+        else:  # If no selection specified, load all features
+            df = pd.read_csv(df_path, sep=sep, encoding=encoding,
+                             skiprows=self._rows_to_drop)
 
-            # Step 8: Drop unwanted features if output specified
-            if select.output_features:
-                features_to_keep = select.output_features
-                features = set(df.columns)
-                features_to_drop = features - set(features_to_keep)
-                df.drop(features_to_drop, axis=1, inplace=True)
+        # Step 7: Encode loaded features
+        if self.meta.encode:
+            mv = get_missing_values(df, db.heuristic)
+            types = _load_feature_types(db, df_name, anonymized=False)
+            db._load_ordinal_orders(self.meta)
+            order = db.ordinal_orders.get(self.meta.tag, None)
+            df, _, _, _ = db._encode_df(df, mv, types, order=order,
+                                        encode=self.meta.encode)
 
-            # Step 9: save result
-            self._X_base = df
+        # Step 8: Drop unwanted features if output specified
+        if select and select.output_features:
+            features_to_keep = select.output_features
+            features = set(df.columns)
+            features_to_drop = features - set(features_to_keep)
+            df.drop(features_to_drop, axis=1, inplace=True)
+
+        # Step 9: save result
+        self._X_base = df
