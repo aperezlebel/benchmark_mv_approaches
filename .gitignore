@@ -17,3 +17,4 @@ custom/*
 .DS_Store
 logs*
 .env
+temp

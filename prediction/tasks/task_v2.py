@@ -68,6 +68,7 @@ class Task(object):
 
         # Store the dataframes
         self._X_base = None
+        self._X_base_plain = None
         self._X_extra = None
         self._y = None
 
@@ -77,7 +78,7 @@ class Task(object):
     def X(self):
         """Input dataset."""
         if self._X_base is None and self._X_extra is None:
-            self._load()
+            self._load_X_y()
 
         if self._X_base is None:
             return self._X_extra
@@ -88,12 +89,24 @@ class Task(object):
         return pd.concat((self._X_base, self._X_extra), axis=1)
 
     @property
+    def X_base_plain(self):
+        """Get non-encoded version of X base."""
+        if self._X_base_plain is None:
+            self._load_X_plain()
+
+        return self._X_base_plain
+
+    @property
     def y(self):
         """Feature to predict."""
-        if self._y is not None:
-            self._load()
+        if self._y is None:
+            self._load_y()
 
         return self._y[self._f_y[0]]
+
+    def is_classif(self):
+        """Tell if the task is a classification or a regression."""
+        return self.meta.classif
 
     def get_infos(self):
         """Get infos on the task."""
@@ -154,8 +167,8 @@ class Task(object):
 
         return pd.concat((df_init, df_y, df_transform), axis=1)
 
-    def _load(self):
-        """Load a dataframe from taskmeta."""
+    def _load_y(self):
+        """Load a dataframe from taskmeta (only y)."""
         # Step 0: get dataframe's path and load infos
         logging.debug('Get df path and load infos')
         db = dbs[self.meta.db]
@@ -207,7 +220,48 @@ class Task(object):
         self._rows_to_drop = idx_to_drop + 1  # Rows start to 1 with header
         self._y = self._y.drop(idx_to_drop_y, axis=0)
 
-        # Step 5: Derive new set of features if any
+    def _load_X_plain(self):
+        if self._y is None:
+            self._load_y()
+
+        # Step 0: get dataframe's path and load infos
+        logging.debug('Get df path and load infos')
+        db = dbs[self.meta.db]
+        df_name = self.meta.df_name
+        df_path = db.frame_paths[df_name]
+        sep = db._sep
+        encoding = db._encoding
+
+        # Step 5: Load asked features
+        select = self.meta.select
+        if select:
+            if select.output_features and select.input_features:
+                raise ValueError('Cannot specify both input and oupt '
+                                 'features for select transform.')
+            if select.output_features:
+                features_to_load = select.get_parent(select.output_features)
+            else:
+                features_to_load = select.input_features
+            df = pd.read_csv(df_path, sep=sep, usecols=features_to_load,
+                             encoding=encoding, skiprows=self._rows_to_drop)
+
+        else:  # If no selection specified, load all features
+            df = pd.read_csv(df_path, sep=sep, encoding=encoding,
+                             skiprows=self._rows_to_drop)
+
+        self._X_base_plain = df
+
+    def _load_X_y(self):
+        """Load a dataframe from taskmeta (X and y)."""
+        if self._X_base_plain is None:
+            self._load_X_plain()
+
+        # Step 0: get dataframe's path and load infos
+        logging.debug('Get df path and load infos')
+        db = dbs[self.meta.db]
+        df_name = self.meta.df_name
+
+        # Step 6: Derive new set of features if any
         transform = self.meta.transform
         if transform:
             asked_features = transform.input_features
@@ -221,35 +275,23 @@ class Task(object):
             df.drop(features_to_drop, axis=1, inplace=True)
             self._X_extra = df
 
-        # Step 6: Load asked features
+        # Step 7: Encode loaded features
+        if self.meta.encode:
+            df = self._X_base_plain
+            mv = get_missing_values(df, db.heuristic)
+            types = _load_feature_types(db, df_name, anonymized=False)
+            db._load_ordinal_orders(self.meta)
+            order = db.ordinal_orders.get(self.meta.tag, None)
+            df, _, _, _ = db._encode_df(df, mv, types, order=order,
+                                        encode=self.meta.encode)
+
+        # Step 8: Drop unwanted features if output specified
         select = self.meta.select
-        if select:
-            if select.output_features and select.input_features:
-                raise ValueError('Cannot specify both input and oupt '
-                                 'features for select transform.')
-            if select.output_features:
-                features_to_load = select.get_parent(select.output_features)
-            else:
-                features_to_load = select.input_features
-                features_to_keep = select.input_features
-            df = pd.read_csv(df_path, sep=sep, usecols=features_to_load,
-                             encoding=encoding, skiprows=self._rows_to_drop)
+        if select and select.output_features:
+            features_to_keep = select.output_features
+            features = set(df.columns)
+            features_to_drop = features - set(features_to_keep)
+            df.drop(features_to_drop, axis=1, inplace=True)
 
-            # Step 7: Encode loaded features
-            if self.meta.encode:
-                mv = get_missing_values(df, db.heuristic)
-                types = _load_feature_types(db, df_name, anonymized=False)
-                db._load_ordinal_orders(self.meta)
-                order = db.ordinal_orders.get(self.meta.tag, None)
-                df, _, _, _ = db._encode_df(df, mv, types, order=order,
-                                            encode=self.meta.encode)
-
-            # Step 8: Drop unwanted features if output specified
-            if select.output_features:
-                features_to_keep = select.output_features
-                features = set(df.columns)
-                features_to_drop = features - set(features_to_keep)
-                df.drop(features_to_drop, axis=1, inplace=True)
-
-            # Step 9: save result
-            self._X_base = df
+        # Step 9: save result
+        self._X_base = df
