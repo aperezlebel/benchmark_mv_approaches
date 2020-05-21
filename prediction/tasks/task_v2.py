@@ -26,15 +26,27 @@ class TaskMeta(object):
 
     def get_infos(self):
         """Return a dict containing infos on the object."""
-        return {
+        data = {
             'name': self.name,
             'db': self.db,
             'df_name': self.df_name,
             'classif': self.classif,
-            'idx_selection': self.idx_selection.get_infos(),
-            'predict': self.predict.get_infos(),
             'encode': self.encode,
         }
+
+        if self.idx_selection is not None:
+            data['idx_selection'] = self.idx_selection.get_infos()
+
+        if self.predict is not None:
+            data['predict']: self.predict.get_infos()
+
+        if self.transform is not None:
+            data['transform']: self.transform.get_infos()
+
+        if self.select is not None:
+            data['select']: self.select.get_infos()
+
+        return data
 
     @property
     def tag(self):
