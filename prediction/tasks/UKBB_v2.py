@@ -1,4 +1,6 @@
 """Prediction tasks v2 for UKBB."""
+import yaml
+import os
 import pandas as pd
 
 from .task_v2 import TaskMeta
@@ -6,6 +8,16 @@ from .transform import Transform
 
 
 task_metas = list()
+
+# Load some params from custom file
+filepath = 'custom/strategy_params.yml'
+if os.path.exists(filepath):
+    with open(filepath, 'r') as file:
+        params = yaml.safe_load(file)
+else:
+    params = dict()
+
+n_top_pvals = params.get('n_top_pvals', 100)
 
 
 # Task 1.1: Breast cancer prediction followng paper
@@ -189,7 +201,7 @@ task_metas.append(TaskMeta(
 # Define which features to keep
 pvals = pd.read_csv('pvals/UKBB/breast_plain/pvals_filtered.csv', header=None,
                     index_col=0, squeeze=True)
-pvals = pvals.sort_values()[:100]
+pvals = pvals.sort_values()[:n_top_pvals]
 breast_top_pvals = list(pvals.index)
 
 breast_pvals_keep_transform = Transform(
@@ -269,7 +281,7 @@ skin_predict_transform = Transform(
 # Define which features to keep
 pvals = pd.read_csv('pvals/UKBB/melanomia_plain/pvals_filtered.csv',
                     header=None, index_col=0, squeeze=True)
-pvals = pvals.sort_values()[:100]
+pvals = pvals.sort_values()[:n_top_pvals]
 skin_top_pvals = list(pvals.index)
 
 skin_pvals_keep_transform = Transform(
@@ -326,7 +338,7 @@ parkinson_predict_transform = Transform(
 # Define which features to keep
 pvals = pd.read_csv('pvals/UKBB/parkinson_plain/pvals_filtered.csv',
                     header=None, index_col=0, squeeze=True)
-pvals = pvals.sort_values()[:100]
+pvals = pvals.sort_values()[:n_top_pvals]
 parkinson_top_pvals = list(pvals.index)
 
 parkinson_pvals_keep_transform = Transform(
