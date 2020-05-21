@@ -207,3 +207,83 @@ task_metas.append(TaskMeta(
     select=breast_pvals_keep_transform,
     encode='all',
 ))
+
+
+# Task 2.2: Melanomia prediction using pvals
+# ------------------------------------------
+# Define the callable used to create the feature to predict
+def define_predict_skin(df):
+    """Callable used to define the feature to predict."""
+    # Melanoma and other malignant neoplasms of skin
+    df['C43-C44'] = (
+        cancer_ICD10(df, 'C430') | ICD10_equal(df, 'C430') |
+        cancer_ICD10(df, 'C431') | ICD10_equal(df, 'C431') |
+        cancer_ICD10(df, 'C432') | ICD10_equal(df, 'C432') |
+        cancer_ICD10(df, 'C433') | ICD10_equal(df, 'C433') |
+        cancer_ICD10(df, 'C434') | ICD10_equal(df, 'C434') |
+        cancer_ICD10(df, 'C435') | ICD10_equal(df, 'C435') |
+        cancer_ICD10(df, 'C436') | ICD10_equal(df, 'C436') |
+        cancer_ICD10(df, 'C437') | ICD10_equal(df, 'C437') |
+        cancer_ICD10(df, 'C438') | ICD10_equal(df, 'C438') |
+        cancer_ICD10(df, 'C439') | ICD10_equal(df, 'C439') |
+        cancer_ICD10(df, 'C440') | ICD10_equal(df, 'C440') |
+        cancer_ICD10(df, 'C441') | ICD10_equal(df, 'C441') |
+        cancer_ICD10(df, 'C442') | ICD10_equal(df, 'C442') |
+        cancer_ICD10(df, 'C443') | ICD10_equal(df, 'C443') |
+        cancer_ICD10(df, 'C444') | ICD10_equal(df, 'C444') |
+        cancer_ICD10(df, 'C445') | ICD10_equal(df, 'C445') |
+        cancer_ICD10(df, 'C446') | ICD10_equal(df, 'C446') |
+        cancer_ICD10(df, 'C447') | ICD10_equal(df, 'C447') |
+        cancer_ICD10(df, 'C448') | ICD10_equal(df, 'C448') |
+        cancer_ICD10(df, 'C449') | ICD10_equal(df, 'C449') |
+        cancer_ICD9(df, '1720') | ICD9_equal(df, '1720') |
+        cancer_ICD9(df, '1723') | ICD9_equal(df, '1723') |
+        cancer_ICD9(df, '1725') | ICD9_equal(df, '1725') |
+        cancer_ICD9(df, '1726') | ICD9_equal(df, '1726') |
+        cancer_ICD9(df, '1727') | ICD9_equal(df, '1727') |
+        cancer_ICD9(df, '1729') | ICD9_equal(df, '1729') |
+        cancer_ICD9(df, '1730') | ICD9_equal(df, '1730') |
+        cancer_ICD9(df, '1731') | ICD9_equal(df, '1731') |
+        cancer_ICD9(df, '1732') | ICD9_equal(df, '1732') |
+        cancer_ICD9(df, '1733') | ICD9_equal(df, '1733') |
+        cancer_ICD9(df, '1734') | ICD9_equal(df, '1734') |
+        cancer_ICD9(df, '1735') | ICD9_equal(df, '1735') |
+        cancer_ICD9(df, '1736') | ICD9_equal(df, '1736') |
+        cancer_ICD9(df, '1737') | ICD9_equal(df, '1737') |
+        cancer_ICD9(df, '1739') | ICD9_equal(df, '1739')
+    )
+
+    # Convert bool to {0, 1}
+    df['C43-C44'] = df['C43-C44'].astype(int)
+
+    return df
+
+
+skin_predict_transform = Transform(
+    input_features=[ICD9, ICD9_main, ICD9_sec, ICD9_cancer, ICD10, ICD10_main,
+                    ICD10_sec, ICD10_cancer],
+    transform=define_predict_skin,
+    output_features=['C43-C44'],
+)
+
+# Define which features to keep
+pvals = pd.read_csv('pvals/UKBB/melanomia_plain/pvals_filtered.csv',
+                    header=None, index_col=0, squeeze=True)
+pvals = pvals.sort_values()[:100]
+skin_top_pvals = list(pvals.index)
+
+skin_pvals_keep_transform = Transform(
+    output_features=skin_top_pvals
+)
+
+task_metas.append(TaskMeta(
+    name='skin_pvals',
+    db='UKBB',
+    df_name='40663_filtered',
+    classif=True,
+    idx_selection=None,
+    predict=skin_predict_transform,
+    transform=None,
+    select=skin_pvals_keep_transform,
+    encode='all',
+))
