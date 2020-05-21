@@ -287,3 +287,60 @@ task_metas.append(TaskMeta(
     select=skin_pvals_keep_transform,
     encode='all',
 ))
+
+
+# Task 3.2: Parkinson prediction using pvals
+# ------------------------------------------
+# Define the callable used to create the feature to predict
+def define_predict_parkinson(df):
+    """Callable used to define the feature to predict."""
+    # Parkinson's disease
+    df['Parkinson'] = (
+        cancer_ICD10(df, 'G20') | ICD10_equal(df, 'G20') |
+        cancer_ICD10(df, 'G210') | ICD10_equal(df, 'G210') |
+        cancer_ICD10(df, 'G211') | ICD10_equal(df, 'G211') |
+        cancer_ICD10(df, 'G212') | ICD10_equal(df, 'G212') |
+        cancer_ICD10(df, 'G213') | ICD10_equal(df, 'G213') |
+        cancer_ICD10(df, 'G214') | ICD10_equal(df, 'G214') |
+        cancer_ICD10(df, 'G218') | ICD10_equal(df, 'G218') |
+        cancer_ICD10(df, 'G219') | ICD10_equal(df, 'G219') |
+        cancer_ICD10(df, 'G22') | ICD10_equal(df, 'G22') |
+        cancer_ICD10(df, 'F023') | ICD10_equal(df, 'F023') |
+        cancer_ICD9(df, '3320') | ICD9_equal(df, '3320') |
+        cancer_ICD9(df, '3321') | ICD9_equal(df, '3321')
+    )
+
+    # Convert bool to {0, 1}
+    df['Parkinson'] = df['Parkinson'].astype(int)
+
+    return df
+
+
+parkinson_predict_transform = Transform(
+    input_features=[ICD9, ICD9_main, ICD9_sec, ICD9_cancer, ICD10, ICD10_main,
+                    ICD10_sec, ICD10_cancer],
+    transform=define_predict_parkinson,
+    output_features=['Parkinson'],
+)
+
+# Define which features to keep
+pvals = pd.read_csv('pvals/UKBB/parkinson_plain/pvals_filtered.csv',
+                    header=None, index_col=0, squeeze=True)
+pvals = pvals.sort_values()[:100]
+parkinson_top_pvals = list(pvals.index)
+
+parkinson_pvals_keep_transform = Transform(
+    output_features=parkinson_top_pvals
+)
+
+task_metas.append(TaskMeta(
+    name='parkinson_pvals',
+    db='UKBB',
+    df_name='40663_filtered',
+    classif=True,
+    idx_selection=None,
+    predict=parkinson_predict_transform,
+    transform=None,
+    select=parkinson_pvals_keep_transform,
+    encode='all',
+))
