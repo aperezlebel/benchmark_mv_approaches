@@ -158,6 +158,7 @@ class Task(object):
 
         # Step 2: Derive indexes to drop if any
         idx_transformer = self.meta.idx_selection
+        idx_to_drop = pd.Index([])  # At start, no indexes to drop
         if idx_transformer:
             logging.debug('Derive indexes to drop.')
             features_to_load = idx_transformer.input_features
