@@ -109,6 +109,7 @@ class Task(object):
         infos = self.meta.get_infos()
         infos['_X_select.shape'] = repr(getattr(self._X_select, 'shape', None))
         infos['_X_extra.shape'] = repr(getattr(self._X_extra, 'shape', None))
+        infos['X.shape'] = repr(getattr(self.X, 'shape', None))
         infos['_y.shape'] = repr(getattr(self._y, 'shape', None))
         return infos
 
