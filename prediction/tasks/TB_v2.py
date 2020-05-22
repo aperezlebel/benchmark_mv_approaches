@@ -66,7 +66,6 @@ def define_new_features_platelet(df):
     """Callable used to define new features from a bunch of features."""
     # github.com/wjiang94/ABSLOPE/blob/master/ABSLOPE/OnlineSupp/OnlineSupp.pdf
 
-    print(list(df.columns))
     df = df.astype(float)
 
     df['Age'] = df['Age du patient (ans)']
@@ -142,4 +141,82 @@ task_metas.append(TaskMeta(
     transform=platelet_new_features_tranform,
     select=None,
     encode='ordinal',
+))
+
+
+# Task 3: Hemorrhagic shock prediciton (https://arxiv.org/pdf/1805.04602)
+# -----------------------------------------------------------------------
+shock_hemo_predict_transform = Transform(
+    input_features=['Choc hémorragique (? 4 CGR sur 6h)'],
+    output_features=['Choc hémorragique (? 4 CGR sur 6h)'],
+)
+
+
+def define_new_features_shock_hemo(df):
+    """Callable used to define new features from a bunch of features."""
+    df = df.astype(float)
+
+    df['Age'] = df['Age du patient (ans)']
+    df['BMI'] = df['BMI']
+    df['FC.SMUR'] = df['Fréquence cardiaque (FC) à l arrivée du SMUR']
+    df['SD.SMUR'] = df['Pression Artérielle Systolique (PAS) à l arrivée du SMUR'] - df['Pression Artérielle Diastolique (PAD) à l arrivée du SMUR']
+    df['SD.min'] = df['Pression Artérielle Systolique (PAS) minimum'] - df['Pression Artérielle Diastolique (PAD) minimum']
+    df['FC.max'] = df['Fréquence cardiaque (FC) maximum']
+    df['Glasgow.moteur.init'] = df['Glasgow moteur initial']
+    df['Glasgow.init'] = df['Glasgow initial']
+    df['Hemocue.init'] = df['Hémocue initial']
+    df['SpO2.min'] = df['SpO2 min']
+    df['RT.colloides'] = df['Colloïdes']
+    df['RT.cristalloides'] = df['Cristalloïdes']
+
+    # Replace potential infinite values by Nans (divide may have created infs)
+    df.replace([np.inf, -np.inf], np.nan, inplace=True)
+
+    return df
+
+
+shock_hemo_new_features_tranform = Transform(
+    input_features=[
+        'Age du patient (ans)',
+        'BMI',
+        'Fréquence cardiaque (FC) à l arrivée du SMUR',
+        'Pression Artérielle Systolique (PAS) à l arrivée du SMUR',
+        'Pression Artérielle Diastolique (PAD) à l arrivée du SMUR',
+        'Pression Artérielle Systolique (PAS) minimum',
+        'Pression Artérielle Diastolique (PAD) minimum',
+        'Fréquence cardiaque (FC) maximum',
+        'Glasgow moteur initial',
+        'Glasgow initial',
+        'Hémocue initial',
+        'SpO2 min',
+        'Colloïdes',
+        'Cristalloïdes',
+    ],
+    transform=define_new_features_shock_hemo,
+    output_features=[
+        'Age',
+        'BMI',
+        'FC.SMUR',
+        'SD.SMUR',
+        'SD.min',
+        'FC.max',
+        'Glasgow.moteur.init',
+        'Glasgow.init',
+        'Hemocue.init',
+        'SpO2.min',
+        'RT.colloides',
+        'RT.cristalloides'
+    ],
+)
+
+task_metas.append(TaskMeta(
+    name='shock_hemo',
+    db='TB',
+    df_name='20000',
+    classif=True,
+    idx_selection=None,
+    predict=shock_hemo_predict_transform,
+    transform=shock_hemo_new_features_tranform,
+    select=None,
+    encode=None,
 ))
