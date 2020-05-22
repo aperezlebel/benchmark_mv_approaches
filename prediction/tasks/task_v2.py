@@ -230,21 +230,25 @@ class Task(object):
         encoding = db._encoding
 
         # Step 5.1: Load asked features
+        features_to_load = set()
         select = self.meta.select
         if select:
             if select.output_features and select.input_features:
                 raise ValueError('Cannot specify both input and oupt '
                                  'features for select transform.')
-            if select.output_features:
-                features_to_load = select.get_parent(select.output_features)
-            else:
-                features_to_load = select.input_features
-            df = pd.read_csv(df_path, sep=sep, usecols=features_to_load,
-                             encoding=encoding, skiprows=self._rows_to_drop)
 
-        else:  # If no selection specified, load all features
-            df = pd.read_csv(df_path, sep=sep, encoding=encoding,
-                             skiprows=self._rows_to_drop)
+            if select.output_features:
+                required_features = select.get_parent(select.output_features)
+            else:
+                required_features = select.input_features
+            features_to_load.update(required_features)
+
+        transform = self.meta.transform
+        if transform:
+            features_to_load.update(transform.input_features)
+
+        df = pd.read_csv(df_path, sep=sep, usecols=features_to_load,
+                         encoding=encoding, skiprows=self._rows_to_drop)
 
         # Step 5.2: Remove placeholders for missing values
         mv = get_missing_values(df, db.heuristic)
