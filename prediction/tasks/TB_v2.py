@@ -2,6 +2,7 @@
 import os
 import yaml
 import pandas as pd
+import numpy as np
 
 from .task_v2 import TaskMeta
 from .transform import Transform
@@ -50,4 +51,95 @@ task_metas.append(TaskMeta(
     transform=None,
     select=None,
     encode='all',
+))
+
+
+# Task 2: platelet prediction (https://arxiv.org/abs/1909.06631)
+# --------------------------------------------------------------
+platelet_predict_transform = Transform(
+    input_features=['Plaquettes'],
+    output_features=['Plaquettes'],
+)
+
+
+def define_new_features_platelet(df):
+    """Callable used to define new features from a bunch of features."""
+    # github.com/wjiang94/ABSLOPE/blob/master/ABSLOPE/OnlineSupp/OnlineSupp.pdf
+
+    print(list(df.columns))
+    df = df.astype(float)
+
+    df['Age'] = df['Age du patient (ans)']
+    df['SI'] = df['FC en phase hospitalière'].divide(df['Pression Artérielle Systolique - PAS'])
+    df['MBP'] = (2*df['Pression Artérielle Diastolique - PAD']+df['Pression Artérielle Systolique - PAS'])/3
+    df['Delta.hemo'] = df['Delta Hémocue']
+    df['Time.amb'] = df['Délai « arrivée sur les lieux - arrivée hôpital »']
+    df['Lactate'] = df['Lactates']
+    df['Temp'] = df['Température']
+    df['HR'] = df['FC en phase hospitalière']
+    df['VE'] = df['Cristalloïdes']+df['Colloïdes']
+    df['RBC'] = df['Choc hémorragique (? 4 CGR sur 6h)']
+    df['SI.amb'] = df['Fréquence cardiaque (FC) à l arrivée du SMUR'].divide(df['Pression Artérielle Systolique (PAS) à l arrivée du SMUR'])
+    df['MAP.amb'] = (2*df['Pression Artérielle Diastolique (PAD) à l arrivée du SMUR']+df['Pression Artérielle Systolique (PAS) à l arrivée du SMUR'])/3
+    df['HR.max'] = df['Fréquence cardiaque (FC) maximum']
+    df['SBP.min'] = df['Pression Artérielle Systolique (PAS) minimum']
+    df['DBP.min'] = df['Pression Artérielle Diastolique (PAD) minimum']
+
+    # Replace potential infinite values by Nans (divide may have created infs)
+    df.replace([np.inf, -np.inf], np.nan, inplace=True)
+
+    return df
+
+
+platelet_new_features_tranform = Transform(
+    input_features=[
+        'Age du patient (ans)',
+        'FC en phase hospitalière',
+        'Pression Artérielle Systolique - PAS',
+        'Pression Artérielle Diastolique - PAD',
+        'Delta Hémocue',
+        'Délai « arrivée sur les lieux - arrivée hôpital »',
+        'Lactates',
+        'Température',
+        'FC en phase hospitalière',
+        'Cristalloïdes',
+        'Colloïdes',
+        'Choc hémorragique (? 4 CGR sur 6h)',
+        'Fréquence cardiaque (FC) à l arrivée du SMUR',
+        'Pression Artérielle Systolique (PAS) à l arrivée du SMUR',
+        'Pression Artérielle Diastolique (PAD) à l arrivée du SMUR',
+        'Fréquence cardiaque (FC) maximum',
+        'Pression Artérielle Systolique (PAS) minimum',
+        'Pression Artérielle Diastolique (PAD) minimum',
+    ],
+    transform=define_new_features_platelet,
+    output_features=[
+        'Age',
+        'SI',
+        'MBP',
+        'Delta.hemo',
+        'Time.amb',
+        'Lactate',
+        'Temp',
+        'HR',
+        'VE',
+        'RBC',
+        'SI.amb',
+        'MAP.amb',
+        'HR.max',
+        'SBP.min',
+        'DBP.min',
+    ],
+)
+
+task_metas.append(TaskMeta(
+    name='platelet',
+    db='TB',
+    df_name='20000',
+    classif=False,
+    idx_selection=None,
+    predict=platelet_predict_transform,
+    transform=platelet_new_features_tranform,
+    select=None,
+    encode='ordinal',
 ))
