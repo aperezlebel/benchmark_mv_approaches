@@ -220,3 +220,169 @@ task_metas.append(TaskMeta(
     select=None,
     encode=None,
 ))
+
+# Task 4: Tranexamic acid prediction (https://arxiv.org/abs/1910.10624)
+# ---------------------------------------------------------------------
+acid_predict_transform = Transform(
+    input_features=['Acide tranexamique'],
+    output_features=['Acide tranexamique'],
+)
+
+
+def define_new_features_acid(df):
+    """Callable used to define new features from a bunch of features."""
+    df = df.astype(float)
+
+    # Temp features (will be dropped)
+    df['SBP.min'] = df['Pression Artérielle Systolique (PAS) minimum']
+    df['SBP.MICU'] = df['Pression Artérielle Systolique (PAS) à l arrivée du SMUR']
+    df['DBP.min'] = df['Pression Artérielle Diastolique (PAD) minimum']
+    df['DBP.MICU'] = df['Pression Artérielle Diastolique (PAD) à l arrivée du SMUR']
+    df['HR.max'] = df['Fréquence cardiaque (FC) maximum']
+    df['HR.MICU'] = df['Fréquence cardiaque (FC) à l arrivée du SMUR']
+    df['Shock.index.h'] = df['FC en phase hospitalière'].divide(df['Pression Artérielle Systolique - PAS'])
+
+    # Persistent features
+    df['SBP.ph'] = np.minimum(df['SBP.min'], df['SBP.MICU'])
+    df['DBP.ph'] = np.minimum(df['DBP.min'], df['DBP.MICU'])
+    df['HR.ph'] = np.maximum(df['HR.max'], df['HR.MICU'])
+    df['Cardiac.arrest.ph'] = df['Arrêt cardio-respiratoire (massage)']
+    df['HemoCue.init'] = df['Hémocue initial']
+    df['SpO2.min'] = df['SpO2 min']
+    df['Vasopressor.therapy'] = df['Catécholamines max dans choc hémorragique']
+    df['Cristalloid.volume'] = df['Cristalloïdes']
+    df['Colloid.volume'] = df['Colloïdes']
+    df['Shock.index.ph'] = df['Fréquence cardiaque (FC) à l arrivée du SMUR'].divide(df['Pression Artérielle Systolique (PAS) à l arrivée du SMUR'])
+    df['AIS.external'] = df['ISS  / External']
+    df['Delta.shock.index'] = df['Shock.index.h'] - df['Shock.index.ph']
+    df['Delta.hemoCue'] = df['Delta Hémocue']
+
+    df['Anticoagulant.therapy'] = df['Traitement anticoagulant']
+    df['Antiplatelet.therapy'] = df['Traitement antiagrégants']
+    df['GCS.init'] = df['Glasgow initial']
+    df['GCS'] = df['Score de Glasgow en phase hospitalière']
+    df['GCS.motor.init'] = df['Glasgow moteur initial']
+    df['GCS.motor'] = df['Glasgow moteur']
+    df['Improv.anomaly.osmo'] = df['Régression mydriase sous osmothérapie']
+    df['Medcare.time.ph'] = df['Délai « arrivée sur les lieux - arrivée hôpital »']
+    df['FiO2'] = df['FiO2']
+    df['Temperature.min'] = df['Température min']
+    df['TCD.PI.max'] = df['DTC IP max (sur les premières 24 heures d HTIC)']
+    df['IICP'] = df['HTIC (>25 PIC simple sédation)']
+    df['EVD'] = df['Dérivation ventriculaire externe (DVE)']
+    df['Decompressive.craniectomy'] = df['Craniectomie dé-compressive']
+    df['Neurosurgery.day0'] = df['Bloc dans les premières 24h  / Neurochirurgie (ex. : Craniotomie ou DVE)']
+    df['AIS.head'] = df['ISS  / Head_neck']
+    df['AIS.face'] = df['ISS  / Face']
+    df['ISS'] = df['Score ISS']
+    df['ISS.II'] = df['Total Score IGS']
+
+    # Replace potential infinite values by Nans (divide may have created infs)
+    df.replace([np.inf, -np.inf], np.nan, inplace=True)
+
+    return df
+
+
+acid_new_features_tranform = Transform(
+    input_features=[
+        'Pression Artérielle Systolique (PAS) minimum',
+        'Pression Artérielle Systolique (PAS) à l arrivée du SMUR',
+        'Pression Artérielle Diastolique (PAD) minimum',
+        'Pression Artérielle Diastolique (PAD) à l arrivée du SMUR',
+        'Fréquence cardiaque (FC) maximum',
+        'Fréquence cardiaque (FC) à l arrivée du SMUR',
+        'FC en phase hospitalière',
+        'Pression Artérielle Systolique - PAS',
+        'Numéro de centre',
+        'Arrêt cardio-respiratoire (massage)',
+        'Hémocue initial',
+        'SpO2 min',
+        'Catécholamines max dans choc hémorragique',
+        'Cristalloïdes',
+        'Colloïdes',
+        'ISS  / External',
+        'Delta Hémocue',
+        'Traitement anticoagulant',
+        'Traitement antiagrégants',
+        'Glasgow initial',
+        'Score de Glasgow en phase hospitalière',
+        'Glasgow moteur initial',
+        'Glasgow moteur',
+        'Anomalie pupillaire (Pré-hospitalier)',
+        'Anomalie pupillaire (Phase hospitalière)',
+        'Osmothérapie',
+        'Régression mydriase sous osmothérapie',
+        'Délai « arrivée sur les lieux - arrivée hôpital »',
+        'FiO2',
+        'Température min',
+        'DTC IP max (sur les premières 24 heures d HTIC)',
+        'HTIC (>25 PIC simple sédation)',
+        'Dérivation ventriculaire externe (DVE)',
+        'Craniectomie dé-compressive',
+        'Bloc dans les premières 24h  / Neurochirurgie (ex. : Craniotomie ou DVE)',
+        'ISS  / Head_neck',
+        'ISS  / Face',
+        'Score ISS',
+        'Total Score IGS',
+    ],
+    transform=define_new_features_acid,
+    output_features=[
+        'Trauma.center',
+        'SBP.ph',
+        'DBP.ph',
+        'HR.ph',
+        'Cardiac.arrest.ph',
+        'HemoCue.init',
+        'SpO2.min',
+        'Vasopressor.therapy',
+        'Cristalloid.volume',
+        'Colloid.volume',
+        'Shock.index.ph',
+        'AIS.external',
+        'Delta.shock.index',
+        'Delta.hemoCue',
+        'Anticoagulant.therapy',
+        'Antiplatelet.therapy',
+        'GCS.init',
+        'GCS',
+        'GCS.motor.init',
+        'GCS.motor',
+        'Pupil.anomaly.ph',
+        'Pupil.anomaly.h',
+        'Osmotherapy',
+        'Improv.anomaly.osmo',
+        'Medcare.time.ph',
+        'FiO2',
+        'Temperature.min',
+        'TCD.PI.max',
+        'IICP',
+        'EVD',
+        'Decompressive.craniectomy',
+        'Neurosurgery.day0',
+        'AIS.head',
+        'AIS.face',
+        'ISS',
+        'ISS.II',
+    ],
+)
+
+acid_keep_transform = Transform(
+    input_features=[
+        'Numéro de centre',
+        'Anomalie pupillaire (Pré-hospitalier)',
+        'Anomalie pupillaire (Phase hospitalière)',
+        'Osmothérapie',
+    ],
+)
+
+task_metas.append(TaskMeta(
+    name='acid',
+    db='TB',
+    df_name='20000',
+    classif=True,
+    idx_selection=None,
+    predict=acid_predict_transform,
+    transform=acid_new_features_tranform,
+    select=acid_keep_transform,
+    encode='all',
+))
