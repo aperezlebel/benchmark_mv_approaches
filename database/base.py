@@ -358,6 +358,8 @@ class Database(ABC):
         to_ordinal_encode_ids = []
         to_one_hot_encode_ids = []
         to_delete_ids = [NOT_A_FEATURE]
+        to_date_encode_exp = []
+        to_date_encode_tim = []
 
         if not isinstance(encode, list):
             encode = [encode]
