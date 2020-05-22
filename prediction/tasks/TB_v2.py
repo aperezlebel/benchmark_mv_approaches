@@ -50,7 +50,8 @@ task_metas.append(TaskMeta(
     predict=death_predict_transform,
     transform=None,
     select=None,
-    encode='all',
+    encode_select='all',
+    encode_transform=None,
 ))
 
 
@@ -100,7 +101,7 @@ platelet_new_features_tranform = Transform(
         'Délai « arrivée sur les lieux - arrivée hôpital »',
         'Lactates',
         'Température',
-        'FC en phase hospitalière',
+        # 'FC en phase hospitalière',
         'Cristalloïdes',
         'Colloïdes',
         'Choc hémorragique (? 4 CGR sur 6h)',
@@ -140,7 +141,8 @@ task_metas.append(TaskMeta(
     predict=platelet_predict_transform,
     transform=platelet_new_features_tranform,
     select=None,
-    encode='ordinal',
+    encode_select='all',
+    encode_transform='ordinal',
 ))
 
 
@@ -218,7 +220,8 @@ task_metas.append(TaskMeta(
     predict=shock_hemo_predict_transform,
     transform=shock_hemo_new_features_tranform,
     select=None,
-    encode=None,
+    encode_transform=None,
+    encode_select=None,
 ))
 
 # Task 4: Tranexamic acid prediction (https://arxiv.org/abs/1910.10624)
@@ -293,7 +296,7 @@ acid_new_features_tranform = Transform(
         'Fréquence cardiaque (FC) à l arrivée du SMUR',
         'FC en phase hospitalière',
         'Pression Artérielle Systolique - PAS',
-        'Numéro de centre',
+        # 'Numéro de centre',
         'Arrêt cardio-respiratoire (massage)',
         'Hémocue initial',
         'SpO2 min',
@@ -308,9 +311,9 @@ acid_new_features_tranform = Transform(
         'Score de Glasgow en phase hospitalière',
         'Glasgow moteur initial',
         'Glasgow moteur',
-        'Anomalie pupillaire (Pré-hospitalier)',
-        'Anomalie pupillaire (Phase hospitalière)',
-        'Osmothérapie',
+        # 'Anomalie pupillaire (Pré-hospitalier)',
+        # 'Anomalie pupillaire (Phase hospitalière)',
+        # 'Osmothérapie',
         'Régression mydriase sous osmothérapie',
         'Délai « arrivée sur les lieux - arrivée hôpital »',
         'FiO2',
@@ -327,7 +330,7 @@ acid_new_features_tranform = Transform(
     ],
     transform=define_new_features_acid,
     output_features=[
-        'Trauma.center',
+        # 'Trauma.center',
         'SBP.ph',
         'DBP.ph',
         'HR.ph',
@@ -347,9 +350,9 @@ acid_new_features_tranform = Transform(
         'GCS',
         'GCS.motor.init',
         'GCS.motor',
-        'Pupil.anomaly.ph',
-        'Pupil.anomaly.h',
-        'Osmotherapy',
+        # 'Pupil.anomaly.ph',
+        # 'Pupil.anomaly.h',
+        # 'Osmotherapy',
         'Improv.anomaly.osmo',
         'Medcare.time.ph',
         'FiO2',
@@ -384,5 +387,6 @@ task_metas.append(TaskMeta(
     predict=acid_predict_transform,
     transform=acid_new_features_tranform,
     select=acid_keep_transform,
-    encode='all',
+    encode_transform='ordinal',
+    encode_select='all',
 ))

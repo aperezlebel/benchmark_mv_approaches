@@ -192,7 +192,8 @@ task_metas.append(TaskMeta(
     predict=breast_predict_transform,
     transform=breast_new_features_transform,
     select=breast_keep_transform,
-    encode='all',
+    encode_select='all',
+    encode_transform=None,
 ))
 
 
@@ -217,7 +218,8 @@ task_metas.append(TaskMeta(
     predict=breast_predict_transform,
     transform=None,
     select=breast_pvals_keep_transform,
-    encode='all',
+    encode_select='all',
+    encode_transform=None,
 ))
 
 
@@ -297,7 +299,8 @@ task_metas.append(TaskMeta(
     predict=skin_predict_transform,
     transform=None,
     select=skin_pvals_keep_transform,
-    encode='all',
+    encode_select='all',
+    encode_transform=None,
 ))
 
 
@@ -354,5 +357,6 @@ task_metas.append(TaskMeta(
     predict=parkinson_predict_transform,
     transform=None,
     select=parkinson_pvals_keep_transform,
-    encode='all',
+    encode_select='all',
+    encode_transform=None,
 ))
