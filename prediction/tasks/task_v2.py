@@ -1,10 +1,11 @@
 """Implement the new way of coding Tasks."""
 import pandas as pd
+import numpy as np
 from dataclasses import dataclass
 import logging
 
 from missing_values import get_missing_values
-# from features_type import _load_feature_types
+from df_utils import fill_df
 from database import dbs, _load_feature_types
 from .transform import Transform
 
@@ -143,14 +144,10 @@ class Task(object):
         df_transform = pd.DataFrame()
 
         if f_init:
-            db = dbs[self.meta.db]
-            df_name = self.meta.df_name
-            df_path = db.frame_paths[df_name]
-            sep = db._sep
-            encoding = db._encoding
-
-            df_init = pd.read_csv(df_path, sep=sep, encoding=encoding,
-                                  usecols=f_init, skiprows=self._rows_to_drop)
+            df_init = self._X_base_plain
+            features = set(df_init.columns)
+            features_to_drop = features - set(f_init)
+            df_init = df_init.drop(features_to_drop, axis=1)
 
         if f_y:
             if self._y is None:
@@ -232,7 +229,7 @@ class Task(object):
         sep = db._sep
         encoding = db._encoding
 
-        # Step 5: Load asked features
+        # Step 5.1: Load asked features
         select = self.meta.select
         if select:
             if select.output_features and select.input_features:
@@ -249,17 +246,25 @@ class Task(object):
             df = pd.read_csv(df_path, sep=sep, encoding=encoding,
                              skiprows=self._rows_to_drop)
 
+        # Step 5.2: Remove placeholders for missing values
+        mv = get_missing_values(df, db.heuristic)
+        df = fill_df(df, mv != 0, np.nan)
+
+        # Step 5.3: Encode the initial dataframe
+        if self.meta.encode:
+            types = _load_feature_types(db, df_name, anonymized=False)
+            db._load_ordinal_orders(self.meta)
+            order = db.ordinal_orders.get(self.meta.tag, None)
+            df, _, _, _ = db._encode_df(df, mv, types, order=order,
+                                        encode=self.meta.encode)
+
+        # Step 5.4: Save result
         self._X_base_plain = df
 
     def _load_X_y(self):
         """Load a dataframe from taskmeta (X and y)."""
         if self._X_base_plain is None:
             self._load_X_plain()
-
-        # Step 0: get dataframe's path and load infos
-        logging.debug('Get df path and load infos')
-        db = dbs[self.meta.db]
-        df_name = self.meta.df_name
 
         # Step 6: Derive new set of features if any
         transform = self.meta.transform
@@ -274,16 +279,6 @@ class Task(object):
             features_to_drop = features - features_to_keep
             df.drop(features_to_drop, axis=1, inplace=True)
             self._X_extra = df
-
-        # Step 7: Encode loaded features
-        if self.meta.encode:
-            df = self._X_base_plain
-            mv = get_missing_values(df, db.heuristic)
-            types = _load_feature_types(db, df_name, anonymized=False)
-            db._load_ordinal_orders(self.meta)
-            order = db.ordinal_orders.get(self.meta.tag, None)
-            df, _, _, _ = db._encode_df(df, mv, types, order=order,
-                                        encode=self.meta.encode)
 
         # Step 8: Drop unwanted features if output specified
         select = self.meta.select
