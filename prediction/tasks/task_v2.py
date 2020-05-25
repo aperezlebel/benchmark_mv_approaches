@@ -1,10 +1,11 @@
 """Implement the new way of coding Tasks."""
 import pandas as pd
+import numpy as np
 from dataclasses import dataclass
 import logging
 
 from missing_values import get_missing_values
-# from features_type import _load_feature_types
+from df_utils import fill_df
 from database import dbs, _load_feature_types
 from .transform import Transform
 
@@ -22,7 +23,8 @@ class TaskMeta(object):
     transform: Transform = None
     idx_selection: Transform = None
     select: Transform = None
-    encode: str = None
+    encode_select: str = None
+    encode_transform: str = None
 
     def get_infos(self):
         """Return a dict containing infos on the object."""
@@ -31,7 +33,8 @@ class TaskMeta(object):
             'db': self.db,
             'df_name': self.df_name,
             'classif': self.classif,
-            'encode': self.encode,
+            'encode_select': self.encode_select,
+            'encode_transform': self.encode_transform,
         }
 
         if self.idx_selection is not None:
@@ -67,8 +70,9 @@ class Task(object):
         self._f_transform = None
 
         # Store the dataframes
-        self._X_base = None
-        self._X_base_plain = None
+        self._X_select_base = None
+        self._X_select = None
+        self._X_extra_base = None
         self._X_extra = None
         self._y = None
 
@@ -77,24 +81,16 @@ class Task(object):
     @property
     def X(self):
         """Input dataset."""
-        if self._X_base is None and self._X_extra is None:
+        if self._X_select is None and self._X_extra is None:
             self._load_X_y()
 
-        if self._X_base is None:
+        if self._X_select is None:
             return self._X_extra
 
         if self._X_extra is None:
-            return self._X_base
+            return self._X_select
 
-        return pd.concat((self._X_base, self._X_extra), axis=1)
-
-    @property
-    def X_base_plain(self):
-        """Get non-encoded version of X base."""
-        if self._X_base_plain is None:
-            self._load_X_plain()
-
-        return self._X_base_plain
+        return pd.concat((self._X_select, self._X_extra), axis=1)
 
     @property
     def y(self):
@@ -111,8 +107,9 @@ class Task(object):
     def get_infos(self):
         """Get infos on the task."""
         infos = self.meta.get_infos()
-        infos['_X_base.shape'] = repr(getattr(self._X_base, 'shape', None))
+        infos['_X_select.shape'] = repr(getattr(self._X_select, 'shape', None))
         infos['_X_extra.shape'] = repr(getattr(self._X_extra, 'shape', None))
+        infos['X.shape'] = repr(getattr(self.X, 'shape', None))
         infos['_y.shape'] = repr(getattr(self._y, 'shape', None))
         return infos
 
@@ -143,14 +140,10 @@ class Task(object):
         df_transform = pd.DataFrame()
 
         if f_init:
-            db = dbs[self.meta.db]
-            df_name = self.meta.df_name
-            df_path = db.frame_paths[df_name]
-            sep = db._sep
-            encoding = db._encoding
-
-            df_init = pd.read_csv(df_path, sep=sep, encoding=encoding,
-                                  usecols=f_init, skiprows=self._rows_to_drop)
+            df_init = self._X_extra_base
+            features = set(df_init.columns)
+            features_to_drop = features - set(f_init)
+            df_init = df_init.drop(features_to_drop, axis=1)
 
         if f_y:
             if self._y is None:
@@ -220,7 +213,7 @@ class Task(object):
         self._rows_to_drop = idx_to_drop + 1  # Rows start to 1 with header
         self._y = self._y.drop(idx_to_drop_y, axis=0)
 
-    def _load_X_plain(self):
+    def _load_X_base(self):
         if self._y is None:
             self._load_y()
 
@@ -232,34 +225,69 @@ class Task(object):
         sep = db._sep
         encoding = db._encoding
 
-        # Step 5: Load asked features
+        # Step 5.1: Load asked features
+        features_to_load = set()
         select = self.meta.select
         if select:
             if select.output_features and select.input_features:
-                raise ValueError('Cannot specify both input and oupt '
+                raise ValueError('Cannot specify both input and output '
                                  'features for select transform.')
+
             if select.output_features:
-                features_to_load = select.get_parent(select.output_features)
+                select_f = select.get_parent(select.output_features)
             else:
-                features_to_load = select.input_features
-            df = pd.read_csv(df_path, sep=sep, usecols=features_to_load,
-                             encoding=encoding, skiprows=self._rows_to_drop)
+                select_f = select.input_features
+            features_to_load.update(select_f)
 
-        else:  # If no selection specified, load all features
-            df = pd.read_csv(df_path, sep=sep, encoding=encoding,
-                             skiprows=self._rows_to_drop)
+        transform = self.meta.transform
+        if transform:
+            transform_f = set(transform.input_features)
+            features_to_load.update(transform_f)
 
-        self._X_base_plain = df
+        # If nothing specified, we load everything
+        if not select and not transform:
+            features_to_load = None
+
+        df = pd.read_csv(df_path, sep=sep, usecols=features_to_load,
+                         encoding=encoding, skiprows=self._rows_to_drop)
+        mv = get_missing_values(df, db.heuristic)
+        df = fill_df(df, mv != 0, np.nan)
+
+        # Step 5.2: save the results
+        if select:
+            self._X_select_base = df[select_f]
+
+        if transform:
+            self._X_extra_base = df[transform_f]
+
+        if not select and not transform:
+            self._X_select_base = df
+
+        # Step 5.3: Encode both dataframes
+        if self.meta.encode_transform and self._X_extra_base is not None:
+            df = self._X_extra_base
+            mv = get_missing_values(df, db.heuristic)
+            types = _load_feature_types(db, df_name, anonymized=False)
+            db._load_ordinal_orders(self.meta)
+            order = db.ordinal_orders.get(self.meta.tag, None)
+            df, _, _, _ = db._encode_df(df, mv, types, order=order,
+                                        encode=self.meta.encode_transform)
+            self._X_extra_base = df
+
+        if self.meta.encode_select and self._X_select_base is not None:
+            df = self._X_select_base
+            mv = get_missing_values(df, db.heuristic)
+            types = _load_feature_types(db, df_name, anonymized=False)
+            db._load_ordinal_orders(self.meta)
+            order = db.ordinal_orders.get(self.meta.tag, None)
+            df, _, _, _ = db._encode_df(df, mv, types, order=order,
+                                        encode=self.meta.encode_select)
+            self._X_select_base = df
 
     def _load_X_y(self):
         """Load a dataframe from taskmeta (X and y)."""
-        if self._X_base_plain is None:
-            self._load_X_plain()
-
-        # Step 0: get dataframe's path and load infos
-        logging.debug('Get df path and load infos')
-        db = dbs[self.meta.db]
-        df_name = self.meta.df_name
+        if self._X_extra_base is None and self._X_select_base is None:
+            self._load_X_base()
 
         # Step 6: Derive new set of features if any
         transform = self.meta.transform
@@ -275,23 +303,14 @@ class Task(object):
             df.drop(features_to_drop, axis=1, inplace=True)
             self._X_extra = df
 
-        # Step 7: Encode loaded features
-        if self.meta.encode:
-            df = self._X_base_plain
-            mv = get_missing_values(df, db.heuristic)
-            types = _load_feature_types(db, df_name, anonymized=False)
-            db._load_ordinal_orders(self.meta)
-            order = db.ordinal_orders.get(self.meta.tag, None)
-            df, _, _, _ = db._encode_df(df, mv, types, order=order,
-                                        encode=self.meta.encode)
-
-        # Step 8: Drop unwanted features if output specified
+        # Step 7: Drop unwanted features if output specified
         select = self.meta.select
         if select and select.output_features:
+            df = self._X_select_base
             features_to_keep = select.output_features
             features = set(df.columns)
             features_to_drop = features - set(features_to_keep)
-            df.drop(features_to_drop, axis=1, inplace=True)
-
-        # Step 9: save result
-        self._X_base = df
+            df = df.drop(features_to_drop, axis=1)
+            self._X_select = df
+        else:
+            self._X_select = self._X_select_base
