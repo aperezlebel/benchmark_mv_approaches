@@ -49,4 +49,7 @@ def run(argv=None):
     logger.info(f'Run task {task_name} using {strategy_name}')
     logger.info(f'Asked RS: {RS}')
 
+    if RS:
+        RS = int(RS)
+
     _ = args.train(task, strategy, RS=RS)
