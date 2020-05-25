@@ -8,6 +8,7 @@ from missing_values import get_missing_values
 from df_utils import fill_df
 from database import dbs, _load_feature_types
 from .transform import Transform
+from encode import ordinal_encode
 
 
 @dataclass
@@ -212,6 +213,11 @@ class Task(object):
         idx_to_drop = idx_to_drop.union(idx_to_drop_y)  # merge the indexes
         self._rows_to_drop = idx_to_drop + 1  # Rows start to 1 with header
         self._y = self._y.drop(idx_to_drop_y, axis=0)
+
+        # Step 5: Encode y if needed
+        if self.is_classif():
+            y_mv = get_missing_values(self._y, db.heuristic)
+            self._y, _ = ordinal_encode(self._y, y_mv)
 
     def _load_X_base(self):
         if self._y is None:
