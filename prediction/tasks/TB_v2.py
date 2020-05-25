@@ -33,13 +33,13 @@ if os.path.exists(death_pvals_path):
     pvals = pd.read_csv(death_pvals_path, header=None,
                         index_col=0, squeeze=True)
     pvals = pvals.sort_values()[:n_top_pvals]
-    breast_top_pvals = list(pvals.index)
+    death_top_pvals = list(pvals.index)
 
-    breast_pvals_keep_transform = Transform(
-        output_features=breast_top_pvals
+    death_pvals_keep_transform = Transform(
+        output_features=death_top_pvals
     )
 else:
-    breast_pvals_keep_transform = None
+    death_pvals_keep_transform = None
 
 task_metas.append(TaskMeta(
     name='death_pvals',
@@ -49,7 +49,7 @@ task_metas.append(TaskMeta(
     idx_selection=None,
     predict=death_predict_transform,
     transform=None,
-    select=None,
+    select=death_pvals_keep_transform,
     encode_select='all',
     encode_transform=None,
 ))
