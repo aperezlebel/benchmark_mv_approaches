@@ -41,7 +41,7 @@ def _df_type_handler(function, df_seq, keys=None, **kwargs):
                                                   **kwargs)
         return list(df_encoded.values()), list(mv_encoded.values())
 
-    return function(df_seq, **kwargs)
+    return function(*df_seq, **kwargs)
 
 
 def ordinal_encode(df, mv, keys=None, order=None):
