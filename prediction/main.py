@@ -35,8 +35,6 @@ def run(argv=None):
     strategy_name = args.strategy_name
     RS = args.RS
 
-    logger.info(f'Argv given. Task: {task_name} ; Strategy name/id: {strategy_name}')
-
     # Try to convert to int if id passed
     try:
         strategy_name = int(strategy_name)
