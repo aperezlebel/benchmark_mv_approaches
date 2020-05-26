@@ -1,5 +1,6 @@
 """Implement  PlotHelper for train4 results."""
 import os
+from collections import Counter
 
 
 class PlotHelperV4(object):
@@ -49,7 +50,7 @@ class PlotHelperV4(object):
     def tasks(self, db):
         """Return the tasks related to a given database."""
         nd = self._nested_dict
-        return [t for t in nd[db].keys() if nd[db][t]]
+        return [t for t in nd[db].keys() if self.methods(db, t)]
 
     def methods(self, db, t):
         """Return the methods used by a given task."""
@@ -57,8 +58,11 @@ class PlotHelperV4(object):
         return [m for m in nd[db][t] if self._is_valid_method(db, t, m)]
 
     def _is_valid_method(self, db, t, m):
-        path = f'{self.root_folder}/{db}/{t}/{m}/'
+        # Must contain either Classification or Regression
+        if 'Regression' not in m and 'Classification' not in m:
+            return False
 
+        path = f'{self.root_folder}/{db}/{t}/{m}/'
         if not os.path.exists(path):
             return False
 
@@ -66,3 +70,20 @@ class PlotHelperV4(object):
 
         return len(filenames) > 1  # there is always strat_infos.yml in m folder
 
+    def common_methods(self):
+        """Return the common methods used by the tasks in the root_folder."""
+        c = Counter()
+
+        for db in self.databases():
+            for t in self.tasks(db):
+                for m in self.methods(db, t):
+                    if self._is_valid_method(db, t, m):
+                        s = m.split('Regression')
+                        if len(s) == 1:
+                            s = m.split('Classification')
+                        suffix = s[1]
+                        c.update([suffix])
+
+        max_count = c.most_common(1)[0][1]
+
+        return [m for m, q in c.items() if q == max_count]
