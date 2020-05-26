@@ -159,7 +159,7 @@ strategies.append(Strategy(
 strategies.append(Strategy(
     name='Regression',
     estimator=HistGradientBoostingRegressor(loss='least_absolute_deviation', random_state=RS),
-    inner_cv=StratifiedShuffleSplit(n_splits=n_inner_splits, train_size=0.8, random_state=RS),
+    inner_cv=ShuffleSplit(n_splits=n_inner_splits, train_size=0.8, random_state=RS),
     search=GridSearchCV,
     param_space=param_space,
     search_params={
