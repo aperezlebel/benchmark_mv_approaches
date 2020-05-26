@@ -41,7 +41,7 @@ class Strategy():
 
         search_params['cv'] = self.inner_cv
         estimator = Pipeline([
-            ('log1', FakeStep('searchHP')),
+            # ('log1', FakeStep('searchHP')),
             ('model', estimator)
         ])
         param_space = {f'model__{k}': v for k, v in param_space.items()}

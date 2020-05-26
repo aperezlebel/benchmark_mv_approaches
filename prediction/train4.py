@@ -33,15 +33,15 @@ def train(task, strategy, RS=None):
     if strategy.imputer is not None:
         logger.info('Creating pipeline with imputer.')
         steps = [
-            ('log1', FakeStep('imputer')),
+            # ('log1', FakeStep('imputer')),
             ('imputer', strategy.imputer),
-            ('log2', FakeStep('searchCV_estimator')),
+            # ('log2', FakeStep('searchCV_estimator')),
             ('searchCV_estimator', strategy.search)
         ]
     else:
         logger.info('Creating pipeline without imputer.')
         steps = [
-            ('log1', FakeStep('searchCV_estimator')),
+            # ('log1', FakeStep('searchCV_estimator')),
             ('searchCV_estimator', strategy.search)
         ]
 
