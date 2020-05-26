@@ -62,6 +62,8 @@ def train(task, strategy, RS=None):
             y_train, y_test = y.iloc[train_idx], y.iloc[test_idx]
 
             logger.info(f'Fold {i}: Started fitting the estimator')
+            logger.info(f'Value count for y_train:\n{y_train.value_counts()}')
+            logger.info(f'Value count for y_test:\n{y_test.value_counts()}')
             estimator.fit(X_train, y_train)
             logger.info('Ended fitting the estimator')
 
@@ -81,4 +83,3 @@ def train(task, strategy, RS=None):
 
             logger.info(f'Fold {i}: Ended predict.')
             dh.dump_prediction(y_pred, y_test, fold=i, tag=str(n))
-
