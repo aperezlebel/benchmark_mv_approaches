@@ -1,6 +1,5 @@
 """Implement  PlotHelper for train4 results."""
 import os
-from collections import Counter
 
 
 class PlotHelperV4(object):
@@ -19,43 +18,53 @@ class PlotHelperV4(object):
         walk = os.walk(self.root_folder)
 
         abs_dirpaths = []
+        abs_filepaths = []
         for root, dirnames, filenames in walk:
             if dirnames:
                 for dirname in dirnames:
-                    # print(f'{root}/{dirname}')
                     abs_dirpaths.append(f'{root}/{dirname}')
+            if filenames:
+                for filename in filenames:
+                    abs_filepaths.append(f'{root}/{filename}')
 
         prefix = os.path.commonprefix(abs_dirpaths)
         rel_dir_paths = [os.path.relpath(p, prefix) for p in abs_dirpaths]
-        # print(rel_dir_paths)
+        rel_file_paths = [os.path.relpath(p, prefix) for p in abs_filepaths]
 
-        # Step 3: Convert relative paths to nested python dictionnary
-        nested_dict = {}
+        # Step 3.1: Convert relative paths to nested python dictionnary (dirs)
+        nested_dir_dict = {}
 
         for rel_dir_path in rel_dir_paths:
-            d = nested_dict
+            d = nested_dir_dict
             for x in rel_dir_path.split('/'):
                 d = d.setdefault(x, {})
 
-        print(nested_dict)
+        # Step 3.2: Convert relative paths to nested python dictionnary (files)
+        nested_file_dict = {}
 
-        # Step 4: Fill the class attributes with the nested dict
-        self._nested_dict = nested_dict
+        for rel_file_path in rel_file_paths:
+            d = nested_file_dict
+            for x in rel_file_path.split('/'):
+                d = d.setdefault(x, {})
+
+        # Step 4: Fill the class attributes with the nested dicts
+        self._nested_dir_dict = nested_dir_dict
+        self._nested_file_dict = nested_file_dict
 
     def databases(self):
         """Return the databases found in the root folder."""
-        nd = self._nested_dict
-        return [db for db in nd.keys() if self.tasks(db)]
+        ndd = self._nested_dir_dict
+        return [db for db in ndd.keys() if self.tasks(db)]
 
     def tasks(self, db):
         """Return the tasks related to a given database."""
-        nd = self._nested_dict
-        return [t for t in nd[db].keys() if self.methods(db, t)]
+        ndd = self._nested_dir_dict
+        return [t for t in ndd[db].keys() if self.methods(db, t)]
 
     def methods(self, db, t):
         """Return the methods used by a given task."""
-        nd = self._nested_dict
-        return [m for m in nd[db][t] if self._is_valid_method(db, t, m)]
+        ndd = self._nested_dir_dict
+        return [m for m in ndd[db][t] if self._is_valid_method(db, t, m)]
 
     def _is_valid_method(self, db, t, m):
         # Must contain either Classification or Regression
@@ -77,13 +86,26 @@ class PlotHelperV4(object):
         for db in self.databases():
             for t in self.tasks(db):
                 for m in self.methods(db, t):
-                    if self._is_valid_method(db, t, m):
-                        s = m.split('Regression')
-                        if len(s) == 1:
-                            s = m.split('Classification')
-                        suffix = s[1]
-                        methods.add(suffix)
+                    s = m.split('Regression')
+                    if len(s) == 1:
+                        s = m.split('Classification')
+                    suffix = s[1]
+                    methods.add(suffix)
 
         return methods
 
-        return [m for m, q in c.items() if q == max_count]
+    def existing_sizes(self):
+        """Return the existing training sizes found in the root_folder."""
+        sizes = set()
+        nfd = self._nested_file_dict
+
+        for db in self.databases():
+            for t in self.tasks(db):
+                for m in self.methods(db, t):
+                    for filename in nfd[db][t][m].keys():
+                        s = filename.split('_prediction.csv')
+                        if len(s) > 1:  # Pattern found
+                            size = s[0]  # size is the first part
+                            sizes.add(size)
+
+        return sizes
