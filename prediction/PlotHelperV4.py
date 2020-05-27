@@ -4,16 +4,21 @@ import yaml
 import pandas as pd
 import numpy as np
 from sklearn.metrics import r2_score, roc_auc_score
+import matplotlib
+matplotlib.use('MacOSX')
+import matplotlib.pyplot as plt
+import seaborn as sns
 
 
 class PlotHelperV4(object):
     """Plot the train4 results."""
 
-    def __init__(self, root_folder):
+    def __init__(self, root_folder, rename):
         """Init."""
         # Stepe 1: Check and register root_path
         root_folder = root_folder.rstrip('/')  # Remove trailing '/'
         self.root_folder = root_folder
+        self._rename = rename
 
         if not os.path.isdir(self.root_folder):
             raise ValueError(f'No dir at specified path: {self.root_folder}')
@@ -83,6 +88,20 @@ class PlotHelperV4(object):
 
         return len(filenames) > 1  # always strat_infos.yml in m folder
 
+    def short_method_name(self, m):
+        """Return the suffix from the method name."""
+        s = m.split('Regression')
+        if len(s) == 1:
+            s = m.split('Classification')
+        if len(s) == 1:
+            raise ValueError(f'Unable to find short method name of {m}')
+
+        return s[1]
+
+    def rename(self, x):
+        """Rename a string."""
+        return self._rename.get(x, x)
+
     def existing_methods(self):
         """Return the existing methods used by the tasks in the root_folder."""
         methods = set()
@@ -112,6 +131,9 @@ class PlotHelperV4(object):
                             size = s[0]  # size is the first part
                             sizes.add(size)
 
+        sizes = list(sizes)
+        sizes.sort(key=int)
+
         return sizes
 
     def score(self, db, t, m, size, true_class='1', mean=False):
@@ -139,6 +161,7 @@ class PlotHelperV4(object):
             Else, return a float, mean of scores on all folds.
 
         """
+        print(f'Compute score of {db}/{t}/{m}/{size}')
         method_path = f'{self.root_folder}/{db}/{t}/{m}/'
         strat_infos_path = method_path+'strat_infos.yml'
 
@@ -201,3 +224,123 @@ class PlotHelperV4(object):
                     available_methods.add(m)
 
         return available_methods
+
+    def _y(self, m, db, n_m, n_db):
+        """Get y-axis position given # db and # m and n_db and n_m."""
+        assert 0 <= m < n_m
+        assert 0 <= db < n_db
+        return n_m - m - (db+1)/(n_db+1)
+
+    def plot(self, method_order=None, db_order=None):
+        """Plot the full available results."""
+        dbs = self.databases()
+        existing_methods = self.existing_methods()
+        existing_sizes = self.existing_sizes()
+
+        print(existing_sizes)
+
+        # Convert existing methods from short name to renamed name
+        existing_methods = {self.rename(m) for m in existing_methods}
+
+        # Reorder the methods if asked
+        temp = []
+        if method_order:
+            # Add methods with order in order
+            for m in method_order:
+                if m in existing_methods:
+                    temp.append(m)
+
+        # Add methods without order
+        for m in existing_methods:
+            if m not in temp:
+                temp.append(m)
+
+        method_order_list = temp
+        method_order = {m: i for i, m in enumerate(method_order_list)}
+
+        # Reorder the db if asked
+        temp = []
+        if db_order:
+            for db in db_order:
+                if db in db_order:
+                    temp.append(db)
+
+        for db in dbs:
+            if db not in temp:
+                temp.append(db)
+
+        db_order_list = temp
+        db_order_list_renamed = [self.rename(db) for db in db_order_list]
+        db_order = {db: i for i, db in enumerate(db_order_list)}
+
+        n_db = len(dbs)
+        n_m = len(existing_methods)
+        n_sizes = len(existing_sizes)
+
+        rows = []
+        for i, size in enumerate(existing_sizes):
+            for db in dbs:
+                for t in self.tasks(db):
+                    methods = self.availale_methods_by_size(db, t, size)
+                    rel_scores = self.relative_scores(db, t, methods, size)
+                    for m, s in rel_scores.items():
+                        short_m = self.short_method_name(m)
+                        renamed_m = self.rename(short_m)
+                        priority = method_order[renamed_m]
+                        db_id = db_order[db]
+                        rdb = self.rename(db)
+                        y = self._y(priority, db_id, n_m, n_db)
+                        rows.append(
+                            (size, db, rdb, t, priority, m, renamed_m, s, y)
+                        )
+
+        cols = ['n', 'db', 'Databases', 't', 'p', 'm', 'rm', 'relative_score', 'y']
+
+        df = pd.DataFrame(rows, columns=cols)
+        print(df)
+
+        fig, axes = plt.subplots(nrows=1, ncols=n_sizes, figsize=(20, 6))
+        plt.subplots_adjust(
+            left=0.075,
+            right=0.95,
+            bottom=0.1,
+            top=0.95,
+            wspace=0.05
+        )
+
+        for i, size in enumerate(existing_sizes):
+            ax = axes[i]
+            idx = df.index[df['n'] == size]
+            df_gb = df.loc[idx]
+
+            twinx = ax.twinx()
+            twinx.set_ylim(0, n_m)
+            twinx.yaxis.set_visible(False)
+
+            ax.axvline(0, ymin=0, ymax=n_m, color='gray', zorder=0)
+
+            # Boxplot
+            sns.set_palette(sns.color_palette('gray'))
+            sns.boxplot(x='relative_score', y='rm', data=df_gb, orient='h',
+                        ax=ax, order=method_order_list)
+
+            # Scatter plot
+            sns.set_palette(sns.color_palette('colorblind'))
+            sns.scatterplot(x='relative_score', y='y', hue='Databases',
+                            data=df_gb, ax=twinx,
+                            hue_order=db_order_list_renamed,
+                            style='Databases',
+                            markers=['o', '^', 'v', 's'],
+                            s=75,
+                            )
+
+            if i > 0:  # if not the first axis
+                ax.yaxis.set_visible(False)
+                twinx.get_legend().remove()
+            ax.set_title(f'n={size}')
+            ax.set_xlabel(self.rename(ax.get_xlabel()))
+            ax.set_ylabel(None)
+            ax.set_axisbelow(True)
+            ax.grid(True, axis='x')
+
+        return fig
