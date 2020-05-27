@@ -188,3 +188,16 @@ class PlotHelperV4(object):
         relative_scores = {m: (s - mean)/mean for m, s in scores.items()}
 
         return relative_scores
+
+    def availale_methods_by_size(self, db, t, size):
+        """Get the methods available for a given size."""
+        methods = self.methods(db, t)
+        nfd = self._nested_file_dict
+        available_methods = set()
+
+        for m in methods:
+            for filename in nfd[db][t][m]:
+                if f'{size}_' in filename:
+                    available_methods.add(m)
+
+        return available_methods
