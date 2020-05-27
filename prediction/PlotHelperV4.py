@@ -1,5 +1,9 @@
 """Implement  PlotHelper for train4 results."""
 import os
+import yaml
+import pandas as pd
+import numpy as np
+from sklearn.metrics import r2_score, roc_auc_score
 
 
 class PlotHelperV4(object):
@@ -109,3 +113,66 @@ class PlotHelperV4(object):
                             sizes.add(size)
 
         return sizes
+
+    def score(self, db, t, m, size, true_class='1', mean=False):
+        """Compute score of a given db, task, method, size.
+
+        Parameters
+        ----------
+        db : str
+            Name of db folder.
+        t : str
+            Name of task folder.
+        m : str
+            Name of method folder.
+        size : str
+            Size of the train set to load.
+        true_class : str
+            Name of the true class (if classification).
+        mean : bool
+            Whether to compute the mean of the score or return all scores.
+
+        Return
+        ------
+        scores : dict or float
+            If mean is False: return dict of scores of each fold.
+            Else, return a float, mean of scores on all folds.
+
+        """
+        method_path = f'{self.root_folder}/{db}/{t}/{m}/'
+        strat_infos_path = method_path+'strat_infos.yml'
+
+        if not os.path.exists(strat_infos_path):
+            raise ValueError(f'Path {strat_infos_path} doesn\'t exist.')
+
+        with open(strat_infos_path, 'r') as file:
+            strat_infos = yaml.safe_load(file)
+
+        is_classif = strat_infos['classification']
+
+        if is_classif:
+            scorer = roc_auc_score
+            df_path = f'{method_path}{size}_probas.csv'
+            y_true_col = 'y_true'
+            y_col = f'proba_{true_class}'
+        else:
+            scorer = r2_score
+            df_path = f'{method_path}{size}_prediction.csv'
+            y_true_col = 'y_true'
+            y_col = 'y_pred'
+
+        df = pd.read_csv(df_path)
+
+        scores = dict()
+
+        for fold, df_gb in df.groupby('fold'):
+            y_true = df_gb[y_true_col]
+            y = df_gb[y_col]
+
+            score = scorer(y_true, y)
+            scores[fold] = score
+
+        if mean:
+            scores = np.mean(list(scores.values()))
+
+        return scores
