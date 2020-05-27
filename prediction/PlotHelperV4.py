@@ -176,3 +176,15 @@ class PlotHelperV4(object):
             scores = np.mean(list(scores.values()))
 
         return scores
+
+    def relative_scores(self, db, t, methods, size):
+        """Get relative scores of given methods for (db, task, size).
+
+        Size and methods must exist (not check performed).
+        """
+        scores = {m: self.score(db, t, m, size, mean=True) for m in methods}
+        mean = np.mean(list(scores.values()))
+
+        relative_scores = {m: (s - mean)/mean for m, s in scores.items()}
+
+        return relative_scores
