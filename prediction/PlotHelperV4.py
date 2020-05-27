@@ -68,11 +68,11 @@ class PlotHelperV4(object):
 
         _, _, filenames = next(os.walk(path))
 
-        return len(filenames) > 1  # there is always strat_infos.yml in m folder
+        return len(filenames) > 1  # always strat_infos.yml in m folder
 
-    def common_methods(self):
-        """Return the common methods used by the tasks in the root_folder."""
-        c = Counter()
+    def existing_methods(self):
+        """Return the existing methods used by the tasks in the root_folder."""
+        methods = set()
 
         for db in self.databases():
             for t in self.tasks(db):
@@ -82,8 +82,8 @@ class PlotHelperV4(object):
                         if len(s) == 1:
                             s = m.split('Classification')
                         suffix = s[1]
-                        c.update([suffix])
+                        methods.add(suffix)
 
-        max_count = c.most_common(1)[0][1]
+        return methods
 
         return [m for m, q in c.items() if q == max_count]
