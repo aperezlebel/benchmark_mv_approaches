@@ -72,8 +72,10 @@ class Task(object):
 
         # Store the dataframes
         self._X_select_base = None
+        self._X_select_unenc = None
         self._X_select = None
         self._X_extra_base = None
+        self._X_extra_unenc = None
         self._X_extra = None
         self._y = None
 
@@ -262,12 +264,15 @@ class Task(object):
         # Step 5.2: save the results
         if select:
             self._X_select_base = df[select_f]
+            self._X_select_unenc = df[select_f]
 
         if transform:
             self._X_extra_base = df[transform_f]
+            self._X_extra_unenc = df[transform_f]
 
         if not select and not transform:
             self._X_select_base = df
+            self._X_select_unenc = df
 
         # Step 5.3: Encode both dataframes
         if self.meta.encode_transform and self._X_extra_base is not None:
