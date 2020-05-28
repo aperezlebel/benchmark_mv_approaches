@@ -207,8 +207,9 @@ class PlotHelperV4(object):
         """
         scores = {m: self.score(db, t, m, size, mean=True) for m in methods}
         mean = np.mean(list(scores.values()))
+        # std = np.std(list(scores.values()))
 
-        relative_scores = {m: (s - mean)/mean for m, s in scores.items()}
+        relative_scores = {m: (s - mean) for m, s in scores.items()}
 
         return relative_scores
 
@@ -308,6 +309,9 @@ class PlotHelperV4(object):
             wspace=0.05
         )
 
+        markers = ['o', '^', 'v', 's']
+        db_markers = {db: markers[i] for i, db in enumerate(db_order_list_renamed)}
+
         for i, size in enumerate(existing_sizes):
             ax = axes[i]
             idx = df.index[df['n'] == size]
@@ -322,7 +326,7 @@ class PlotHelperV4(object):
             # Boxplot
             sns.set_palette(sns.color_palette('gray'))
             sns.boxplot(x='relative_score', y='rm', data=df_gb, orient='h',
-                        ax=ax, order=method_order_list)
+                        ax=ax, order=method_order_list, showfliers=False)
 
             # Scatter plot
             sns.set_palette(sns.color_palette('colorblind'))
@@ -330,7 +334,7 @@ class PlotHelperV4(object):
                             data=df_gb, ax=twinx,
                             hue_order=db_order_list_renamed,
                             style='Databases',
-                            markers=['o', '^', 'v', 's'],
+                            markers=db_markers,#['o', '^', 'v', 's'],
                             s=75,
                             )
 
