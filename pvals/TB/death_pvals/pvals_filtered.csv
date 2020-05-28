@@ -15,8 +15,6 @@ Numéro de centre_5,0.4440031130143944
 Numéro de centre_6,0.24803024460572345
 Numéro de centre_7,0.9442302804119552
 Numéro de centre_8,0.2140452170331264
-Age du patient (ans),2.8021492936250833e-222
-BMI,0.0002974273901534728
 "Mécanisme en cause_AVP (voiture, camion, bus)",0.8456914082426735
 Mécanisme en cause_AVP 2 roues motorisé,0.5939774599600713
 "Mécanisme en cause_AVP autre (avion, bateau, train, autres)",0.6754260559673215
@@ -355,129 +353,45 @@ SMUR (SAMU Ville)_toulon,0.6673924412004005
 SMUR (SAMU Ville)_tourcoing,0.6180104065926522
 SMUR (SAMU Ville)_valenciennes,0.7243857729451199
 SMUR (SAMU Ville)_Épernay,0.2217555061176605
-Durée de l incarcération (min),0.2962773150857613
-Surface corporelle brulée,0.00019456686958434384
-Glasgow initial,0.0
-Glasgow moteur initial,0.0
 Anomalie pupillaire (Pré-hospitalier)_Anisocorie (unilatérale),0.5157398511883815
 Anomalie pupillaire (Pré-hospitalier)_Mydriase Bilatérale,0.5385883113245866
 Anomalie pupillaire (Pré-hospitalier)_Non,0.4861008563640005
 Anomalie pupillaire (Pré-hospitalier)_Pas précisé,0.8791057287495584
 Anomalie pupillaire (Pré-hospitalier)_nan,0.7777255598051267
-Pression Artérielle Systolique (PAS) à l arrivée du SMUR,3.204167226648514e-48
-Pression Artérielle Diastolique (PAD) à l arrivée du SMUR,3.080389961449135e-81
-Fréquence cardiaque (FC) à l arrivée du SMUR,4.04340643724782e-41
-Pression Artérielle Systolique (PAS) minimum,0.0
-Pression Artérielle Diastolique (PAD) minimum,0.0
-Fréquence cardiaque (FC) maximum,1.3795649231573377e-52
-Lactates pré-hospitalier,1.8433772458555263e-17
-Cristalloïdes,3.213630764952597e-134
-Colloïdes,2.449762263660157e-68
-Hémocue initial,5.164556330229953e-157
-"Hémocue, à l arrivée hôpital par équipe hôpital",0.0
-Delta Hémocue,5.373975474981905e-13
-SpO2 min,2.698239738192829e-283
-Délai « départ base - arrivée sur les lieux »,0.9349184247244112
-Délai « arrivée sur les lieux - arrivée hôpital »,1.701087583985816e-06
-Glasgow moteur,0.0
 Anomalie pupillaire (Phase hospitalière)_Anisocorie (unilatérale),0.2580136990571073
 Anomalie pupillaire (Phase hospitalière)_Mydriase (bilatérale),0.6672517589593926
 Anomalie pupillaire (Phase hospitalière)_Non,0.15795179332459205
 Anomalie pupillaire (Phase hospitalière)_nan,0.28668109909463024
-FC en phase hospitalière,8.417913761581292e-12
-Pression Artérielle Systolique - PAS,4.383452140206308e-91
-Pression Artérielle Diastolique - PAD,8.246794716002454e-77
-Saturation périphérique oxygène - SpO2,2.0504998477690538e-16
-Température,6.786515660048873e-81
-"Doppler TransCrânien (DTC), Index de Pulsatilité (IP) max",3.099632594711268e-199
-pH,0.0
-PaO2,9.60808060925739e-19
-pCO2,7.772415748010373e-37
-Lactates,0.0
-Lactates H2,3.795634669613662e-96
-"Sinon, lactates > H2",3.60191539519163e-89
-Excès de base,3.218940682466832e-219
 Ventilation (FiO2)_Contrôlée,0.2282574292875422
 Ventilation (FiO2)_Spontanée air ambiant,0.1898039558045657
 Ventilation (FiO2)_Spontanée sous lunettes,0.4061542427221654
 Ventilation (FiO2)_Spontanée sous masque HC,0.3090851266553781
 Ventilation (FiO2)_Spontanée sous masque MC,0.023668977234766717
 Ventilation (FiO2)_nan,0.9703210401100596
-FiO2,0.0
-Hb conventionnelle laboratoire,0.0
-Plaquettes,8.410738053236568e-162
-TP,0.0
-Fibrinogène,6.656023636950997e-178
-Créatinine,6.119341102694066e-76
-Bicar mesuré,0.0
-Troponine standard,6.138248174449539e-47
-Troponine ultrasensible,5.2168481659396845e-16
-Alcoolémie (g/L),0.9355672936053012
-Nombre culots globulaires (avant départ scanner ou bloc),3.4643695854414247e-270
-Nombre plasma frais congelés (avant départ scanner ou bloc),7.072405222136435e-118
-Nombre concentré plaquettaire (avant départ scanner ou bloc),3.680767703451108e-57
 Maladies chroniques_Aucune,0.3906980972449416
 Maladies chroniques_Cancer métastasé,0.04260340629037874
 Maladies chroniques_Maladie hémato.,0.7431398078933565
 Maladies chroniques_SIDA,0.9930939255031777
 Maladies chroniques_nan,0.4835530046904325
-Total Score IGS,0.0
 SOFA Cardiovasculaire_Dopamine > 15 ou Adrénaline / Noradrénaline > 0.1,0.5728553748741592
 SOFA Cardiovasculaire_Dopamine > 5 ou Adrénaline / Noradrénaline ? 0.1,0.23199079912461384
 SOFA Cardiovasculaire_Dopamine ?5 ou Dobutamine,0.9930939255031777
 SOFA Cardiovasculaire_PAM < 70 mmHg,0.7065653326433368
 SOFA Cardiovasculaire_Pas d'hypotension,0.3671254686920629
 SOFA Cardiovasculaire_nan,0.390893686022048
- Total Score SOFA,0.0
-Température min,1.7513885647723662e-28
-Délai « admission trauma center - incision/ponction pour geste »,0.0013070881350769838
-Délai introduction catécholamines dans choc hémorragique,8.539527230582664e-08
-Catécholamines max dans choc hémorragique,9.870007233570983e-83
-CGR 6h,5.3697127258916917e-14
-PFC 6h,4.3796696048880095e-09
-Concentré plaquettaire 6h (nombre de CUP),7.87417025041358e-10
-Fibrinogène 6h,2.5380650367167584e-09
-Cristalloïdes 24h,6.882262924367903e-08
-Colloïdes 24h,0.7586675105261691
-CGR 24h,1.0791432636847417e-07
-PFC 24h,6.164369673449646e-07
-Concentré plaquettaire 24h (nombre de CUP),2.2925384436187872e-07
-Fibrinogène 24h,1.4553579642034606e-09
-PaCO2 min,0.033564210807204994
-pH min,4.284754496592359e-93
-Lactate max,5.863277126315474e-93
-Créatinine max,4.796399690463673e-05
-Ca ionise min,3.399807682380713e-05
-P/F min,1.0328573298540855e-19
-Bicar min,1.0805668610660534e-68
-BE max,4.45717331276705e-54
-TP min,1.4080988658757678e-88
-Fibrinogène min,6.77501739726169e-39
-Hémoglobine min,3.126784015621105e-07
-Plaquettes min,0.002533315230914128
 Osmothérapie_Mannitol,0.6859081616573849
 Osmothérapie_Rien,0.7082157017515713
 Osmothérapie_SSH,0.5598112077411883
 Osmothérapie_nan,0.7100468840331176
-Délai PIC : arrivée hôpital - pose de PIC,0.4594265739612034
-DTC IP max (sur les premières 24 heures d HTIC),6.373458963941605e-133
 Traumatisme médullaire le plus haut_Cervical,0.8280623738140802
 Traumatisme médullaire le plus haut_Lombaire,0.4795206124254348
 Traumatisme médullaire le plus haut_Sacrum,0.4563741836825152
 Traumatisme médullaire le plus haut_Thoracique,0.18796201117284356
 Traumatisme médullaire le plus haut_nan,0.28238255334233386
-Score ASIA moteur,7.176121337769421e-08
-"Durée de séjour en réa- si date de sortie connue, durée de séjour = (date sortie - date d entrée)- si date de sortie inconnue, d",0.8278234205754507
 "Transfert secondaire, pourquoi ?_Pas de transfert",0.9640894150365404
 "Transfert secondaire, pourquoi ?_Plateau technique insuffisant",0.2155528584058452
 "Transfert secondaire, pourquoi ?_Rapprochement familial",0.3023692205844256
 "Transfert secondaire, pourquoi ?_nan",0.9673206755948878
-"Rachis récupération, score ASIA moteur",
-Créatinine max.1,1.2401575173425364e-73
-CPK max,0.7917356425636812
-Myoglobine max,1.033251200454612e-13
-Nombre de pneumopathies,0.00024953683850462643
-Jour de la première pneumopathie,0.06852850715427762
 Situation professionnelle actuelle_Activité professionnelle à plein temps,0.9589260475346192
 Situation professionnelle actuelle_Activité professionnelle à plein temps ,0.6885690789049007
 Situation professionnelle actuelle_Activité professionnelle à temps partiel,0.3082670614907169
@@ -535,15 +449,354 @@ Niveau d études ou diplôme le plus élevé_Bac,0.5080986641923797
 Niveau d études ou diplôme le plus élevé_Non scolarisé,0.04395367105673018
 Niveau d études ou diplôme le plus élevé_Primaire,0.5926019233787239
 Niveau d études ou diplôme le plus élevé_nan,0.4413440329994793
-ISS  / Head_neck,0.0
-ISS  / Face,1.5502705430157985e-25
-ISS  / Chest,7.292039214987487e-51
-ISS  / Abdomen,0.0010557859308310297
-ISS  / Extremities,6.432337165072311e-07
-ISS  / External,3.5604546871570063e-07
+Age du patient (ans),2.8021492936250833e-222
+BMI,0.0002974273901534728
+Durée de l incarcération (min),0.2962773150857613
+Surface corporelle brulée,0.00019456686958434384
+Pression Artérielle Systolique (PAS) à l arrivée du SMUR,3.204167226648514e-48
+Pression Artérielle Diastolique (PAD) à l arrivée du SMUR,3.080389961449135e-81
+Fréquence cardiaque (FC) à l arrivée du SMUR,4.04340643724782e-41
+Pression Artérielle Systolique (PAS) minimum,0.0
+Pression Artérielle Diastolique (PAD) minimum,0.0
+Fréquence cardiaque (FC) maximum,1.3795649231573377e-52
+Lactates pré-hospitalier,1.8433772458555263e-17
+Cristalloïdes,3.213630764952597e-134
+Colloïdes,2.449762263660157e-68
+Hémocue initial,5.164556330229953e-157
+"Hémocue, à l arrivée hôpital par équipe hôpital",0.0
+Delta Hémocue,5.373975474981905e-13
+SpO2 min,2.698239738192829e-283
+Délai « départ base - arrivée sur les lieux »,0.9349184247244112
+Délai « arrivée sur les lieux - arrivée hôpital »,1.701087583985816e-06
+FC en phase hospitalière,8.417913761581292e-12
+Pression Artérielle Systolique - PAS,4.383452140206308e-91
+Pression Artérielle Diastolique - PAD,8.246794716002454e-77
+Saturation périphérique oxygène - SpO2,2.0504998477690538e-16
+Température,6.786515660048873e-81
+"Doppler TransCrânien (DTC), Index de Pulsatilité (IP) max",3.099632594711268e-199
+pH,0.0
+PaO2,9.60808060925739e-19
+pCO2,7.772415748010373e-37
+Lactates,0.0
+Lactates H2,3.795634669613662e-96
+"Sinon, lactates > H2",3.60191539519163e-89
+Excès de base,3.218940682466832e-219
+FiO2,0.0
+Hb conventionnelle laboratoire,0.0
+Plaquettes,8.410738053236568e-162
+TP,0.0
+Fibrinogène,6.656023636950997e-178
+Créatinine,6.119341102694066e-76
+Bicar mesuré,0.0
+Troponine standard,6.138248174449539e-47
+Troponine ultrasensible,5.2168481659396845e-16
+Alcoolémie (g/L),0.9355672936053012
+Total Score IGS,0.0
+ Total Score SOFA,0.0
+Température min,1.7513885647723662e-28
+Délai « admission trauma center - incision/ponction pour geste »,0.0013070881350769838
+Délai introduction catécholamines dans choc hémorragique,8.539527230582664e-08
+Catécholamines max dans choc hémorragique,9.870007233570983e-83
+CGR 6h,5.3697127258916917e-14
+PFC 6h,4.3796696048880095e-09
+Fibrinogène 6h,2.5380650367167584e-09
+Cristalloïdes 24h,6.882262924367903e-08
+Colloïdes 24h,0.7586675105261691
+CGR 24h,1.0791432636847417e-07
+PFC 24h,6.164369673449646e-07
+Fibrinogène 24h,1.4553579642034606e-09
+PaCO2 min,0.033564210807204994
+pH min,4.284754496592359e-93
+Lactate max,5.863277126315474e-93
+Créatinine max,4.796399690463673e-05
+Ca ionise min,3.399807682380713e-05
+P/F min,1.0328573298540855e-19
+Bicar min,1.0805668610660534e-68
+BE max,4.45717331276705e-54
+TP min,1.4080988658757678e-88
+Fibrinogène min,6.77501739726169e-39
+Hémoglobine min,3.126784015621105e-07
+Plaquettes min,0.002533315230914128
+Délai PIC : arrivée hôpital - pose de PIC,0.4594265739612034
+DTC IP max (sur les premières 24 heures d HTIC),6.373458963941605e-133
+Score ASIA moteur,7.176121337769421e-08
+"Durée de séjour en réa- si date de sortie connue, durée de séjour = (date sortie - date d entrée)- si date de sortie inconnue, d",0.8278234205754507
+"Rachis récupération, score ASIA moteur",
+Créatinine max.1,1.2401575173425364e-73
+CPK max,0.7917356425636812
+Myoglobine max,1.033251200454612e-13
 Score ISS,0.0
 Trauma Injury Severity Score (TRISS),0.0
 Random,0.200214450798852
 RTS,0.0
 TRISS contondant,0.0
 TRISS pénétrant,0.0
+Sexe_0.0,0.03945126036183242
+Sexe_1.0,0.033961985699265326
+Sexe_nan,0.5769997823933904
+Casque_0.0,0.2725317445269711
+Casque_1.0,0.20141982240677986
+Casque_nan,0.9412832482440041
+Gants_0.0,0.2504277368867236
+Gants_1.0,0.3145550959446449
+Gants_nan,0.9511994671996388
+Éjection du véhicule_0.0,0.9392562661483218
+Éjection du véhicule_1.0,0.5189471805331374
+Éjection du véhicule_nan,0.6822739580288466
+Appréciation globale_0.0,0.9364229540109912
+Appréciation globale_1.0,0.4382806616662154
+Appréciation globale_nan,0.4277863480498992
+Incarcération_0.0,0.21245521341418305
+Incarcération_1.0,0.7890909197723368
+Incarcération_nan,0.13841604866733218
+Cinétique non-spécifié/non-évaluable_0.0,0.013411537949008144
+Cinétique non-spécifié/non-évaluable_1.0,0.09411262713851223
+Cinétique non-spécifié/non-évaluable_nan,0.13671795071812326
+Écrasé/projeté_0.0,0.8933385144047458
+Écrasé/projeté_1.0,0.13282183236349093
+Écrasé/projeté_nan,0.2581866335682331
+Chute_0.0,0.741506581046016
+Chute_1.0,0.3242333740655309
+Chute_nan,0.6783811641439623
+Blast_0.0,0.20636030171739245
+Blast_1.0,0.789976147877038
+Blast_nan,0.18175778571056125
+Ischémie du membre_0.0,0.7181531403198227
+Ischémie du membre_1.0,0.22195639052020574
+Ischémie du membre_nan,0.05314847422765368
+Fracas du bassin_0.0,0.572922962707691
+Fracas du bassin_1.0,0.7385834494205437
+Fracas du bassin_nan,0.07248269361338326
+Brulûre_0.0,0.8628809142293465
+Brulûre_1.0,0.13937055495859854
+Brulûre_nan,0.6701335340321367
+Annoncé comme instable_0.0,0.7352278706919404
+Annoncé comme instable_1.0,0.5360713500669633
+Annoncé comme instable_nan,0.4271198365513477
+"Grossesse, 2e ou 3e trimestre_0.0",0.10360182708247588
+"Grossesse, 2e ou 3e trimestre_1.0",0.05435303239717578
+"Grossesse, 2e ou 3e trimestre_nan",0.06240954277254367
+Traitement anticoagulant_0.0,0.4702672960139379
+Traitement anticoagulant_1.0,0.15191944607943228
+Traitement anticoagulant_nan,0.6007544350223031
+Traitement antiagrégants_0.0,0.42411577937749934
+Traitement antiagrégants_1.0,0.3504247630887106
+Traitement antiagrégants_nan,0.87036748651589
+Mode de transport à l'hôpital_0.0,0.5637604221902885
+Mode de transport à l'hôpital_1.0,0.7251231949516774
+Mode de transport à l'hôpital_nan,0.04156847818061537
+Suspicion d atteinte neurologique à l examen_0.0,0.6685632805686885
+Suspicion d atteinte neurologique à l examen_1.0,0.5520835878587093
+Suspicion d atteinte neurologique à l examen_nan,0.7117248863857313
+Régression mydriase sous osmothérapie_0.0,0.6768943288246048
+Régression mydriase sous osmothérapie_1.0,0.6674043097546609
+Régression mydriase sous osmothérapie_nan,0.9064745801953537
+Arrêt cardio-respiratoire (massage)_0.0,0.04637244476341555
+Arrêt cardio-respiratoire (massage)_1.0,0.05266118735879726
+Arrêt cardio-respiratoire (massage)_nan,0.4886576988550022
+Catécholamines_0.0,0.963061203047172
+Catécholamines_1.0,0.9104542776063864
+Catécholamines_2.0,0.7786810085639981
+Catécholamines_nan,0.8862370591225963
+Intubation orotrachéale (IOT) SMUR_0.0,0.07867921971345103
+Intubation orotrachéale (IOT) SMUR_1.0,0.09196501607499524
+Intubation orotrachéale (IOT) SMUR_nan,0.7053739642696311
+Transfusion de PLYO (plasma lyophilisé)_0.0,0.4910546513833749
+Transfusion de PLYO (plasma lyophilisé)_1.0,0.8870352549255848
+Transfusion de PLYO (plasma lyophilisé)_nan,0.4801284089621123
+Période de travail_0.0,0.8418103176199294
+Période de travail_1.0,0.8795659399876753
+Période de travail_nan,0.7126749452905249
+Echographie d orientation (FAST)_0.0,0.3807014231433145
+Echographie d orientation (FAST)_1.0,0.6833383200202328
+Echographie d orientation (FAST)_nan,0.36697062371385547
+Résultat de la FAST écho_0.0,0.3815457213514848
+Résultat de la FAST écho_1.0,0.06939660641981235
+Résultat de la FAST écho_nan,0.5858420941512152
+Si anormale préciser   / Hémopéritoine_0.0,0.7342661725137323
+Si anormale préciser   / Hémopéritoine_1.0,0.13862353484265275
+Si anormale préciser   / Hémopéritoine_nan,0.5815021194135132
+Si anormale préciser   / Hémothorax_0.0,0.5294740873945707
+Si anormale préciser   / Hémothorax_1.0,0.8009824479579366
+Si anormale préciser   / Hémothorax_nan,0.5815021194135132
+Si anormale préciser   / Pneumothorax_0.0,0.4995159318520189
+Si anormale préciser   / Pneumothorax_1.0,0.02766315735269876
+Si anormale préciser   / Pneumothorax_nan,0.5815021194135132
+Si anormale préciser   / Epanchement péricardique_0.0,0.8279247226562579
+Si anormale préciser   / Epanchement péricardique_1.0,0.14044660613757265
+Si anormale préciser   / Epanchement péricardique_nan,0.5815021194135132
+Si anormale préciser   / Autre diagnostic_0.0,0.6137562058669181
+Si anormale préciser   / Autre diagnostic_1.0,0.8258696600073383
+Si anormale préciser   / Autre diagnostic_nan,0.5815021194135132
+Radiographie pulmonaire_0.0,0.6817365116106411
+Radiographie pulmonaire_1.0,0.43522367651918015
+Radiographie pulmonaire_nan,0.654141789118069
+Résultat de la radiographie pulmonaire_0.0,0.08856348511044075
+Résultat de la radiographie pulmonaire_1.0,0.11704365345158048
+Résultat de la radiographie pulmonaire_nan,0.5020161544154087
+Si anormale préciser   / Pneumothorax.1_0.0,0.23830617149040145
+Si anormale préciser   / Pneumothorax.1_1.0,0.3400964322704346
+Si anormale préciser   / Pneumothorax.1_nan,0.4690720270356874
+Si anormale préciser   / Hémothorax.1_0.0,0.5561280553092897
+Si anormale préciser   / Hémothorax.1_1.0,0.628119577715557
+Si anormale préciser   / Hémothorax.1_nan,0.4690720270356874
+Si anormale préciser   / Contusion_0.0,0.30307073835498305
+Si anormale préciser   / Contusion_1.0,0.4606627010469549
+Si anormale préciser   / Contusion_nan,0.4690720270356874
+Si anormale préciser   / Elargissement du médiastin_0.0,0.4147694388114562
+Si anormale préciser   / Elargissement du médiastin_1.0,0.2020787676507648
+Si anormale préciser   / Elargissement du médiastin_nan,0.4690720270356874
+Radiographie bassin_0.0,0.23716233102569415
+Radiographie bassin_1.0,0.0915292864704042
+Radiographie bassin_nan,0.6398602677961942
+Si fait_0.0,0.06551003150743613
+Si fait_1.0,0.856921160725034
+Si fait_nan,0.10607366263897196
+Si anormale préciser   / Fracture pelvienne_0.0,0.04769812806899869
+Si anormale préciser   / Fracture pelvienne_1.0,0.7212819315857498
+Si anormale préciser   / Fracture pelvienne_nan,0.09135187030948004
+Si anormale préciser   / Disjonction symphyse pubienne_0.0,0.1915632458691212
+Si anormale préciser   / Disjonction symphyse pubienne_1.0,0.13875725261437832
+Si anormale préciser   / Disjonction symphyse pubienne_nan,0.09135187030948004
+Fibrinogène (au déchoc)_0.0,0.5559326357374781
+Fibrinogène (au déchoc)_1.0,0.6033258018089454
+Fibrinogène (au déchoc)_nan,0.3571542819237389
+Etude PROCOAG_0.0,0.7165158991133909
+Etude PROCOAG_1.0,0.7711019257726948
+Etude PROCOAG_nan,0.6945334957202849
+Fractures ouvertes_0.0,0.5003312071517731
+Fractures ouvertes_1.0,0.4343343594519404
+Fractures ouvertes_nan,0.7803703405821103
+Bloc dans les premières 24h  / Neurochirurgie (ex. : Craniotomie ou DVE)_0.0,0.6927349465366335
+Bloc dans les premières 24h  / Neurochirurgie (ex. : Craniotomie ou DVE)_1.0,0.1282281419659792
+Bloc dans les premières 24h  / Neurochirurgie (ex. : Craniotomie ou DVE)_nan,0.2367161982565896
+Température.1_0.0,0.6234983990739561
+Température.1_1.0,0.15829172506153255
+Température.1_nan,0.47316563941209994
+Choc hémorragique (? 4 CGR sur 6h)_0.0,0.08892789058278543
+Choc hémorragique (? 4 CGR sur 6h)_1.0,0.11568606660947613
+Choc hémorragique (? 4 CGR sur 6h)_nan,0.4513813322808996
+Origine du saignement  / Hémopéritoine_0.0,0.3977059480620053
+Origine du saignement  / Hémopéritoine_1.0,0.1329072126682609
+Origine du saignement  / Hémopéritoine_nan,0.11778059858237155
+Origine du saignement  / Hémorétropéritoine_0.0,0.10509383039504536
+Origine du saignement  / Hémorétropéritoine_1.0,0.8397490327058809
+Origine du saignement  / Hémorétropéritoine_nan,0.11778059858237155
+Origine du saignement  / Hémothorax_0.0,0.14674705636690996
+Origine du saignement  / Hémothorax_1.0,0.5907310795564475
+Origine du saignement  / Hémothorax_nan,0.11778059858237155
+Origine du saignement  / Orthopédique_0.0,0.4545551266868248
+Origine du saignement  / Orthopédique_1.0,0.13243059843895882
+Origine du saignement  / Orthopédique_nan,0.11778059858237155
+Origine du saignement  / Autres_0.0,0.07508375520535651
+Origine du saignement  / Autres_1.0,0.996852998654356
+Origine du saignement  / Autres_nan,0.11778059858237155
+Novoseven_0.0,0.18152316051528725
+Novoseven_1.0,0.16778896528494358
+Novoseven_nan,0.11614451263303807
+Trauma crânien (lésion cérébrale TDM)_0.0,0.7551734728767117
+Trauma crânien (lésion cérébrale TDM)_1.0,0.6269304218896706
+Trauma crânien (lésion cérébrale TDM)_nan,0.26474950779224377
+Pression intracrânienne (PIC)_0.0,0.2965351851676319
+Pression intracrânienne (PIC)_1.0,0.3008224406150947
+Pression intracrânienne (PIC)_2.0,0.8054173013352961
+Pression intracrânienne (PIC)_nan,0.8246124412173043
+Dérivation ventriculaire externe (DVE)_0.0,0.8117605339008159
+Dérivation ventriculaire externe (DVE)_1.0,0.7827623232633689
+Dérivation ventriculaire externe (DVE)_2.0,0.6826348009860572
+Dérivation ventriculaire externe (DVE)_nan,0.8199503080363939
+Fracture du rachis et/ ou lésion médullaire_0.0,0.13693282253639924
+Fracture du rachis et/ ou lésion médullaire_1.0,0.2095980308654754
+Fracture du rachis et/ ou lésion médullaire_nan,0.20348699039192256
+Rachis neurologique_0.0,0.6096385743212333
+Rachis neurologique_1.0,0.32532601239809456
+Rachis neurologique_nan,0.3121841622619613
+Lésion complète_0.0,0.2490473753757132
+Lésion complète_1.0,0.8563123416351343
+Lésion complète_nan,0.30338819505921394
+Lésion médullaire sans fracture ( SCYWORA )_0.0,0.8397490327058809
+Lésion médullaire sans fracture ( SCYWORA )_1.0,0.3572519262389652
+Lésion médullaire sans fracture ( SCYWORA )_nan,0.6623432776448028
+Procédure limitations de soins (LATA)_0.0,0.4845388888154264
+Procédure limitations de soins (LATA)_1.0,0.6596068620778874
+Procédure limitations de soins (LATA)_nan,0.5969947954499596
+HTIC (>25 PIC simple sédation)_0.0,0.9607326520743992
+HTIC (>25 PIC simple sédation)_1.0,0.5268875482533482
+HTIC (>25 PIC simple sédation)_nan,0.7216753627079304
+Plaquettes < 150 000_0.0,0.4350641758405373
+Plaquettes < 150 000_1.0,0.16093402742194987
+Plaquettes < 150 000_nan,0.6732103474226613
+Épisode diurèse < 500 mL/j_0.0,0.8054657326810477
+Épisode diurèse < 500 mL/j_1.0,0.5607308421701194
+Épisode diurèse < 500 mL/j_nan,0.6455925574110098
+Epuration extrarénale (EER)_0.0,0.9335347292153994
+Epuration extrarénale (EER)_1.0,0.1349122724651733
+Epuration extrarénale (EER)_nan,0.7835599580489709
+Infection_0.0,0.9515813392558752
+Infection_1.0,0.5140665268506892
+Infection_nan,0.6232725887544075
+Cause  / Respiratoire_0.0,0.4019714870457405
+Cause  / Respiratoire_1.0,0.8434583187058943
+Cause  / Respiratoire_nan,0.6232725887544075
+Cause  / Urinaire_0.0,0.9226107767467931
+Cause  / Urinaire_1.0,0.18708911181814056
+Cause  / Urinaire_nan,0.6232725887544075
+Cause  / Abdominal_0.0,0.5608944006956077
+Cause  / Abdominal_1.0,0.7189927960267616
+Cause  / Abdominal_nan,0.6232725887544075
+Cause  / Cérébral (méningite...)_0.0,0.7055809524588899
+Cause  / Cérébral (méningite...)_1.0,0.2919214560898223
+Cause  / Cérébral (méningite...)_nan,0.6232725887544075
+Cause  / Site opératoire_0.0,0.9034314361433748
+Cause  / Site opératoire_1.0,0.028883688917012162
+Cause  / Site opératoire_nan,0.6232725887544075
+"Cause  / Matérielle (KT, DVE...)_0.0",0.6475113328797877
+"Cause  / Matérielle (KT, DVE...)_1.0",0.8749218149274671
+"Cause  / Matérielle (KT, DVE...)_nan",0.6232725887544075
+Choc septique_0.0,0.3894780669925724
+Choc septique_1.0,0.9694644492423488
+Choc septique_nan,0.3986020215891696
+Acquisitions BMR_0.0,0.16064909479167086
+Acquisitions BMR_1.0,0.8634574317212439
+Acquisitions BMR_nan,0.14470717470257252
+Patient vivant en couple_0.0,0.21949257565098992
+Patient vivant en couple_1.0,0.4838483186860573
+Patient vivant en couple_nan,0.5770225444637784
+Lieu du traumatisme_0.0,0.07187091924999256
+Lieu du traumatisme_1.0,0.03170525649726217
+Lieu du traumatisme_nan,0.36327036497259535
+ASA-PS,1.481183392282361e-230
+Score de Glasgow en phase hospitalière,0.0
+Score de Glasgow IGS II,0.0
+Pression artérielle systolique IGS II,2.3307580309734987e-218
+FC IGS II,1.8990996817855477e-15
+PaO2/FIO2 (mmHg) si VM ou CPAP,6.6993781479868e-92
+Diurèse (L/24h),1.2738443487943718e-166
+Urée sanguine,1.9981290674018547e-40
+Leucocytes,4.342244203052059e-06
+Kaliémie,9.46210598560924e-28
+Natrémie,9.02212802592707e-105
+HCO3-,6.774070218934239e-210
+Bilirubine,0.015558774937061284
+SOFA Respiration (PaO2/FiO2 (mmHg)),8.909013622690325e-275
+SOFA Coagulation (plaquette x 10^3/mm3),2.2557726498760785e-132
+Glasgow,0.0
+Hépatique (bilirubine),2.051717282855416e-15
+Rein (créat ou diurèse),7.111506238432768e-117
+Sévérité ARDS,9.864806140270247e-05
+Glasgow initial,0.0
+Glasgow moteur initial,0.0
+Glasgow moteur,0.0
+Nombre culots globulaires (avant départ scanner ou bloc),3.4643695854414247e-270
+Nombre plasma frais congelés (avant départ scanner ou bloc),7.072405222136435e-118
+Nombre concentré plaquettaire (avant départ scanner ou bloc),3.680767703451108e-57
+Concentré plaquettaire 6h (nombre de CUP),7.87417025041358e-10
+Concentré plaquettaire 24h (nombre de CUP),2.2925384436187872e-07
+Nombre de pneumopathies,0.00024953683850462643
+Jour de la première pneumopathie,0.06852850715427762
+ISS  / Head_neck,0.0
+ISS  / Face,1.5502705430157985e-25
+ISS  / Chest,7.292039214987487e-51
+ISS  / Abdomen,0.0010557859308310297
+ISS  / Extremities,6.432337165072311e-07
+ISS  / External,3.5604546871570063e-07
