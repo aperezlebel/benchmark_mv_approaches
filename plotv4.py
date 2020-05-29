@@ -32,10 +32,10 @@ method_order = [
 
 db_order = [
     'TB',
-    # 'UKBB',
+    'UKBB',
 ]
 
-ph = PlotHelperV4(root_folder='results_selected/FINAL_RESULTS/trial1_without_death/',
+ph = PlotHelperV4(root_folder='results_selected/FINAL_RESULTS/trial2/',
                   rename=rename)
 
 # print(ph.databases())
