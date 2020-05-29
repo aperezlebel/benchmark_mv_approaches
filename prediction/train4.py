@@ -59,7 +59,8 @@ def train(task, strategy, RS=None):
             continue
 
         if strategy.is_classification():
-            ss = StratifiedShuffleSplit(n_splits=5, test_size=n_tot-n,
+            ss = StratifiedShuffleSplit(n_splits=strategy.n_splits,
+                                        test_size=n_tot-n,
                                         random_state=RS)
         else:
             ss = ShuffleSplit(n_splits=5, test_size=n_tot-n,

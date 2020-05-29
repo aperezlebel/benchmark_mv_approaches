@@ -24,3 +24,4 @@ param_space:  # The space to use for HP tuning for HGBC and HGBR
   - 6
   - 9
 n_top_pvals: 100  # Number of features of the top ANOVA pvals to use
+n_splits: 5  # Number of splits of ShuffleSplit in train4
