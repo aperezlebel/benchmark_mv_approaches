@@ -3,8 +3,8 @@ import pandas as pd
 
 
 pvals_dirs = [
-    'death_pvals/',
-    'septic_pvals/',
+    'death/',
+    'septic/',
 ]
 
 categories = [
