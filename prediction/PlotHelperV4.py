@@ -13,12 +13,13 @@ import seaborn as sns
 class PlotHelperV4(object):
     """Plot the train4 results."""
 
-    def __init__(self, root_folder, rename):
+    def __init__(self, root_folder, rename, reference_method=None):
         """Init."""
         # Stepe 1: Check and register root_path
         root_folder = root_folder.rstrip('/')  # Remove trailing '/'
         self.root_folder = root_folder
         self._rename = rename
+        self._reference_method = reference_method
 
         if not os.path.isdir(self.root_folder):
             raise ValueError(f'No dir at specified path: {self.root_folder}')
@@ -60,6 +61,24 @@ class PlotHelperV4(object):
         self._nested_dir_dict = nested_dir_dict
         self._nested_file_dict = nested_file_dict
 
+        # Step 5: Compute scores for reference method
+        if self._reference_method:
+            self._reference_score = dict()
+            for size in self.existing_sizes():
+                scores_size = self._reference_score.get(size, dict())
+                for db in self.databases():
+                    scores = scores_size.get(db, dict())
+                    for t in self.tasks(db):
+                        score = None
+                        for m in self.availale_methods_by_size(db, t, size):
+                            if self._is_reference_method(m):
+                                score = self.score(db, t, m, size, mean=True)
+                                break
+                        scores[t] = score
+                    scores_size[db] = scores
+
+                self._reference_score[size] = scores_size
+
     def databases(self):
         """Return the databases found in the root folder."""
         ndd = self._nested_dir_dict
@@ -87,6 +106,10 @@ class PlotHelperV4(object):
         _, _, filenames = next(os.walk(path))
 
         return len(filenames) > 1  # always strat_infos.yml in m folder
+
+    def _is_reference_method(self, m):
+        m = self.short_method_name(m)
+        return self.rename(m) == self._reference_method
 
     def short_method_name(self, m):
         """Return the suffix from the method name."""
