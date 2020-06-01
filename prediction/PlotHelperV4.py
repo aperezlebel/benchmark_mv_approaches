@@ -284,21 +284,25 @@ class PlotHelperV4(object):
                 for t in self.tasks(db):
                     methods = self.availale_methods_by_size(db, t, size)
                     rel_scores = self.relative_scores(db, t, methods, size)
-                    for m, s in rel_scores.items():
+                    for m, rs in rel_scores.items():
                         short_m = self.short_method_name(m)
                         renamed_m = self.rename(short_m)
                         priority = method_order[renamed_m]
                         db_id = db_order[db]
                         rdb = self.rename(db)
                         y = self._y(priority, db_id, n_m, n_db)
+                        s = self.score(db, t, m, size, mean=True)
                         rows.append(
-                            (size, db, rdb, t, priority, m, renamed_m, s, y)
+                            (size, db, rdb, t, priority, m, renamed_m, rs, s, y)
                         )
 
-        cols = ['n', 'db', 'Databases', 't', 'p', 'm', 'rm', 'relative_score', 'y']
+        cols = ['n', 'db', 'Databases', 't', 'p', 'm', 'rm', 'relative_score', 'score', 'y']
 
         df = pd.DataFrame(rows, columns=cols)
         print(df)
+        suffix = self.root_folder.replace('/', '_')
+        os.makedirs('scores/', exist_ok=True)
+        df.to_csv(f'scores/scores_{suffix}.csv')
 
         fig, axes = plt.subplots(nrows=1, ncols=n_sizes, figsize=(20, 6))
         plt.subplots_adjust(
