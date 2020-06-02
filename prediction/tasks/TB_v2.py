@@ -46,6 +46,7 @@ task_metas.append(TaskMeta(
     db='TB',
     df_name='20000',
     classif=True,
+    idx_column='ID_PATIENT',
     idx_selection=None,
     predict=death_predict_transform,
     transform=None,
@@ -137,6 +138,7 @@ task_metas.append(TaskMeta(
     db='TB',
     df_name='20000',
     classif=False,
+    idx_column='ID_PATIENT',
     idx_selection=None,
     predict=platelet_predict_transform,
     transform=platelet_new_features_tranform,
@@ -216,6 +218,7 @@ task_metas.append(TaskMeta(
     db='TB',
     df_name='20000',
     classif=True,
+    idx_column='ID_PATIENT',
     idx_selection=None,
     predict=shock_hemo_predict_transform,
     transform=shock_hemo_new_features_tranform,
@@ -275,7 +278,7 @@ def define_new_features_acid(df):
     df['EVD'] = df['Dérivation ventriculaire externe (DVE)']
     df['Decompressive.craniectomy'] = df['Craniectomie dé-compressive']
     df['Neurosurgery.day0'] = df['Bloc dans les premières 24h  / Neurochirurgie (ex. : Craniotomie ou DVE)']
-    df['AIS.head'] = df['ISS  / Head_neck']
+    df['AIS.head'] = df['ISS  / Head neck']
     df['AIS.face'] = df['ISS  / Face']
     df['ISS'] = df['Score ISS']
     df['ISS.II'] = df['Total Score IGS']
@@ -323,7 +326,7 @@ acid_new_features_tranform = Transform(
         'Dérivation ventriculaire externe (DVE)',
         'Craniectomie dé-compressive',
         'Bloc dans les premières 24h  / Neurochirurgie (ex. : Craniotomie ou DVE)',
-        'ISS  / Head_neck',
+        'ISS  / Head neck',
         'ISS  / Face',
         'Score ISS',
         'Total Score IGS',
@@ -383,6 +386,7 @@ task_metas.append(TaskMeta(
     db='TB',
     df_name='20000',
     classif=True,
+    idx_column='ID_PATIENT',
     idx_selection=None,
     predict=acid_predict_transform,
     transform=acid_new_features_tranform,
@@ -417,6 +421,7 @@ task_metas.append(TaskMeta(
     db='TB',
     df_name='20000',
     classif=True,
+    idx_column='ID_PATIENT',
     idx_selection=None,
     predict=septic_predict_transform,
     transform=None,

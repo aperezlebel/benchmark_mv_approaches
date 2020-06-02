@@ -22,6 +22,7 @@ class TaskMeta(object):
 
     predict: Transform
     transform: Transform = None
+    idx_column: str = None
     idx_selection: Transform = None
     select: Transform = None
     encode_select: str = None
@@ -79,6 +80,8 @@ class Task(object):
         self._X_extra = None
         self._y = None
 
+        self._file_index = None
+
         self._rows_to_drop = None
 
     @property
@@ -115,6 +118,20 @@ class Task(object):
         infos['X.shape'] = repr(getattr(self.X, 'shape', None))
         infos['_y.shape'] = repr(getattr(self._y, 'shape', None))
         return infos
+
+    def _idx_to_rows(self, idx):
+        if self.meta.idx_column is None:
+            return idx + 1
+
+        if self._file_index is None:
+            self._load_index()
+
+        rows = []
+        index = self._file_index
+        for i in idx:
+            rows.append(index.get_loc(i)+1)
+
+        return rows
 
     def _features_to_load(self, features):
         """From a set of features to load, find where they are."""
@@ -163,6 +180,19 @@ class Task(object):
 
         return pd.concat((df_init, df_y, df_transform), axis=1)
 
+    def _load_index(self):
+        db = dbs[self.meta.db]
+        df_name = self.meta.df_name
+        df_path = db.frame_paths[df_name]
+        sep = db._sep
+        encoding = db._encoding
+        index_col = self.meta.idx_column
+
+        if index_col:
+            df = pd.read_csv(df_path, sep=sep, encoding=encoding,
+                             usecols=[index_col], index_col=index_col)
+            self._file_index = df.index
+
     def _load_y(self):
         """Load a dataframe from taskmeta (only y)."""
         # Step 0: get dataframe's path and load infos
@@ -172,31 +202,37 @@ class Task(object):
         df_path = db.frame_paths[df_name]
         sep = db._sep
         encoding = db._encoding
+        index_col = self.meta.idx_column
 
         # Step 1: Load available features from initial df
-        df = pd.read_csv(df_path, sep=sep, encoding=encoding, nrows=0)
+        df = pd.read_csv(df_path, sep=sep, encoding=encoding, nrows=0,
+                         index_col=index_col)
         self._f_init = set(df.columns)
+
+        # Step 1.2: load index
+        self._load_index()
 
         # Step 2: Derive indexes to drop if any
         idx_transformer = self.meta.idx_selection
         idx_to_drop = pd.Index([])  # At start, no indexes to drop
         if idx_transformer:
             logging.debug('Derive indexes to drop.')
-            features_to_load = idx_transformer.input_features
+            features_to_load = idx_transformer.input_features+[index_col]
             df = pd.read_csv(df_path, sep=sep, encoding=encoding,
-                             usecols=features_to_load)
+                             usecols=features_to_load, index_col=index_col)
             idx = df.index
             logging.debug(f'Loaded df of shape {df.shape}.')
             df = idx_transformer.transform(df)
             idx_to_keep = df.index
             idx_to_drop = idx.difference(idx_to_keep)
-            self._rows_to_drop = idx_to_drop + 1  # Rows start to 1 wih header
+            self._rows_to_drop = self._idx_to_rows(idx_to_drop)  #idx_to_drop + 1  # Rows start to 1 wih header
 
         # Step 3: Derive the feature to predict y
         logging.debug('Derive the feature to predict y.')
-        features_to_load = self.meta.predict.input_features
+        features_to_load = self.meta.predict.input_features+[index_col]
         df = pd.read_csv(df_path, sep=sep, encoding=encoding,
-                         usecols=features_to_load, skiprows=self._rows_to_drop)
+                         usecols=features_to_load, skiprows=self._rows_to_drop,
+                         index_col=index_col)
         logging.debug(f'Loaded df of shape {df.shape}.')
 
         if len(self.meta.predict.output_features) != 1:
@@ -213,7 +249,7 @@ class Task(object):
         idx_to_drop_y = self._y[y_name].index[y_mv != 0]
 
         idx_to_drop = idx_to_drop.union(idx_to_drop_y)  # merge the indexes
-        self._rows_to_drop = idx_to_drop + 1  # Rows start to 1 with header
+        self._rows_to_drop = self._idx_to_rows(idx_to_drop)  #idx_to_drop + 1  # Rows start to 1 with header
         self._y = self._y.drop(idx_to_drop_y, axis=0)
 
         # Step 5: Encode y if needed
@@ -232,9 +268,10 @@ class Task(object):
         df_path = db.frame_paths[df_name]
         sep = db._sep
         encoding = db._encoding
+        index_col = self.meta.idx_column
 
         # Step 5.1: Load asked features
-        features_to_load = set()
+        features_to_load = set([index_col])
         select = self.meta.select
         if select:
             if select.output_features and select.input_features:
@@ -257,7 +294,8 @@ class Task(object):
             features_to_load = None
 
         df = pd.read_csv(df_path, sep=sep, usecols=features_to_load,
-                         encoding=encoding, skiprows=self._rows_to_drop)
+                         encoding=encoding, skiprows=self._rows_to_drop,
+                         index_col=index_col)
         mv = get_missing_values(df, db.heuristic)
         df = fill_df(df, mv != 0, np.nan)
 
