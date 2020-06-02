@@ -15,6 +15,8 @@ from df_utils import fill_df
 from prediction.tasks import tasks
 from database import dbs
 from database.constants import CATEGORICAL, CONTINUE_R, CONTINUE_I, BINARY, ORDINAL
+from prediction.tasks.transform import Transform
+from sklearn.model_selection import ShuffleSplit, StratifiedShuffleSplit
 
 
 logger = logging.getLogger(__name__)
@@ -24,7 +26,7 @@ logger.addHandler(logging.StreamHandler())  # Print also in console.
 parser = argparse.ArgumentParser(description='Prediction program.')
 parser.add_argument('program')
 parser.add_argument('task_name', nargs='?', default=None)
-parser.add_argument('--RS', dest='RS', default=None, nargs='?',
+parser.add_argument('--RS', dest='RS', default=0, nargs='?',
                     help='The random state to use.')
 
 sep = ','
@@ -36,41 +38,70 @@ def run(argv=None):
     args = parser.parse_args(argv)
 
     print('Retrieving task')
+    RS = args.RS
     task_name = args.task_name
     task = tasks[task_name]
 
+    temp_dir = f'selected/{task.meta.tag}/temp/'
+
     print('Retreiving db')
     db = dbs[task.meta.db]
-
-    # print('Setting dump helper')
-    # dh = DumpHelper(task, None)  # Used to dump results
-
-    if task.is_classif():
-        logger.info('Classification, using f_classif')
-        f_callable = f_classif
-    else:
-        logger.info('Regression, using f_regression')
-        f_callable = f_regression
 
     print('Retrieving y')
     y = task.y
     print(f'y loaded with shape {y.shape}')
 
+    if task.is_classif():
+        logger.info('Classification, using f_classif')
+        f_callable = f_classif
+        ss = StratifiedShuffleSplit(n_splits=1,
+                                    test_size=2/3,
+                                    random_state=RS)
+    else:
+        logger.info('Regression, using f_regression')
+        f_callable = f_regression
+        ss = ShuffleSplit(n_splits=1, test_size=2/3,
+                          random_state=RS)
+
+    # Alter the task to select only 1/3 for selection
+    keep_idx, drop_idx = next(ss.split(y, y))
+
     index = y.index
 
-    temp_dir = f'selected/{task.meta.tag}/temp/'
+    # Convert to index
+    keep_index = [index[i] for i in keep_idx]
+    drop_index = [index[i] for i in drop_idx]
+
+    def select_idx(df):
+        """Define the idx to keep from the database."""
+        return df.drop(drop_index, axis=0)
+
+    task.meta.idx_selection = Transform(
+        input_features=[],
+        transform=select_idx,
+    )
+
+    series = pd.Series(keep_index)
+    series.to_csv(f'selected/{task.meta.tag}/used_idx.csv', header=None)
+    print(f'Idx used of shape {series.size}')
+
+    # Ignore existing pvals selection
+    task.meta.select = None
+    task.meta.encode_select = 'ordinal'
+
+    # Force reload y to take into account previous change
+    task._load_y()
+    y = task.y
+    print(f'y reloaded with shape {y.shape}')
+
+    index = y.index
+
     temp_df_transposed_path = temp_dir+'X_transposed.csv'
 
     if not os.path.exists(temp_df_transposed_path):
         print('Retrieving X')
-        # task._load_X_base()
-        # X = task._X_select_unenc
         X = task.X
         print(f'X loaded with shape {X.shape}')
-        # print('Replace missing values placeholder with Nan')
-        # mv = get_missing_values(X, db.heuristic)
-
-        # X = fill_df(X, mv != 0, np.nan)
 
         os.makedirs(temp_dir, exist_ok=True)
         X_t = X.transpose()
