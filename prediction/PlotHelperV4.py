@@ -108,6 +108,9 @@ class PlotHelperV4(object):
         return len(filenames) > 1  # always strat_infos.yml in m folder
 
     def _is_reference_method(self, m):
+        if not hasattr(self, '_reference_method'):
+            return False
+
         m = self.short_method_name(m)
         return self.rename(m) == self._reference_method
 
@@ -132,6 +135,8 @@ class PlotHelperV4(object):
         for db in self.databases():
             for t in self.tasks(db):
                 for m in self.methods(db, t):
+                    if self._is_reference_method(m):
+                        continue
                     s = m.split('Regression')
                     if len(s) == 1:
                         s = m.split('Classification')
@@ -228,11 +233,15 @@ class PlotHelperV4(object):
 
         Size and methods must exist (not check performed).
         """
+        methods = {m for m in methods if not self._is_reference_method(m)}
         scores = {m: self.score(db, t, m, size, mean=True) for m in methods}
-        mean = np.mean(list(scores.values()))
         # std = np.std(list(scores.values()))
+        if hasattr(self, '_reference_score'):
+            ref_score = self._reference_score[size][db][t]
+        else:
+            ref_score = np.mean(list(scores.values()))
 
-        relative_scores = {m: (s - mean) for m, s in scores.items()}
+        relative_scores = {m: (s - ref_score) for m, s in scores.items()}
 
         return relative_scores
 
@@ -260,8 +269,6 @@ class PlotHelperV4(object):
         dbs = self.databases()
         existing_methods = self.existing_methods()
         existing_sizes = self.existing_sizes()
-
-        print(existing_sizes)
 
         # Convert existing methods from short name to renamed name
         existing_methods = {self.rename(m) for m in existing_methods}
@@ -302,6 +309,7 @@ class PlotHelperV4(object):
         n_sizes = len(existing_sizes)
 
         rows = []
+        ref = self._reference_method
         for i, size in enumerate(existing_sizes):
             for db in dbs:
                 for t in self.tasks(db):
@@ -316,10 +324,10 @@ class PlotHelperV4(object):
                         y = self._y(priority, db_id, n_m, n_db)
                         s = self.score(db, t, m, size, mean=True)
                         rows.append(
-                            (size, db, rdb, t, priority, m, renamed_m, rs, s, y)
+                            (size, db, rdb, t, priority, m, renamed_m, rs, s, y, ref)
                         )
 
-        cols = ['n', 'db', 'Databases', 't', 'p', 'm', 'rm', 'relative_score', 'score', 'y']
+        cols = ['n', 'db', 'Databases', 't', 'p', 'm', 'rm', 'relative_score', 'score', 'y', 'ref']
 
         df = pd.DataFrame(rows, columns=cols)
         print(df)
