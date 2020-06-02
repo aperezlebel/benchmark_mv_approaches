@@ -64,7 +64,11 @@ def ordinal_encode(df, mv, keys=None, order=None):
         enc = OrdinalEncoder(categories=categories)
 
         df = fill_df(df, mv != NOT_MISSING, MV_PLACEHOLDER)
-        # df = df.fillna(MV_PLACEHOLDER).astype(str)  # Cast to str
+
+        # Cast to str to prevent: "Found unknown categories ..." error
+        # which occurs when float but order file is str
+        df = df.astype(str)
+
         # Fit transform the encoder
         data_encoded = enc.fit_transform(df)
         df = fill_df(df, mv != NOT_MISSING, np.nan)
