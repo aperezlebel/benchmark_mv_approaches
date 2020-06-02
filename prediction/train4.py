@@ -63,7 +63,7 @@ def train(task, strategy, RS=None):
                                         test_size=n_tot-n,
                                         random_state=RS)
         else:
-            ss = ShuffleSplit(n_splits=5, test_size=n_tot-n,
+            ss = ShuffleSplit(n_splits=strategy.n_splits, test_size=n_tot-n,
                               random_state=RS)
 
         for i, (train_idx, test_idx) in enumerate(ss.split(X, y)):
