@@ -22,6 +22,7 @@ class TaskMeta(object):
 
     predict: Transform
     transform: Transform = None
+    idx_column: str = None
     idx_selection: Transform = None
     select: Transform = None
     encode_select: str = None
