@@ -21,7 +21,7 @@ class Strategy():
                  imputer=None, search_params=dict(), compute_importance=False,
                  importance_params=dict(), learning_curve=False,
                  learning_curve_params=dict(), roc=False, name=None,
-                 train_set_steps=None, min_test_set=None):
+                 train_set_steps=None, min_test_set=None, n_splits=None):
         self.estimator = estimator
         self.inner_cv = inner_cv
         self.outer_cv = outer_cv
@@ -35,13 +35,14 @@ class Strategy():
         self.roc = roc
         self.train_set_steps = train_set_steps
         self.min_test_set = min_test_set
+        self.n_splits = n_splits
 
         if not all(p in estimator.get_params().keys() for p in param_space.keys()):
             raise ValueError('Given parmameters must be params of estimator.')
 
         search_params['cv'] = self.inner_cv
         estimator = Pipeline([
-            ('log1', FakeStep('searchHP')),
+            # ('log1', FakeStep('searchHP')),
             ('model', estimator)
         ])
         param_space = {f'model__{k}': v for k, v in param_space.items()}

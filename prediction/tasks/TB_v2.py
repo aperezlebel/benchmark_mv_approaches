@@ -390,3 +390,37 @@ task_metas.append(TaskMeta(
     encode_transform='ordinal',
     encode_select='all',
 ))
+
+
+# Task 5: Septic shock prediction
+# ------------------------
+septic_predict_transform = Transform(
+    input_features=['Choc septique'],
+    output_features=['Choc septique'],
+)
+
+septic_pvals_path = 'pvals/TB/septic/pvals_filtered.csv'
+if os.path.exists(septic_pvals_path):
+    pvals = pd.read_csv(septic_pvals_path, header=None,
+                        index_col=0, squeeze=True)
+    pvals = pvals.sort_values()[:n_top_pvals]
+    septic_top_pvals = list(pvals.index)
+
+    septic_pvals_keep_transform = Transform(
+        output_features=septic_top_pvals
+    )
+else:
+    septic_pvals_keep_transform = None
+
+task_metas.append(TaskMeta(
+    name='septic_pvals',
+    db='TB',
+    df_name='20000',
+    classif=True,
+    idx_selection=None,
+    predict=septic_predict_transform,
+    transform=None,
+    select=septic_pvals_keep_transform,
+    encode_select='all',
+    encode_transform=None,
+))

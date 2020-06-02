@@ -360,3 +360,38 @@ task_metas.append(TaskMeta(
     encode_select='all',
     encode_transform=None,
 ))
+
+
+# Task 4.2: Fluid intelligence prediction using pvals
+# ------------------------------------------
+fluid_predict_transform = Transform(
+    input_features=['20016-0.0'],
+    output_features=['20016-0.0'],
+)
+
+# Define which features to keep
+fluid_pvals_path = 'pvals/UKBB/fluid_plain/pvals_filtered.csv'
+if os.path.exists(fluid_pvals_path):
+    pvals = pd.read_csv(fluid_pvals_path,
+                        header=None, index_col=0, squeeze=True)
+    pvals = pvals.sort_values()[:n_top_pvals]
+    fluid_top_pvals = list(pvals.index)
+
+    fluid_pvals_keep_transform = Transform(
+        output_features=fluid_top_pvals
+    )
+else:
+    fluid_pvals_keep_transform = None
+
+task_metas.append(TaskMeta(
+    name='fluid_pvals',
+    db='UKBB',
+    df_name='40663_filtered',
+    classif=True,
+    idx_selection=None,
+    predict=fluid_predict_transform,
+    transform=None,
+    select=fluid_pvals_keep_transform,
+    encode_select='all',
+    encode_transform=None,
+))

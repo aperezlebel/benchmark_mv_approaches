@@ -5,7 +5,7 @@ import numpy as np
 import logging
 from copy import deepcopy
 from sklearn.model_selection import ShuffleSplit, GridSearchCV, \
-    RandomizedSearchCV, KFold
+    RandomizedSearchCV, KFold, StratifiedShuffleSplit
 from sklearn.experimental import enable_hist_gradient_boosting
 from sklearn.ensemble import HistGradientBoostingClassifier, \
     HistGradientBoostingRegressor, RandomForestClassifier
@@ -44,6 +44,7 @@ roc = params.get('roc', False)
 param_space = params.get('param_space', None)
 train_set_steps = params.get('train_set_steps', [])
 min_test_set = params.get('min_test_set', 0.2)
+n_splits = params.get('n_splits', 5)
 
 # Default RS
 RS = 42
@@ -74,7 +75,7 @@ if param_space is None:
 strategies.append(Strategy(
     name='Classification',
     estimator=HistGradientBoostingClassifier(random_state=RS),
-    inner_cv=ShuffleSplit(n_splits=n_inner_splits, train_size=0.8, random_state=RS),
+    inner_cv=StratifiedShuffleSplit(n_splits=n_inner_splits, train_size=0.8, random_state=RS),
     search=GridSearchCV,
     param_space=param_space,
     search_params={
@@ -109,13 +110,14 @@ strategies.append(Strategy(
     roc=roc,
     train_set_steps=train_set_steps,
     min_test_set=min_test_set,
+    n_splits=n_splits,
 ))
 
 
 strategies.append(Strategy(
     name='Classification_RFC',
     estimator=RandomForestClassifier(n_jobs=1, random_state=RS),
-    inner_cv=ShuffleSplit(n_splits=n_inner_splits, train_size=0.8, random_state=RS),
+    inner_cv=StratifiedShuffleSplit(n_splits=n_inner_splits, train_size=0.8, random_state=RS),
     search=GridSearchCV,
     param_space={
         'n_estimators': [50, 100],
@@ -153,6 +155,7 @@ strategies.append(Strategy(
     roc=roc,
     train_set_steps=train_set_steps,
     min_test_set=min_test_set,
+    n_splits=n_splits,
 ))
 
 # A strategy to run a regression
@@ -196,6 +199,7 @@ strategies.append(Strategy(
     roc=roc,
     train_set_steps=train_set_steps,
     min_test_set=min_test_set,
+    n_splits=n_splits,
 ))
 
 

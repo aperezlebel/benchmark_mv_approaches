@@ -1,0 +1,65 @@
+Passager décédé dans le même véhicule
+Amputation
+Mannitol / SSH
+Intubation orotrachéale (IOT) SMUR
+ Utilisation mesures hémostatiques externes
+Utilisation mesures hémostatiques externes   / Garrot
+Utilisation mesures hémostatiques externes   / Clamp
+Utilisation mesures hémostatiques externes   / Compressif
+Utilisation mesures hémostatiques externes   / Autre
+Utilisation ceinture bassin
+Nombre culots globulaires transfusés en préhospitalier
+Transfusion de PLYO (plasma lyophilisé)
+Activation procédure choc hémorragique
+Ventilation (FiO2)
+Drainage thoracique avant scanner ?
+Bloc ou artério direct
+Délai départ au scanner ou bloc
+Cathéters posés avant scanner ?
+Dernière PAS avant départ scan ou bloc
+Dernière PAD avant départ scan ou bloc
+Dose noradrénaline au moment départ au scan
+Nombre culots globulaires (avant départ scanner ou bloc)
+Nombre plasma frais congelés (avant départ scanner ou bloc)
+Nombre concentré plaquettaire (avant départ scanner ou bloc)
+Bloc dans les 24 premières heures
+Bloc dans les premières 24h  / Orthopédie
+Bloc dans les premières 24h  / Neurochirurgie (ex. : Craniotomie ou DVE)
+Bloc dans les premières 24h  / Thoracique
+Bloc dans les premières 24h  / Chirurgie Vasculaire
+Bloc dans les premières 24h  / Viscéral
+Bloc dans les premières 24h  / Maxillo-facial
+Bloc dans les premières 24h  / Radiologie interventionelle
+Bloc dans les premières 24h  / Autre
+Mode d admission
+Premier type d action thérapeutique essentielle
+ACR
+Acide tranexamique
+Dérivation ventriculaire externe (DVE)
+Délai DVE : arrivée hôpital - pose de DVE
+Hypothermie thérapeutique
+Craniectomie dé-compressive
+Durée de séjour en réa- si date de sortie connue, durée de séjour = (date sortie - date d entrée)- si date de sortie inconnue, d
+Décès
+Cause du décès
+Détail cause du décès
+"Transfert secondaire, pourquoi ?"
+Sortie
+Procédure limitations de soins (LATA)
+Nombre d intubations
+Glasgow de sortie
+"Rachis récupération, score ASIA moteur"
+Trachéotomie
+Nombre de jours de VM
+Syndrome de Detresse respiratoire Aigue
+ECMO
+Épisode de catécholamines en continu
+Epuration extrarénale (EER)
+Nombre jours d EER
+Nombre total de CGR
+Nombre total de PFC
+Nombre total CP
+Délai jusqu à normalisation BEJour d entrée = 0
+Délai normalisation lactateJour d entrée = 0
+Date de décès (à l'hôpital après sortie de réanimation)
+Nombre de jours à l'hôpital

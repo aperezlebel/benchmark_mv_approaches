@@ -14,7 +14,7 @@ from missing_values import get_missing_values
 from df_utils import fill_df
 from prediction.tasks import tasks
 from database import dbs
-from database.constants import CATEGORICAL, CONTINUE_R, CONTINUE_I
+from database.constants import CATEGORICAL, CONTINUE_R, CONTINUE_I, BINARY, ORDINAL
 
 
 logger = logging.getLogger(__name__)
@@ -63,12 +63,14 @@ def run(argv=None):
 
     if not os.path.exists(temp_df_transposed_path):
         print('Retrieving X')
-        X = task.X_base_plain
+        # task._load_X_base()
+        # X = task._X_select_unenc
+        X = task.X
         print(f'X loaded with shape {X.shape}')
-        print('Replace missing values placeholder with Nan')
-        mv = get_missing_values(X, db.heuristic)
+        # print('Replace missing values placeholder with Nan')
+        # mv = get_missing_values(X, db.heuristic)
 
-        X = fill_df(X, mv != 0, np.nan)
+        # X = fill_df(X, mv != 0, np.nan)
 
         os.makedirs(temp_dir, exist_ok=True)
         X_t = X.transpose()
@@ -111,7 +113,7 @@ def run(argv=None):
 
         t = types[name]
 
-        if t == CATEGORICAL:
+        if t == CATEGORICAL or t == BINARY:
             # categorical encode
             df = pd.DataFrame({name: x})
             df = df.astype(str)
@@ -140,10 +142,10 @@ def run(argv=None):
                 L.append((f, pval_one_feature(df_encoded[f], y)))
             return L
 
-        elif t == CONTINUE_R or t == CONTINUE_I:
+        elif t == CONTINUE_R or t == CONTINUE_I or t == ORDINAL:
             return [(name, pval_one_feature(x, y))]
 
-        print(f'"{name}"" ignored ')
+        print(f'"{name}" ignored ')
 
     res = Parallel(n_jobs=-1, require='sharedmem')(delayed(handler)
                                                    (row, y) for row in X_t)
