@@ -278,7 +278,7 @@ def define_new_features_acid(df):
     df['EVD'] = df['Dérivation ventriculaire externe (DVE)']
     df['Decompressive.craniectomy'] = df['Craniectomie dé-compressive']
     df['Neurosurgery.day0'] = df['Bloc dans les premières 24h  / Neurochirurgie (ex. : Craniotomie ou DVE)']
-    df['AIS.head'] = df['ISS  / Head_neck']
+    df['AIS.head'] = df['ISS  / Head neck']
     df['AIS.face'] = df['ISS  / Face']
     df['ISS'] = df['Score ISS']
     df['ISS.II'] = df['Total Score IGS']
@@ -326,7 +326,7 @@ acid_new_features_tranform = Transform(
         'Dérivation ventriculaire externe (DVE)',
         'Craniectomie dé-compressive',
         'Bloc dans les premières 24h  / Neurochirurgie (ex. : Craniotomie ou DVE)',
-        'ISS  / Head_neck',
+        'ISS  / Head neck',
         'ISS  / Face',
         'Score ISS',
         'Total Score IGS',
