@@ -82,7 +82,8 @@ def run(argv=None):
     )
 
     series = pd.Series(keep_index)
-    series.to_csv(f'selected/{task.meta.tag}/used_idx.csv', header=None)
+    series.to_csv(f'selected/{task.meta.tag}/used_idx.csv', header=None,
+                  index=False)
     print(f'Idx used of shape {series.size}')
 
     # Ignore existing pvals selection
