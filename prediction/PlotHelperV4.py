@@ -334,11 +334,12 @@ class PlotHelperV4(object):
             print(df)
             suffix = self.root_folder.replace('/', '_')
             os.makedirs('scores/', exist_ok=True)
-            df.to_csv(f'scores/scores_{suffix}.csv')
-            return
+            df.to_csv(f'scores/scores_{suffix}.csv', index=None)
         else:
             suffix = self.root_folder.replace('/', '_')
             df = pd.read_csv(f'scores/scores_{suffix}.csv')
+            df['n'] = df['n'].astype(str)
+            print(df)
 
         fig, axes = plt.subplots(nrows=1, ncols=n_sizes, figsize=(20, 6))
         plt.subplots_adjust(
