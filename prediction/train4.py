@@ -59,10 +59,11 @@ def train(task, strategy, RS=None):
             continue
 
         if strategy.is_classification():
-            ss = StratifiedShuffleSplit(n_splits=5, test_size=n_tot-n,
+            ss = StratifiedShuffleSplit(n_splits=strategy.n_splits,
+                                        test_size=n_tot-n,
                                         random_state=RS)
         else:
-            ss = ShuffleSplit(n_splits=5, test_size=n_tot-n,
+            ss = ShuffleSplit(n_splits=strategy.n_splits, test_size=n_tot-n,
                               random_state=RS)
 
         for i, (train_idx, test_idx) in enumerate(ss.split(X, y)):
@@ -78,8 +79,9 @@ def train(task, strategy, RS=None):
             if strategy.is_classification() and strategy.roc:
                 probas = estimator.predict_proba(X_test)
                 logger.info('Started predict_proba')
-                y_pred = np.argmax(probas, axis=1)
+                # y_pred = np.argmax(probas, axis=1)
                 dh.dump_probas(y_test, probas, fold=i, tag=str(n))
+                y_pred = estimator.predict(X_test)
             else:
                 if not strategy.is_classification():
                     logger.info('ROC: not a classification.')

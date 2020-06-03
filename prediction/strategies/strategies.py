@@ -44,6 +44,7 @@ roc = params.get('roc', False)
 param_space = params.get('param_space', None)
 train_set_steps = params.get('train_set_steps', [])
 min_test_set = params.get('min_test_set', 0.2)
+n_splits = params.get('n_splits', 5)
 
 # Default RS
 RS = 42
@@ -109,6 +110,7 @@ strategies.append(Strategy(
     roc=roc,
     train_set_steps=train_set_steps,
     min_test_set=min_test_set,
+    n_splits=n_splits,
 ))
 
 
@@ -153,6 +155,7 @@ strategies.append(Strategy(
     roc=roc,
     train_set_steps=train_set_steps,
     min_test_set=min_test_set,
+    n_splits=n_splits,
 ))
 
 # A strategy to run a regression
@@ -196,6 +199,7 @@ strategies.append(Strategy(
     roc=roc,
     train_set_steps=train_set_steps,
     min_test_set=min_test_set,
+    n_splits=n_splits,
 ))
 
 
