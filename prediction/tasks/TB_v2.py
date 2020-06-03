@@ -28,8 +28,10 @@ death_predict_transform = Transform(
     output_features=['Décès'],
 )
 
-death_pvals_path = 'pvals/TB/death/pvals_filtered.csv'
-if os.path.exists(death_pvals_path):
+death_pvals_dir = 'pvals/TB/death/'
+death_idx_path = f'{death_pvals_dir}used_idx.csv'
+death_pvals_path = f'{death_pvals_dir}pvals_filtered.csv'
+if os.path.exists(death_idx_path) and os.path.exists(death_pvals_path):
     pvals = pd.read_csv(death_pvals_path, header=None,
                         index_col=0, squeeze=True)
     pvals = pvals.sort_values()[:n_top_pvals]
@@ -38,8 +40,16 @@ if os.path.exists(death_pvals_path):
     death_pvals_keep_transform = Transform(
         output_features=death_top_pvals
     )
+
+    death_drop_idx = pd.read_csv(death_idx_path, index_col=0, squeeze=True)
+
+    death_idx_transform = Transform(
+        input_features=[],
+        transform=lambda df: df.drop(death_drop_idx.index, axis=0),
+    )
 else:
     death_pvals_keep_transform = None
+    death_idx_transform = None
 
 task_metas.append(TaskMeta(
     name='death_pvals',
@@ -47,7 +57,7 @@ task_metas.append(TaskMeta(
     df_name='20000',
     classif=True,
     idx_column='ID_PATIENT',
-    idx_selection=None,
+    idx_selection=death_idx_transform,
     predict=death_predict_transform,
     transform=None,
     select=death_pvals_keep_transform,
@@ -397,14 +407,17 @@ task_metas.append(TaskMeta(
 
 
 # Task 5: Septic shock prediction
-# ------------------------
+# -------------------------------
 septic_predict_transform = Transform(
     input_features=['Choc septique'],
     output_features=['Choc septique'],
 )
 
 septic_pvals_path = 'pvals/TB/septic/pvals_filtered.csv'
-if os.path.exists(septic_pvals_path):
+septic_pvals_dir = 'pvals/TB/septic/'
+septic_idx_path = f'{septic_pvals_dir}used_idx.csv'
+septic_pvals_path = f'{septic_pvals_dir}pvals_filtered.csv'
+if os.path.exists(septic_idx_path) and os.path.exists(septic_pvals_path):
     pvals = pd.read_csv(septic_pvals_path, header=None,
                         index_col=0, squeeze=True)
     pvals = pvals.sort_values()[:n_top_pvals]
@@ -413,8 +426,16 @@ if os.path.exists(septic_pvals_path):
     septic_pvals_keep_transform = Transform(
         output_features=septic_top_pvals
     )
+
+    septic_drop_idx = pd.read_csv(septic_idx_path, index_col=0, squeeze=True)
+
+    septic_idx_transform = Transform(
+        input_features=[],
+        transform=lambda df: df.drop(septic_drop_idx.index, axis=0),
+    )
 else:
     septic_pvals_keep_transform = None
+    septic_idx_transform = None
 
 task_metas.append(TaskMeta(
     name='septic_pvals',
@@ -422,7 +443,7 @@ task_metas.append(TaskMeta(
     df_name='20000',
     classif=True,
     idx_column='ID_PATIENT',
-    idx_selection=None,
+    idx_selection=septic_idx_transform,
     predict=septic_predict_transform,
     transform=None,
     select=septic_pvals_keep_transform,
