@@ -35,7 +35,7 @@ db_order = [
     'UKBB',
 ]
 
-ph = PlotHelperV4(root_folder='results_selected/FINAL_RESULTS/trial2/',
+ph = PlotHelperV4(root_folder='results_selected/FINAL_RESULTS/trial3_50/',
                   rename=rename)
 
 # print(ph.databases())
@@ -50,5 +50,6 @@ ph = PlotHelperV4(root_folder='results_selected/FINAL_RESULTS/trial2/',
 # print(av_methods)
 # print(ph.relative_scores('TB', 'platelet', av_methods, '5000'))
 
-fig = ph.plot(method_order=method_order, db_order=db_order)
-plt.show()
+fig = ph.plot(method_order=method_order, db_order=db_order, compute=False)
+if fig:
+    plt.show()
