@@ -1,11 +1,13 @@
 """Remove geatures having some categories from pvals (e.g outcomes)."""
 import pandas as pd
+import os
 
 
 pvals_dirs = [
-    'breast_plain/',
-    'parkinson_plain/',
-    'melanomia_plain/',
+    'breast/',
+    'parkinson/',
+    'skin/',
+    'fluid/',
 ]
 
 categories = [
@@ -30,8 +32,9 @@ def remove_features_id(pvals, features_ids):
     return pvals
 
 
-
 for pvals_dir in pvals_dirs:
+    if not os.path.exists(pvals_dir+'pvals.csv'):
+        continue
     pvals = pd.read_csv(pvals_dir+'pvals.csv', header=None)
 
     # remove features
