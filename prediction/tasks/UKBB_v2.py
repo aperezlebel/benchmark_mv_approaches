@@ -217,13 +217,16 @@ if os.path.exists(breast_idx_path) and os.path.exists(breast_pvals_path):
     breast_drop_idx = pd.read_csv(breast_idx_path, index_col=0, squeeze=True)
 
     breast_idx_transform = Transform(
-        input_features=[],
+        input_features=['31-0.0'],
         transform=lambda df: select_idx_breast(df).drop(breast_drop_idx.index,
                                                         axis=0),
     )
 else:
     breast_pvals_keep_transform = None
-    breast_idx_transform = None
+    breast_idx_transform = Transform(
+        input_features=['31-0.0'],
+        transform=select_idx_breast,
+    )
 
 task_metas.append(TaskMeta(
     name='breast_pvals',
