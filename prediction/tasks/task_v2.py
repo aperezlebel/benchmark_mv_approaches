@@ -121,7 +121,7 @@ class Task(object):
 
     def _idx_to_rows(self, idx):
         if self.meta.idx_column is None:
-            return idx + 1
+            return idx + 1  # Rows start to 1 wih header
 
         if self._file_index is None:
             self._load_index()
@@ -225,7 +225,7 @@ class Task(object):
             df = idx_transformer.transform(df)
             idx_to_keep = df.index
             idx_to_drop = idx.difference(idx_to_keep)
-            self._rows_to_drop = self._idx_to_rows(idx_to_drop)  #idx_to_drop + 1  # Rows start to 1 wih header
+            self._rows_to_drop = self._idx_to_rows(idx_to_drop)
 
         # Step 3: Derive the feature to predict y
         logging.debug('Derive the feature to predict y.')
@@ -249,13 +249,15 @@ class Task(object):
         idx_to_drop_y = self._y[y_name].index[y_mv != 0]
 
         idx_to_drop = idx_to_drop.union(idx_to_drop_y)  # merge the indexes
-        self._rows_to_drop = self._idx_to_rows(idx_to_drop)  #idx_to_drop + 1  # Rows start to 1 with header
+        self._rows_to_drop = self._idx_to_rows(idx_to_drop)
         self._y = self._y.drop(idx_to_drop_y, axis=0)
 
         # Step 5: Encode y if needed
         if self.is_classif():
             y_mv = get_missing_values(self._y, db.heuristic)
             self._y, _ = ordinal_encode(self._y, y_mv)
+
+        self._y.sort_index(inplace=True)  # to have consistent order with X
 
     def _load_X_base(self):
         if self._y is None:
@@ -299,6 +301,8 @@ class Task(object):
         mv = get_missing_values(df, db.heuristic)
         df = fill_df(df, mv != 0, np.nan)
 
+        df.sort_index(inplace=True)  # to have consistent order with y
+
         # Step 5.2: save the results
         if select:
             self._X_select_base = df[select_f]
@@ -322,6 +326,7 @@ class Task(object):
             df, _, _, _ = db._encode_df(df, mv, types, order=order,
                                         encode=self.meta.encode_transform)
             self._X_extra_base = df
+            self._X_extra_base.sort_index(inplace=True)
 
         if self.meta.encode_select and self._X_select_base is not None:
             df = self._X_select_base
@@ -332,6 +337,9 @@ class Task(object):
             df, _, _, _ = db._encode_df(df, mv, types, order=order,
                                         encode=self.meta.encode_select)
             self._X_select_base = df
+            self._X_select_base.sort_index(inplace=True)
+
+        self.check_index_consistency()
 
     def _load_X_y(self):
         """Load a dataframe from taskmeta (X and y)."""
@@ -350,6 +358,7 @@ class Task(object):
             features_to_keep = set(transform.output_features)
             features_to_drop = features - features_to_keep
             df.drop(features_to_drop, axis=1, inplace=True)
+            df.sort_index(inplace=True)
             self._X_extra = df
 
         # Step 7: Drop unwanted features if output specified
@@ -360,6 +369,21 @@ class Task(object):
             features = set(df.columns)
             features_to_drop = features - set(features_to_keep)
             df = df.drop(features_to_drop, axis=1)
+            df.sort_index(inplace=True)
             self._X_select = df
         else:
             self._X_select = self._X_select_base
+
+        self.check_index_consistency()
+
+    def check_index_consistency(self):
+        """Check whether all indexes are equal."""
+        dfs = [self._y, self._X_extra, self._X_extra_base, self._X_extra_unenc,
+               self._X_select, self._X_select_base, self._X_select_unenc]
+
+        indexes = [df.index for df in dfs if df is not None]
+
+        for i in range(len(indexes)-1):
+            idx1 = indexes[i]
+            idx2 = indexes[i+1]
+            assert idx1.equals(idx2)
