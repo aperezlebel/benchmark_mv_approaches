@@ -95,6 +95,8 @@ d_icd_diagnoses = dd.read_csv(d_icd_diagnoses_path, dtype={'ICD9_CODE': 'object'
 
 # print(admissions.compute())
 patients_diagnosis = patients.merge(diagnoses_icd.drop(['SEQ_NUM'], axis=1), how='left', on='SUBJECT_ID')
+idx = patients.set_index('SUBJECT_ID').index.compute()
+print(idx)
 # print(patients_diagnosis.compute())
 
 # merged = merged.merge(admissions.drop(['SUBJECT_ID'], axis=1), how='inner', on='HADM_ID')
@@ -110,12 +112,25 @@ hemo_shock = dd.from_pandas(pd.DataFrame({'ICD9_CODE': ['78559', '99809', '9584'
 # septic shock
 positives_septic = patients_diagnosis.merge(septic_shock, how='inner', on='ICD9_CODE')#.set_index('SUBJECT_ID')
 positives_septic = positives_septic.drop_duplicates(subset=['SUBJECT_ID']).set_index('SUBJECT_ID').index
-print(positives_septic.compute())
+positives_septic_idx = positives_septic.compute()
+
+negatives_septic_idx = idx.difference(positives_septic_idx)
+print(negatives_septic_idx)
+
+positives = pd.DataFrame({'y': 1}, index=positives_septic_idx)
+negatives = pd.DataFrame({'y': 0}, index=negatives_septic_idx)
+tot = pd.concat((positives, negatives), axis=0).sort_index()
+print(positives)
+print(negatives)
+print(tot)
+
+exit()
 
 # hemo shock
-positives_hemo = patients_diagnosis.merge(hemo_shock, how='inner', on='ICD9_CODE')#.set_index('SUBJECT_ID')
-positives_hemo = positives_hemo.drop_duplicates(subset=['SUBJECT_ID']).set_index('SUBJECT_ID').index
-print(positives_hemo.compute())
+# positives_hemo = patients_diagnosis.merge(hemo_shock, how='inner', on='ICD9_CODE')#.set_index('SUBJECT_ID')
+# positives_hemo = positives_hemo.drop_duplicates(subset=['SUBJECT_ID']).set_index('SUBJECT_ID').index
+# print(positives_hemo.compute())
+
 # print(positives_hemo.drop_duplicates(subset=['SUBJECT_ID']).compute())
 # positives_hemo = positives_hemo.compute().set_index('SUBJECT_ID')#.index
 # print(positives_hemo)
