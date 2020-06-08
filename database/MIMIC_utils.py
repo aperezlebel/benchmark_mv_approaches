@@ -58,6 +58,17 @@ def MIMIC_feature_types(filepath):
     print(types)
 
 
+def set_custom_types():
+    custom_dir = '/Users/alexandreperez/OneDrive/Documents/Stage/MILA/Task3_NHIS/NHIS_analyse/MIMICIII/physionet.org/files/mimiciii/1.4/custom/'
+
+    df = pd.read_csv(custom_dir+'X_labevents.csv', index_col='subject_id')
+
+    types = pd.Series(CONTINUE_R, index=df.columns)
+    _dump_feature_types(types, dbs['MIMIC'], 'X_labevents', anonymize=False)
+    print(types)
+
+
 if __name__ == '__main__':
     check_data_types('/Users/alexandreperez/OneDrive/Documents/Stage/MILA/Task3_NHIS/NHIS_analyse/MIMICIII/physionet.org/files/mimiciii/data_types.csv')
     MIMIC_feature_types('/Users/alexandreperez/OneDrive/Documents/Stage/MILA/Task3_NHIS/NHIS_analyse/MIMICIII/physionet.org/files/mimiciii/data_types.csv')
+    set_custom_types()
