@@ -98,3 +98,72 @@ task_metas.append(TaskMeta(
     encode_select=None,
     encode_transform=None,
 ))
+
+
+# Task 2: Hemorrhagic shock prediciton
+# ------------------------------------
+# Define y
+def define_predict_hemo(df):
+    """Compute y from patients table."""
+    # Ignore given df
+    positives = patients_diagnosis.merge(hemo_shock, how='inner', on='ICD9_CODE')#.set_index('SUBJECT_ID')
+    positives = positives.drop_duplicates(subset=['SUBJECT_ID']).set_index('SUBJECT_ID').index
+    positives_idx = positives.compute()
+
+    # Get full idx from df and set the complementary to 0
+    # idx = patients.set_index('SUBJECT_ID').index.compute()
+    idx = df.index
+    # need to intersect because one index of positives_idx is not in idx
+    negatives_idx = idx.difference(positives_idx).intersection(idx)
+    positives_idx = positives_idx.intersection(idx)
+
+    positives = pd.DataFrame({'y': 1}, index=positives_idx)
+    negatives = pd.DataFrame({'y': 0}, index=negatives_idx)
+    df = pd.concat((positives, negatives), axis=0).sort_index()
+
+    return df
+
+
+hemo_predict_transform = Transform(
+    input_features=[],
+    transform=define_predict_hemo,
+    output_features=['y'],
+)
+
+# Define which features to keep
+hemo_pvals_dir = 'pvals/UKBB/hemo/'
+hemo_idx_path = f'{hemo_pvals_dir}used_idx.csv'
+hemo_pvals_path = f'{hemo_pvals_dir}pvals_filtered.csv'
+if os.path.exists(hemo_idx_path) and os.path.exists(hemo_pvals_path):
+    pvals = pd.read_csv(hemo_pvals_path, header=None,
+                        index_col=0, squeeze=True)
+    pvals = pvals.sort_values()[:n_top_pvals]
+    hemo_top_pvals = list(pvals.index)
+
+    hemo_pvals_keep_transform = Transform(
+        output_features=hemo_top_pvals
+    )
+
+    hemo_drop_idx = pd.read_csv(hemo_idx_path, index_col=0, squeeze=True)
+
+    hemo_idx_transform = Transform(
+        input_features=[],
+        transform=lambda df: df.drop(hemo_drop_idx.index, axis=0),
+    )
+else:
+    hemo_pvals_keep_transform = None
+    hemo_idx_transform = None
+
+task_metas.append(TaskMeta(
+    name='hemo_pvals',
+    db='MIMIC',
+    df_name='X_labevents',
+    classif=True,
+    idx_column='subject_id',
+    idx_selection=hemo_idx_transform,
+    predict=hemo_predict_transform,
+    transform=None,
+    select=hemo_pvals_keep_transform,
+    encode_select=None,
+    encode_transform=None,
+))
