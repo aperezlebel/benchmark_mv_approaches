@@ -6,3 +6,4 @@ sklearn
 pyyaml
 cython
 dask
+sqlalchemy
