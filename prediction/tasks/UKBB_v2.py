@@ -201,14 +201,32 @@ task_metas.append(TaskMeta(
 # Task 1.2: Breast cancer prediction using pvals
 # ----------------------------------------------
 # Define which features to keep
-pvals = pd.read_csv('pvals/UKBB/breast_plain/pvals_filtered.csv', header=None,
-                    index_col=0, squeeze=True)
-pvals = pvals.sort_values()[:n_top_pvals]
-breast_top_pvals = list(pvals.index)
+breast_pvals_dir = 'pvals/UKBB/breast/'
+breast_idx_path = f'{breast_pvals_dir}used_idx.csv'
+breast_pvals_path = f'{breast_pvals_dir}pvals_filtered.csv'
+if os.path.exists(breast_idx_path) and os.path.exists(breast_pvals_path):
+    pvals = pd.read_csv(breast_pvals_path, header=None,
+                        index_col=0, squeeze=True)
+    pvals = pvals.sort_values()[:n_top_pvals]
+    breast_top_pvals = list(pvals.index)
 
-breast_pvals_keep_transform = Transform(
-    output_features=breast_top_pvals
-)
+    breast_pvals_keep_transform = Transform(
+        output_features=breast_top_pvals
+    )
+
+    breast_drop_idx = pd.read_csv(breast_idx_path, index_col=0, squeeze=True)
+
+    breast_idx_transform = Transform(
+        input_features=['31-0.0'],
+        transform=lambda df: select_idx_breast(df).drop(breast_drop_idx.index,
+                                                        axis=0),
+    )
+else:
+    breast_pvals_keep_transform = None
+    breast_idx_transform = Transform(
+        input_features=['31-0.0'],
+        transform=select_idx_breast,
+    )
 
 task_metas.append(TaskMeta(
     name='breast_pvals',
@@ -283,14 +301,28 @@ skin_predict_transform = Transform(
 )
 
 # Define which features to keep
-pvals = pd.read_csv('pvals/UKBB/melanomia_plain/pvals_filtered.csv',
-                    header=None, index_col=0, squeeze=True)
-pvals = pvals.sort_values()[:n_top_pvals]
-skin_top_pvals = list(pvals.index)
+skin_pvals_dir = 'pvals/UKBB/skin/'
+skin_idx_path = f'{skin_pvals_dir}used_idx.csv'
+skin_pvals_path = f'{skin_pvals_dir}pvals_filtered.csv'
+if os.path.exists(skin_idx_path) and os.path.exists(skin_pvals_path):
+    pvals = pd.read_csv(skin_pvals_path, header=None, index_col=0,
+                        squeeze=True)
+    pvals = pvals.sort_values()[:n_top_pvals]
+    skin_top_pvals = list(pvals.index)
 
-skin_pvals_keep_transform = Transform(
-    output_features=skin_top_pvals
-)
+    skin_pvals_keep_transform = Transform(
+        output_features=skin_top_pvals
+    )
+
+    skin_drop_idx = pd.read_csv(skin_idx_path, index_col=0, squeeze=True)
+
+    skin_idx_transform = Transform(
+        input_features=[],
+        transform=lambda df: df.drop(skin_drop_idx.index, axis=0),
+    )
+else:
+    skin_pvals_keep_transform = None
+    skin_idx_transform = None
 
 task_metas.append(TaskMeta(
     name='skin_pvals',
@@ -298,7 +330,7 @@ task_metas.append(TaskMeta(
     df_name='40663_filtered',
     classif=True,
     idx_column='eid',
-    idx_selection=None,
+    idx_selection=skin_idx_transform,
     predict=skin_predict_transform,
     transform=None,
     select=skin_pvals_keep_transform,
@@ -342,14 +374,29 @@ parkinson_predict_transform = Transform(
 )
 
 # Define which features to keep
-pvals = pd.read_csv('pvals/UKBB/parkinson_plain/pvals_filtered.csv',
-                    header=None, index_col=0, squeeze=True)
-pvals = pvals.sort_values()[:n_top_pvals]
-parkinson_top_pvals = list(pvals.index)
+parkinson_pvals_dir = 'pvals/UKBB/parkinson/'
+parkinson_idx_path = f'{parkinson_pvals_dir}used_idx.csv'
+parkinson_pvals_path = f'{parkinson_pvals_dir}pvals_filtered.csv'
+if os.path.exists(parkinson_idx_path) and os.path.exists(parkinson_pvals_path):
+    pvals = pd.read_csv(parkinson_pvals_path, header=None, index_col=0,
+                        squeeze=True)
+    pvals = pvals.sort_values()[:n_top_pvals]
+    parkinson_top_pvals = list(pvals.index)
 
-parkinson_pvals_keep_transform = Transform(
-    output_features=parkinson_top_pvals
-)
+    parkinson_pvals_keep_transform = Transform(
+        output_features=parkinson_top_pvals
+    )
+
+    parkinson_drop_idx = pd.read_csv(parkinson_idx_path, index_col=0,
+                                     squeeze=True)
+
+    parkinson_idx_transform = Transform(
+        input_features=[],
+        transform=lambda df: df.drop(parkinson_drop_idx.index, axis=0),
+    )
+else:
+    parkinson_pvals_keep_transform = None
+    parkinson_idx_transform = None
 
 task_metas.append(TaskMeta(
     name='parkinson_pvals',
@@ -357,7 +404,7 @@ task_metas.append(TaskMeta(
     df_name='40663_filtered',
     classif=True,
     idx_column='eid',
-    idx_selection=None,
+    idx_selection=parkinson_idx_transform,
     predict=parkinson_predict_transform,
     transform=None,
     select=parkinson_pvals_keep_transform,
@@ -374,8 +421,10 @@ fluid_predict_transform = Transform(
 )
 
 # Define which features to keep
-fluid_pvals_path = 'pvals/UKBB/fluid_plain/pvals_filtered.csv'
-if os.path.exists(fluid_pvals_path):
+fluid_pvals_dir = 'pvals/UKBB/fluid/'
+fluid_idx_path = f'{fluid_pvals_dir}used_idx.csv'
+fluid_pvals_path = f'{fluid_pvals_dir}pvals_filtered.csv'
+if os.path.exists(fluid_idx_path) and os.path.exists(fluid_pvals_path):
     pvals = pd.read_csv(fluid_pvals_path,
                         header=None, index_col=0, squeeze=True)
     pvals = pvals.sort_values()[:n_top_pvals]
@@ -384,8 +433,17 @@ if os.path.exists(fluid_pvals_path):
     fluid_pvals_keep_transform = Transform(
         output_features=fluid_top_pvals
     )
+
+    fluid_drop_idx = pd.read_csv(fluid_idx_path, index_col=0, squeeze=True)
+
+    fluid_idx_transform = Transform(
+        input_features=[],
+        transform=lambda df: df.drop(fluid_drop_idx.index, axis=0),
+    )
 else:
     fluid_pvals_keep_transform = None
+    fluid_idx_transform = None
+
 
 task_metas.append(TaskMeta(
     name='fluid_pvals',
@@ -393,7 +451,7 @@ task_metas.append(TaskMeta(
     df_name='40663_filtered',
     classif=True,
     idx_column='eid',
-    idx_selection=None,
+    idx_selection=fluid_idx_transform,
     predict=fluid_predict_transform,
     transform=None,
     select=fluid_pvals_keep_transform,

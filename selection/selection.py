@@ -82,7 +82,9 @@ def run(argv=None):
     )
 
     series = pd.Series(keep_index)
-    series.to_csv(f'selected/{task.meta.tag}/used_idx.csv', header=None)
+    os.makedirs(f'selected/{task.meta.tag}', exist_ok=True)
+    series.to_csv(f'selected/{task.meta.tag}/used_idx.csv', header=None,
+                  index=False)
     print(f'Idx used of shape {series.size}')
 
     # Ignore existing pvals selection
@@ -127,8 +129,10 @@ def run(argv=None):
         x = x.to_numpy().reshape(-1, 1)
         y_dropped = y_dropped.to_numpy().reshape(-1)
 
-        if x.shape[0] == 0 or y_dropped.shape[0] == 0:
-            return None  # Array with no sample
+        assert x.shape[0] == y_dropped.shape[0]
+
+        if x.shape[0] < 0.01*index.size:  # Not enough sample, skipping
+            return None
 
         _, pval = f_callable(x, y_dropped)
 
