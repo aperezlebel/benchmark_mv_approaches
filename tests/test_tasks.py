@@ -79,7 +79,7 @@ class test_TB(TestCase):
         X = task.X
         y = task.y
 
-        n_rows = 18509
+        n_rows = 12341
         # n_features = 697
 
         assert X.shape[0] == n_rows
