@@ -32,11 +32,11 @@ method_order = [
 
 db_order = [
     'TB',
-    'UKBB',
+    'MIMIC',
 ]
 
-ph = PlotHelperV4(root_folder='results_selected/FINAL_RESULTS/trial3_50/',
-                  rename=rename)
+ph = PlotHelperV4(root_folder='results_selected/FINAL_RESULTS/trial4/',
+                  rename=rename, reference_method='MIA')
 
 # print(ph.databases())
 # print(ph.existing_methods())
@@ -50,6 +50,6 @@ ph = PlotHelperV4(root_folder='results_selected/FINAL_RESULTS/trial3_50/',
 # print(av_methods)
 # print(ph.relative_scores('TB', 'platelet', av_methods, '5000'))
 
-fig = ph.plot(method_order=method_order, db_order=db_order, compute=False)
+fig = ph.plot(method_order=method_order, db_order=db_order, compute=True)
 if fig:
     plt.show()
