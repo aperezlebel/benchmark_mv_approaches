@@ -4,7 +4,7 @@ import pandas as pd
 from sqlalchemy import create_engine
 
 from features_type import _dump_feature_types
-from .constants import ORDINAL, CONTINUE_R, CONTINUE_I
+from .constants import ORDINAL, CONTINUE_R, CONTINUE_I, CATEGORICAL
 from . import dbs
 
 
@@ -59,9 +59,34 @@ def create_X_income(tables):
     df.to_csv(f'{NHIS.data_folder}custom/X_income.csv')
 
     # Compute the feature types and dump them
+    _dump_types_X_income_v2(df)
+
+
+def _dump_types_X_income_v1(df):
+    """Create types using translation dict and dtypes."""
     print('\tDumping feature types...')
     types = {n: translation[str(t)] for n, t in df.dtypes.items()}
     types = pd.Series(types, index=df.columns)
+    _dump_feature_types(types, NHIS, 'X_income', anonymize=False)
+
+
+def _dump_types_X_income_v2(df):
+    """Create types using files."""
+    print('\tDumping feature types...')
+    types = pd.Series(CATEGORICAL, index=df.columns)
+
+    data_folder = NHIS.data_folder
+    tables = ['household', 'family', 'person', 'adult']
+    for table in tables:
+        print(f'\t\t{table}')
+        path = f'{data_folder}{table}/continue_i.txt'
+        with open(path, 'r') as file:
+            for line in file:
+                line = line.rstrip()
+                if line == '':
+                    continue
+                types[line] = CONTINUE_I
+
     _dump_feature_types(types, NHIS, 'X_income', anonymize=False)
 
 
