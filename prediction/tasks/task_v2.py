@@ -34,6 +34,11 @@ class TaskMeta(object):
         if isinstance(self.drop, list):
             self.drop = set(self.drop)
 
+        if self.idx_column is None:
+            self.idx_column = []
+        elif not isinstance(self.idx_column, list):
+            self.idx_column = [self.idx_column]
+
         if self.drop.intersection(self.predict.output_features):
             raise ValueError('Some predict output features are in drop.')
 
@@ -199,7 +204,7 @@ class Task(object):
 
         if index_col:
             df = pd.read_csv(df_path, sep=sep, encoding=encoding,
-                             usecols=[index_col], index_col=index_col)
+                             usecols=index_col, index_col=index_col)
             self._file_index = df.index
 
     def _load_y(self):
@@ -217,7 +222,7 @@ class Task(object):
         df = pd.read_csv(df_path, sep=sep, encoding=encoding, nrows=0,
                          index_col=index_col)
         self._f_init = {s for s in set(df.columns) if s not in self.meta.drop}
-        self._f_init.add(index_col)
+        self._f_init.update(index_col)
 
         # Step 1.2: load index
         self._load_index()
@@ -227,7 +232,7 @@ class Task(object):
         idx_to_drop = pd.Index([])  # At start, no indexes to drop
         if idx_transformer:
             logging.debug('Derive indexes to drop.')
-            features_to_load = set(idx_transformer.input_features+[index_col])
+            features_to_load = set(idx_transformer.input_features+index_col)
             features_to_load = features_to_load.intersection(self._f_init)
             df = pd.read_csv(df_path, sep=sep, encoding=encoding,
                              usecols=features_to_load, index_col=index_col)
@@ -240,7 +245,7 @@ class Task(object):
 
         # Step 3: Derive the feature to predict y
         logging.debug('Derive the feature to predict y.')
-        features_to_load = set(self.meta.predict.input_features+[index_col])
+        features_to_load = set(self.meta.predict.input_features+index_col)
         features_to_load = features_to_load.intersection(self._f_init)
         df = pd.read_csv(df_path, sep=sep, encoding=encoding,
                          usecols=features_to_load, skiprows=self._rows_to_drop,
@@ -285,7 +290,7 @@ class Task(object):
         index_col = self.meta.idx_column
 
         # Step 5.1: Load asked features
-        features_to_load = set([index_col])
+        features_to_load = set(index_col)
         select = self.meta.select
         if select:
             if select.output_features and select.input_features:
