@@ -71,3 +71,56 @@ task_metas.append(TaskMeta(
     encode_transform=None,
     drop=income_drop_features,
 ))
+
+
+# Task 2: BMI prediciton
+# ----------------------------------------------
+bmi_predict_transform = Transform(
+    input_features=['BMI'],
+    output_features=['BMI'],
+)
+
+# Drop features linked to feature to predict
+bmi_drop_features = {
+    'AHEIGHT',
+    'AWEIGHTP',
+}
+
+# Define which features to keep
+bmi_pvals_dir = 'pvals/NHIS/bmi/'
+bmi_idx_path = f'{bmi_pvals_dir}used_idx.csv'
+bmi_pvals_path = f'{bmi_pvals_dir}pvals_filtered.csv'
+if os.path.exists(bmi_idx_path) and os.path.exists(bmi_pvals_path):
+    pvals = pd.read_csv(bmi_pvals_path, header=None,
+                        index_col=0, squeeze=True)
+    pvals = pvals.sort_values()[:n_top_pvals]
+    bmi_top_pvals = list(pvals.index)
+
+    bmi_pvals_keep_transform = Transform(
+        output_features=bmi_top_pvals
+    )
+
+    bmi_drop_idx = pd.read_csv(bmi_idx_path, index_col=0, squeeze=True)
+
+    bmi_idx_transform = Transform(
+        input_features=[],
+        transform=lambda df: df.drop(bmi_drop_idx.index, axis=0),
+    )
+else:
+    bmi_pvals_keep_transform = None
+    bmi_idx_transform = None
+
+task_metas.append(TaskMeta(
+    name='bmi_pvals',
+    db='NHIS',
+    df_name='X_income',
+    classif=False,
+    idx_column='IDX',
+    idx_selection=bmi_idx_transform,
+    predict=bmi_predict_transform,
+    transform=None,
+    select=bmi_pvals_keep_transform,
+    encode_select=None,
+    encode_transform=None,
+    drop=bmi_drop_features,
+))
