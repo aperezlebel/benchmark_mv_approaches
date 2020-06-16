@@ -62,7 +62,7 @@ septic_predict_transform = Transform(
 )
 
 # Define which features to keep
-septic_pvals_dir = 'pvals/UKBB/septic/'
+septic_pvals_dir = 'pvals/MIMIC/septic/'
 septic_idx_path = f'{septic_pvals_dir}used_idx.csv'
 septic_pvals_path = f'{septic_pvals_dir}pvals_filtered.csv'
 if os.path.exists(septic_idx_path) and os.path.exists(septic_pvals_path):
@@ -131,7 +131,7 @@ hemo_predict_transform = Transform(
 )
 
 # Define which features to keep
-hemo_pvals_dir = 'pvals/UKBB/hemo/'
+hemo_pvals_dir = 'pvals/MIMIC/hemo/'
 hemo_idx_path = f'{hemo_pvals_dir}used_idx.csv'
 hemo_pvals_path = f'{hemo_pvals_dir}pvals_filtered.csv'
 if os.path.exists(hemo_idx_path) and os.path.exists(hemo_pvals_path):
