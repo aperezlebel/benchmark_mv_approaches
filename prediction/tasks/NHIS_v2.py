@@ -23,8 +23,8 @@ n_top_pvals = params.get('n_top_pvals', 100)
 # Task 1: income shock prediciton
 # ----------------------------------------------
 income_predict_transform = Transform(
-    input_features=['ERNYR_P'],
-    output_features=['ERNYR_P'],
+    input_features=['ERNYR-P'],
+    output_features=['ERNYR-P'],
 )
 
 # Drop features linked to feature to predict
