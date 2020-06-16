@@ -54,6 +54,11 @@ def create_X_income(tables):
     print('\tRemoving duplicates...')
     df = df.loc[:, ~df.columns.str.endswith('%to_drop')]
 
+    # Rename columns having forbidden character _ (reserved for OH encoding)
+    rename = {f: f.replace('_', '-') for f in df.columns}
+    print(rename)
+    df.rename(rename, axis=1, inplace=True)
+
     # Save index in columns
     df['IDX'] = df.index
 
