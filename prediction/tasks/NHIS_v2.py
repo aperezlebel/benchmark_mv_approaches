@@ -30,7 +30,8 @@ income_predict_transform = Transform(
 
 # Drop features linked to feature to predict
 income_drop_features = {
-    'to_complete'
+    'INCGRP4',
+    'INCGRP5',
 }
 
 # Define which features to keep
