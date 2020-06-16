@@ -34,7 +34,7 @@ class Database(ABC):
 
     @abstractmethod
     def __init__(self, name='', acronym='', paths=dict(), sep=',', load=None,
-                 encoding='utf-8', encode=None):
+                 encoding='utf-8', encode=None, data_folder=None):
         self.dataframes = dict()
         self.missing_values = dict()
         self.feature_types = dict()
@@ -52,6 +52,7 @@ class Database(ABC):
         self._encoding = encoding
         self.encode = encode
         self._dtype = None
+        self.data_folder = data_folder
 
         if load is not None:
             self.load(load)

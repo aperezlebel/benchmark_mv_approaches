@@ -19,6 +19,7 @@ class NHIS(Database):
             'person': data_folder+'person/personsx.csv',
             'household': data_folder+'household/househld.csv',
             'injury': data_folder+'injury/injpoiep.csv',
+            'X_income': data_folder+'custom/X_income.csv',
         }
         sep = ','
 
@@ -27,7 +28,8 @@ class NHIS(Database):
             acronym='NHIS',
             paths=paths,
             sep=sep,
-            load=load
+            load=load,
+            data_folder=data_folder,
             )
 
     @staticmethod
