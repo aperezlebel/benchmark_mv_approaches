@@ -62,7 +62,7 @@ task_metas.append(TaskMeta(
     db='NHIS',
     df_name='X_income',
     classif=True,
-    idx_column=None,
+    idx_column='IDX',
     idx_selection=income_idx_transform,
     predict=income_predict_transform,
     transform=None,
