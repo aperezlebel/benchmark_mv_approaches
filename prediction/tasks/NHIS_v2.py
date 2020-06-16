@@ -40,6 +40,8 @@ income_pvals_path = f'{income_pvals_dir}pvals_filtered.csv'
 if os.path.exists(income_idx_path) and os.path.exists(income_pvals_path):
     pvals = pd.read_csv(income_pvals_path, header=None,
                         index_col=0, squeeze=True)
+    for f in income_drop_features:  # Drop asked features from pvals
+        pvals = pvals[~pvals.index.str.contains(f)]
     pvals = pvals.sort_values()[:n_top_pvals]
     income_top_pvals = list(pvals.index)
 
@@ -93,6 +95,8 @@ bmi_pvals_path = f'{bmi_pvals_dir}pvals_filtered.csv'
 if os.path.exists(bmi_idx_path) and os.path.exists(bmi_pvals_path):
     pvals = pd.read_csv(bmi_pvals_path, header=None,
                         index_col=0, squeeze=True)
+    for f in bmi_drop_features:  # Drop asked features from pvals
+        pvals = pvals[~pvals.index.str.contains(f)]
     pvals = pvals.sort_values()[:n_top_pvals]
     bmi_top_pvals = list(pvals.index)
 
