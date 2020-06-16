@@ -93,7 +93,7 @@ def _dump_types_X_income_v2(df):
                 line = line.rstrip()
                 if line == '':
                     continue
-                types[line] = CONTINUE_I
+                types[line.replace('_', '-')] = CONTINUE_I
 
     _dump_feature_types(types, NHIS, 'X_income', anonymize=False)
 
