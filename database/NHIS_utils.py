@@ -54,9 +54,12 @@ def create_X_income(tables):
     print('\tRemoving duplicates...')
     df = df.loc[:, ~df.columns.str.endswith('%to_drop')]
 
+    # Save index in columns
+    df['IDX'] = df.index
+
     # Save new dataframe
     print('\tSaving...')
-    df.to_csv(f'{NHIS.data_folder}custom/X_income.csv')
+    df.to_csv(f'{NHIS.data_folder}custom/X_income.csv', index=None)
 
     # Compute the feature types and dump them
     _dump_types_X_income_v2(df)
