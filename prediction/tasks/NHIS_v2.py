@@ -5,7 +5,6 @@ import pandas as pd
 
 from .task_v2 import TaskMeta
 from .transform import Transform
-from database import dbs
 
 
 task_metas = list()
