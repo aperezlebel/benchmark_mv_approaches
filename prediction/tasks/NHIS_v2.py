@@ -69,7 +69,7 @@ task_metas.append(TaskMeta(
     predict=income_predict_transform,
     transform=None,
     select=income_pvals_keep_transform,
-    encode_select=None,
+    encode_select='all',
     encode_transform=None,
     drop=income_drop_features,
 ))
@@ -124,7 +124,7 @@ task_metas.append(TaskMeta(
     predict=bmi_predict_transform,
     transform=None,
     select=bmi_pvals_keep_transform,
-    encode_select=None,
+    encode_select='all',
     encode_transform=None,
     drop=bmi_drop_features,
 ))
