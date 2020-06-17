@@ -1,0 +1,738 @@
+Durée de l incarcération (min),0.0014481662751678163
+Numéro de centre_17,0.0020591608375069826
+Gants_1.0,0.0026955480339325532
+Bloc dans les premières 24h  / Neurochirurgie (ex. : Craniotomie ou DVE)_1.0,0.003004968901473957
+Acquisitions BMR_0.0,0.003510856570469255
+Choc septique_nan,0.004308115381016325
+SMUR (SAMU Ville)_Ligny-en-Barrois,0.004471366059711129
+SMUR (SAMU Ville)_Gisors,0.004471366059711129
+SMUR (SAMU Ville)_Villefranche de Rouergue,0.004471366059711129
+SMUR (SAMU Ville)_Nogent-le-Rotrou,0.004471366059711129
+SMUR (SAMU Ville)_Dunkerque,0.004471366059711129
+SMUR (SAMU Ville)_Cherbourg,0.004471366059711129
+SAMU: département_27 - Eure,0.004471366059711129
+SMUR (SAMU Ville)_HYERES,0.004471366059711129
+SMUR (SAMU Ville)_Vouziers,0.004471366059711129
+SMUR (SAMU Ville)_Necker,0.005825820254910048
+Lésion complète_0.0,0.0060303985280717644
+Acquisitions BMR_nan,0.006512578661194711
+Cinétique non-spécifié/non-évaluable_0.0,0.006515852560604156
+Numéro de centre_1,0.007565398303281653
+Gants_nan,0.0076579454140616576
+Origine du saignement  / Hémorétropéritoine_1.0,0.008017804262317484
+Si anormale préciser   / Pneumothorax.1_1.0,0.008777419993787273
+Si anormale préciser   / Pneumothorax_0.0,0.00894132294861447
+Choc septique_0.0,0.011617823015224071
+Si anormale préciser   / Hémothorax_nan,0.012986622663456172
+Si anormale préciser   / Pneumothorax_nan,0.012986622663456172
+Si anormale préciser   / Epanchement péricardique_nan,0.012986622663456172
+Si anormale préciser   / Autre diagnostic_nan,0.012986622663456172
+Si anormale préciser   / Hémopéritoine_nan,0.012986622663456172
+Résultat de la FAST écho_nan,0.012986622663456172
+Si anormale préciser   / Epanchement péricardique_0.0,0.013394359614789046
+Si anormale préciser   / Hémothorax_0.0,0.014556375330645412
+Echographie d orientation (FAST)_1.0,0.016718163802235297
+Casque_0.0,0.022558969813550968
+Casque_nan,0.02302401902850084
+Cristalloïdes 24h,0.023358383178696814
+Situation professionnelle actuelle_Chômage,0.024006741185845136
+Origine du saignement  / Orthopédique_0.0,0.02460749905404449
+Si anormale préciser   / Hémopéritoine_1.0,0.02516644101151572
+Mécanisme en cause_AVP bicyclette,0.02787267524870073
+Pression Artérielle Systolique - PAS,0.029195967924431805
+Si anormale préciser   / Autre diagnostic_0.0,0.03201457752963062
+Blast_1.0,0.03218992141032944
+Ventilation (FiO2)_Spontanée sous masque HC,0.032352773030757696
+Infection_0.0,0.0348305280086767
+Anomalie pupillaire (Phase hospitalière)_Anisocorie (unilatérale),0.035883251609081686
+Maladies chroniques_Maladie hémato.,0.03832891607417482
+SMUR (SAMU Ville)_Arras,0.03832891607417482
+Mécanisme en cause_AVP 2 roues motorisé,0.04092864593296657
+ISS  / Face,0.04590748787134573
+Bicar min,0.04718687746534258
+Random,0.052622422082250264
+Appréciation globale_1.0,0.05472790817134189
+Echographie d orientation (FAST)_0.0,0.05916387452365773
+FC en phase hospitalière,0.06229303271252616
+Bloc dans les premières 24h  / Neurochirurgie (ex. : Craniotomie ou DVE)_nan,0.06362061813383381
+PaCO2 min,0.06610938477368912
+SAMU: département_75 - Paris,0.0664619757973262
+Chute_0.0,0.0667403732257286
+Fracas du bassin_1.0,0.06751544461246756
+Lésion complète_nan,0.06751544461259547
+Traumatisme médullaire le plus haut_nan,0.0697718713128832
+Fracas du bassin_0.0,0.07168498896542269
+Cinétique non-spécifié/non-évaluable_nan,0.07213739587887473
+Résultat de la FAST écho_1.0,0.07399877339307878
+SAMU: département_83 - Var,0.07641027385172733
+Rachis neurologique_nan,0.07778570122455536
+SMUR (SAMU Ville)_Pertuis,0.07834354020999729
+SMUR (SAMU Ville)_Marne-la-Vallée,0.07834354020999729
+Mécanisme en cause_Arme blanche,0.07931545920655157
+Brulûre_1.0,0.080612915003707
+Epuration extrarénale (EER)_nan,0.08074640860647779
+"Mécanisme en cause_AVP (voiture, camion, bus)",0.08075577952059994
+"Cause  / Matérielle (KT, DVE...)_0.0",0.08257805625968488
+Incarcération_0.0,0.08838903796594058
+"Transfert secondaire, pourquoi ?_Rapprochement familial",0.0935511522512519
+Fracture du rachis et/ ou lésion médullaire_1.0,0.10169864707014864
+SpO2 min,0.10328724369253986
+Plaquettes < 150 000_nan,0.10447118570345723
+Éjection du véhicule_1.0,0.10706685854036227
+Anomalie pupillaire (Pré-hospitalier)_Anisocorie (unilatérale),0.1118001424095036
+SMUR (SAMU Ville)_Toulon,0.11354011513463334
+Cinétique non-spécifié/non-évaluable_1.0,0.11858778066058882
+"Cause  / Matérielle (KT, DVE...)_1.0",0.11936422011435464
+Période de travail_1.0,0.1193835468362201
+"Type de lieu_Autre spécifié, précisez ci-dessous",0.1210703811005278
+Glasgow,0.12140112830742192
+SMUR (SAMU Ville)_Meaux,0.12260231361048116
+Situation professionnelle actuelle_Activité professionnelle à plein temps ,0.12270983257686227
+Cause  / Respiratoire_0.0,0.12277304304855365
+SMUR (SAMU Ville)_Ménilmontant,0.1230853981532873
+Situation professionnelle actuelle_Activité professionnelle à temps partiel ,0.1230853981532873
+Patient vivant en couple_nan,0.1304226256242909
+Rachis neurologique_1.0,0.13378822512705305
+Délai « admission trauma center - incision/ponction pour geste »,0.13395029622446605
+Appréciation globale_nan,0.1341547361176676
+"Grossesse, 2e ou 3e trimestre_1.0",0.1376648093214585
+ASA-PS,0.14135309680010913
+Epuration extrarénale (EER)_0.0,0.1499512221390073
+"Type de lieu_Résidence, institution (maison de retraite, prison, terrain militaire...)",0.15744105763642324
+Si anormale préciser   / Autre diagnostic_1.0,0.15744105763642324
+Sexe_1.0,0.16054074321884615
+Cause  / Urinaire_0.0,0.1627442714902715
+Anomalie pupillaire (Phase hospitalière)_Non,0.16314868593688206
+Période de travail_0.0,0.16357076964015582
+"Grossesse, 2e ou 3e trimestre_0.0",0.16372196221429122
+Intentionnalité_Autre,0.163966549309133
+SMUR (SAMU Ville)_Aulnay-sous-Bois,0.163966549309133
+Origine du saignement  / Hémothorax_0.0,0.16584310225831714
+Novoseven_nan,0.16647677260770824
+Echographie d orientation (FAST)_nan,0.16695786928064102
+Écrasé/projeté_1.0,0.16909340936433398
+Épisode diurèse < 500 mL/j_nan,0.1699105034907557
+Délai PIC : arrivée hôpital - pose de PIC,0.1699304284604394
+Fracture du rachis et/ ou lésion médullaire_0.0,0.1724876870636651
+SAMU: département_91 - Essonne,0.17643739083546536
+SMUR (SAMU Ville)_Pitié Salpêtrière,0.17860133497712594
+Sexe_0.0,0.1843383224657458
+Nombre culots globulaires (avant départ scanner ou bloc),0.18573439713824708
+Natrémie,0.1900184019099504
+Anomalie pupillaire (Phase hospitalière)_nan,0.19771157127576047
+Fractures ouvertes_0.0,0.19863391981348325
+Ventilation (FiO2)_Spontanée air ambiant,0.19896611489341925
+Blast_nan,0.19911808040338946
+Cause  / Site opératoire_0.0,0.2020214383457471
+Anomalie pupillaire (Pré-hospitalier)_Mydriase Bilatérale,0.20584431496949224
+Type de lieu_Zone Agriculture ou production primaire (ferme si domicile),0.20613636321866904
+SMUR (SAMU Ville)_Marseille,0.20613636321866904
+SMUR (SAMU Ville)_Haguenau,0.20613636321866904
+"Activité au moment du traumatisme (OMS C5)_Education (école, lycée, université...)",0.20613636321866904
+Cristalloïdes,0.20670112449603711
+Pression Artérielle Diastolique - PAD,0.20720091917492525
+"Activité socioprofessionnelle récente_Artisans, commerçants et chefs d'entreprises",0.20903506304753725
+Epuration extrarénale (EER)_1.0,0.2105578498119159
+Novoseven_0.0,0.2111695804234477
+Traumatisme médullaire le plus haut_Cervical,0.2112245554848324
+Brulûre_0.0,0.2114096164598179
+Cause  / Cérébral (méningite...)_0.0,0.2120382805878145
+Fibrinogène (au déchoc)_1.0,0.21469629172146387
+SAMU: département_55 - Meuse,0.21715649903193904
+SMUR (SAMU Ville)_Marseille - Timone,0.21715649903193904
+SMUR (SAMU Ville)_Auch,0.21715649903193904
+SMUR (SAMU Ville)_Pompiers des Bouches du Rhône,0.21715649903193904
+Numéro de centre_10,0.2187912654723096
+Activité socioprofessionnelle récente_nan,0.22068478271026773
+Origine du patient_GGNC,0.22137701955313732
+SMUR (SAMU Ville)_Marne la vallée,0.22137701955313732
+Incarcération_nan,0.2269171250995713
+Écrasé/projeté_nan,0.23724042099626835
+Origine du saignement  / Autres_1.0,0.23775305861781426
+Traumatisme médullaire le plus haut_Lombaire,0.23794665333936704
+Troponine ultrasensible,0.2409643547325833
+Fracture du rachis et/ ou lésion médullaire_nan,0.24181321427522345
+SAMU: département_04 - Alpes de haute provence,0.24181321427522345
+"Cause  / Matérielle (KT, DVE...)_nan",0.24440388962142345
+Cause  / Abdominal_nan,0.24440388962142345
+Cause  / Cérébral (méningite...)_nan,0.24440388962142345
+Cause  / Site opératoire_nan,0.24440388962142345
+Cause  / Urinaire_nan,0.24440388962142345
+Infection_nan,0.24440388962142345
+Cause  / Respiratoire_nan,0.24440388962142345
+Chute_1.0,0.244512207464522
+Lactates pré-hospitalier,0.2472276588245471
+"Grossesse, 2e ou 3e trimestre_nan",0.24801175455413185
+Fractures ouvertes_1.0,0.25091188257319563
+Plaquettes < 150 000_1.0,0.2545709559209131
+Dérivation ventriculaire externe (DVE)_1.0,0.254905023473653
+"Doppler TransCrânien (DTC), Index de Pulsatilité (IP) max",0.2614037754166044
+Radiographie bassin_0.0,0.2646814006278535
+Situation professionnelle actuelle_nan,0.2650426181696595
+Éjection du véhicule_0.0,0.2659132284274405
+Transfusion de PLYO (plasma lyophilisé)_0.0,0.2699913217131711
+Choc hémorragique (? 4 CGR sur 6h)_1.0,0.27030360654287144
+Origine du saignement  / Hémothorax_nan,0.2703036065432166
+Origine du saignement  / Autres_nan,0.2703036065432166
+Origine du saignement  / Hémorétropéritoine_nan,0.2703036065432166
+Origine du saignement  / Hémopéritoine_nan,0.2703036065432166
+Origine du saignement  / Orthopédique_nan,0.2703036065432166
+Délai introduction catécholamines dans choc hémorragique,0.27174518486543164
+PaO2/FIO2 (mmHg) si VM ou CPAP,0.2742133179256199
+Transfusion de PLYO (plasma lyophilisé)_nan,0.2777981814871281
+Fibrinogène 24h,0.2790330819500475
+"Type de lieu_Nature, Forêt, Montagne (lac, plage...)",0.28041922947071546
+Mécanisme en cause_Inconnu,0.2825324163902973
+SMUR (SAMU Ville)_Pontoise,0.2825324163902973
+Épisode diurèse < 500 mL/j_0.0,0.2881654525907927
+Origine du saignement  / Hémopéritoine_0.0,0.28821957715997065
+Si fait_1.0,0.28821957715997065
+Si anormale préciser   / Pneumothorax.1_0.0,0.2892873787319893
+Période de travail_nan,0.2900096053145201
+SMUR (SAMU Ville)_Lagny,0.2900096053145201
+SMUR (SAMU Ville)_Saint-Germain-en-Laye,0.2900096053145201
+"Sinon, lactates > H2",0.2900229650659084
+Origine du saignement  / Orthopédique_1.0,0.29043281217344796
+Annoncé comme instable_1.0,0.29199708104089955
+Suspicion d atteinte neurologique à l examen_0.0,0.29550336572604474
+"Activité au moment du traumatisme (OMS C5)_Activité vitale (sommeil, repos, manger, boire, s'habiller, se soigner, se laver...)",0.2978404168138625
+Cause  / Abdominal_0.0,0.2985309464039663
+Troponine standard,0.30216814218215443
+SMUR (SAMU Ville)_Champerret,0.3037445219374715
+Rachis neurologique_0.0,0.3071485993098925
+Brulûre_nan,0.30739888846442875
+Si anormale préciser   / Fracture pelvienne_1.0,0.3082653043892885
+ISS  / Extremities,0.30829739824880364
+Arrêt cardio-respiratoire (massage)_nan,0.308605717031865
+Annoncé comme instable_0.0,0.3158597236119242
+SAMU: département_14 - Calvados,0.3186228607220095
+SMUR (SAMU Ville)_Orsay,0.3186228607220095
+SAMU: département_57 - Moselle,0.3186228607220095
+Choc hémorragique (? 4 CGR sur 6h)_nan,0.3186228607220095
+Traitement antiagrégants_1.0,0.3198046877950126
+SMUR (SAMU Ville)_Mantes-la-Jolie,0.321955020501998
+SMUR (SAMU Ville)_Poissy,0.3268081250035445
+Ventilation (FiO2)_Spontanée sous lunettes,0.32915812749451345
+Nombre concentré plaquettaire (avant départ scanner ou bloc),0.3302950078721203
+Suspicion d atteinte neurologique à l examen_1.0,0.3315575895631182
+Hémocue initial,0.3425579016535204
+Hépatique (bilirubine),0.3437581614215711
+Choc septique_1.0,0.34439095950192744
+Numéro de centre_16,0.3447688899707161
+Incarcération_1.0,0.3490298807906662
+SMUR (SAMU Ville)_Montfermeil,0.35102368522745864
+SMUR (SAMU Ville)_Avignon,0.35102368522745864
+SAMU: département_60 - Oise,0.35102368522745864
+Numéro de centre_13,0.35489129449486057
+SMUR (SAMU Ville)_Versailles,0.35838761339427205
+Kaliémie,0.3591166190891436
+Blast_0.0,0.3609371037655271
+SAMU: département_62 - Pas-de-Calais,0.3637843747274697
+SMUR (SAMU Ville)_Nancy,0.3637843747274697
+SMUR (SAMU Ville)_Gonesse,0.3637843747274697
+Catécholamines max dans choc hémorragique,0.3648004185584773
+Si anormale préciser   / Hémopéritoine_0.0,0.3673907210200734
+SMUR (SAMU Ville)_Fontainebleau,0.37192410683300736
+Activité socioprofessionnelle récente_Agriculteurs exploitants,0.37192410683300736
+Novoseven_1.0,0.37192410683300736
+SAMU: département_32 - Gers,0.37192410683300736
+SMUR (SAMU Ville)_Salon,0.37192410683300736
+SMUR (SAMU Ville)_Provins,0.37192410683300736
+SAMU: département_08 - Ardennes,0.37192410683300736
+Mécanisme en cause_Autre,0.3720402321417416
+"Niveau d études ou diplôme le plus élevé_Collège, CAP, BEP",0.3721447910843224
+Température.1_0.0,0.37241861546298505
+Si anormale préciser   / Disjonction symphyse pubienne_0.0,0.3748885741758629
+Jour de la première pneumopathie,0.3794517201078522
+SAMU: département_93 - Seine-Saint-Denis,0.3805621493491459
+Patient vivant en couple_0.0,0.3824462054790064
+Activité au moment du traumatisme (OMS C5)_Sport ou exercice pendant temps de loisirs,0.3844870011876933
+Anomalie pupillaire (Pré-hospitalier)_nan,0.3844870011876933
+Niveau d études ou diplôme le plus élevé_nan,0.3856335352058489
+SMUR (SAMU Ville)_Dreux,0.3880440077634261
+SMUR (SAMU Ville)_Beaumont,0.3880440077634261
+SMUR (SAMU Ville)_Digne-les-Bains,0.3880440077634261
+SMUR (SAMU Ville)_Caen 1,0.3880440077634261
+Choc hémorragique (? 4 CGR sur 6h)_0.0,0.3880866823852208
+Lactates H2,0.3891429088068703
+Activité au moment du traumatisme (OMS C5)_Travail rémunéré (trajets pour travail rémunéré),0.3898925878862829
+"Intentionnalité_Auto-infligé (suicide, blessure)",0.39047886581387103
+Mode de transport à l'hôpital_nan,0.3912586164429367
+"Activité socioprofessionnelle récente_Ouvriers qualifié, non qualifiés, chauffeurs",0.3939756767766884
+Numéro de centre_5,0.3940843321671215
+"Transfert secondaire, pourquoi ?_Pas de transfert",0.3970216419679782
+Plaquettes < 150 000_0.0,0.3982354948902125
+Fibrinogène (au déchoc)_0.0,0.398235494890411
+"Activité au moment du traumatisme (OMS C5)_Travail non rémunéré (ménage, courses, bricolage, soins aux enfants, trajets personnels)",0.3998205743137958
+Myoglobine max,0.4093860290448135
+Radiographie bassin_1.0,0.4122919269410762
+"Type de lieu_Zone de loisirs/divertissement/activité culturelle et bâtiment public (parc, église, musée, mairie...)",0.4124554961948149
+SMUR (SAMU Ville)_Strasbourg,0.4124554961948149
+Score ASIA moteur,0.413521662928232
+Arrêt cardio-respiratoire (massage)_1.0,0.4135939371495884
+Situation professionnelle actuelle_Chômage ,0.4172190968925308
+Numéro de centre_11,0.4204442215519546
+Alcoolémie (g/L),0.4236790323499866
+CPK max,0.4261629336727415
+Épisode diurèse < 500 mL/j_1.0,0.4262785396005413
+"Activité au moment du traumatisme (OMS C5)_Trajet non classé ailleurs (ex trajet pour sport pdt loisir, pour école)",0.4286653863185338
+"Niveau d études ou diplôme le plus élevé_Diplôme niveau bac + 2 (DEUG, DUT, BTS, PCEM)",0.4287203316973597
+Intentionnalité_nan,0.43085448976806395
+Nombre de pneumopathies,0.4312063149515156
+Intubation orotrachéale (IOT) SMUR_1.0,0.4315367107807513
+Si anormale préciser   / Fracture pelvienne_nan,0.4321718006907607
+Si anormale préciser   / Disjonction symphyse pubienne_nan,0.4321718006907607
+SOFA Cardiovasculaire_Dopamine > 5 ou Adrénaline / Noradrénaline ? 0.1,0.436495797159383
+Lésion médullaire sans fracture ( SCYWORA )_nan,0.4424190485200329
+Ischémie du membre_1.0,0.4424190485211943
+Température.1_1.0,0.44272192275603994
+SMUR (SAMU Ville)_Montreuil,0.44272192275603994
+Si fait_nan,0.4430496179729806
+Intentionnalité_Inconnue,0.4452098543955897
+"Niveau d études ou diplôme le plus élevé_Diplôme de l'enseignement supérieur 3ème cycle (master2 ou doctorat, DEA ou DESS) ou école d'ingénieur ou « grandes écoles »",0.4452098543955897
+Traumatisme médullaire le plus haut_Thoracique,0.4452098543955897
+Casque_1.0,0.4474156326535417
+Résultat de la FAST écho_0.0,0.4478367958364751
+Mécanisme en cause_Chute d'une hauteur,0.4512893532949813
+SAMU: département_BSPP,0.4522797435475927
+Activité socioprofessionnelle récente_Sans activité professionnelle ou inactif,0.4550221457203151
+SMUR (SAMU Ville)_Arpajon,0.4567856235809477
+SAMU: département_nan,0.4611877538775504
+Delta Hémocue,0.4615154108489001
+Température.1_nan,0.4632829944291007
+Concentré plaquettaire 6h (nombre de CUP),0.4661946801545919
+Diurèse (L/24h),0.4701408989730729
+Lésion médullaire sans fracture ( SCYWORA )_0.0,0.4745099626874111
+Bilirubine,0.4794326077444324
+Maladies chroniques_Cancer métastasé,0.4812088601350899
+SMUR (SAMU Ville)_Chartres,0.4812088601350899
+Cause  / Cérébral (méningite...)_1.0,0.4812088601350899
+Si anormale préciser   / Elargissement du médiastin_1.0,0.4812088601350899
+SAMU: département_82 - Tarn-et-Garonne,0.4812088601350899
+Sexe_nan,0.4812088601350899
+Pression artérielle systolique IGS II,0.4816890085702816
+Anomalie pupillaire (Phase hospitalière)_Mydriase (bilatérale),0.4853441821772127
+Chute_nan,0.4869751074306351
+SOFA Coagulation (plaquette x 10^3/mm3),0.4887386704061062
+Activité socioprofessionnelle récente_Retraités,0.4928458826759675
+Maladies chroniques_Aucune,0.4958976268417671
+SMUR (SAMU Ville)_Eaubonne,0.4966471728577735
+"Rachis récupération, score ASIA moteur",0.4970731657334438
+SAMU: département_31 - Haute-Garonne,0.5052882078765658
+SOFA Cardiovasculaire_Pas d'hypotension,0.5085663992789623
+Cause  / Urinaire_1.0,0.508866597941515
+Intentionnalité_Accident (non intentionnel),0.5109000294099519
+Numéro de centre_4,0.5125150494263446
+Activité au moment du traumatisme (OMS C5)_Autre activité non spécifiée,0.5155079619138225
+SMUR (SAMU Ville)_Colmar,0.5213607563948786
+SAMU: département_12 - Aveyron,0.5213607563948786
+Délai « départ base - arrivée sur les lieux »,0.5241331198695611
+"Activité socioprofessionnelle récente_Cadres, professions intellectuelles supérieures",0.5276720490361178
+SOFA Cardiovasculaire_PAM < 70 mmHg,0.5276720490361178
+Origine du patient_SAU,0.5276720490361178
+"Situation professionnelle actuelle_Autre, précisez ci-dessous",0.5290077319160158
+Intubation orotrachéale (IOT) SMUR_0.0,0.5304421467279499
+Intentionnalité_Agression,0.5319187881720122
+SOFA Cardiovasculaire_nan,0.5337955299981159
+Traitement anticoagulant_nan,0.5351336425822903
+Hémoglobine min,0.5359807786361679
+Plaquettes min,0.5361142409524127
+SAMU: département_84 - Vaucluse,0.5404365051595851
+SMUR (SAMU Ville)_Etampes,0.5404365051595851
+SMUR (SAMU Ville)_Hôtel Dieu,0.5404365051595851
+SMUR (SAMU Ville)_Aix-en-provence,0.5419853458456423
+SAMU: département_09 - Ariège,0.5419853458456423
+SAMU: département_81 - Tarn,0.5419853458456423
+SMUR (SAMU Ville)_Montauban,0.5419853458456423
+SMUR (SAMU Ville)_Wissembourg,0.5419853458456423
+SMUR (SAMU Ville)_Nemours,0.5419853458456423
+SMUR (SAMU Ville)_Marseille - Nord,0.5419853458456423
+"Type de lieu_Ecole, lieu d'éducation (crèche, bâtiment et aires adjacentes) ",0.5419853458456423
+Mécanisme en cause_nan,0.5419853458456423
+SMUR (SAMU Ville)_Manosque,0.5419853458456423
+SMUR (SAMU Ville)_St Lo,0.5419853458456423
+SAMU: département_52 - Haute Marne,0.5419853458456423
+SOFA Cardiovasculaire_Dopamine ?5 ou Dobutamine,0.5419853458456423
+SMUR (SAMU Ville)_Châlons-en-Champagne,0.5419853458456423
+SMUR (SAMU Ville)_Rodez,0.5419853458456423
+Catécholamines_0.0,0.54326042543734
+SMUR (SAMU Ville)_Masséna,0.545632836535197
+Catécholamines_nan,0.5464486662692737
+Température,0.5502493356642781
+SMUR (SAMU Ville)_Mondor,0.5528745193298783
+Si anormale préciser   / Pneumothorax_1.0,0.5573223557667659
+Patient vivant en couple_1.0,0.5651885961273719
+"Durée de séjour en réa- si date de sortie connue, durée de séjour = (date sortie - date d entrée)- si date de sortie inconnue, d",0.567077847160379
+Origine du saignement  / Autres_0.0,0.5681308563572807
+"Mécanisme en cause_AVP autre (avion, bateau, train, autres)",0.5684098043816559
+Cause  / Abdominal_1.0,0.5684098043816559
+Maladies chroniques_nan,0.5756413044061262
+Fractures ouvertes_nan,0.5789834822262978
+Bicar mesuré,0.5802820130667594
+Colloïdes,0.5805275977847238
+HTIC (>25 PIC simple sédation)_0.0,0.5867885648814876
+Numéro de centre_6,0.5900905627820345
+Hb conventionnelle laboratoire,0.5913413150540285
+Activité socioprofessionnelle récente_Autre,0.5923740502415216
+Niveau d études ou diplôme le plus élevé_Bac,0.5960383958080548
+Activité socioprofessionnelle récente_Employés de commerce,0.6014539486807913
+Mécanisme en cause_AVP piéton,0.6030867993411121
+Activité socioprofessionnelle récente_Employé de la fonction publique ou administratif des entreprises,0.6068242705257212
+Traitement anticoagulant_1.0,0.6095208605905454
+Numéro de centre_8,0.6110986397748897
+Etude PROCOAG_0.0,0.6118481303047641
+Score de Glasgow en phase hospitalière,0.6146174571569682
+Traitement antiagrégants_nan,0.6168138952291133
+Pression Artérielle Systolique (PAS) à l arrivée du SMUR,0.6182396893110973
+SMUR (SAMU Ville)_Avranches,0.6186504020895695
+SMUR (SAMU Ville)_Saint-Tropez,0.6186504020895695
+SMUR (SAMU Ville)_Aubagne,0.6186504020895695
+SMUR (SAMU Ville)_TOULON,0.6186504020895695
+SAMU: département_11 - Aude,0.6186504020895695
+SMUR (SAMU Ville)_Sarrebourg,0.6186504020895695
+Maladies chroniques_SIDA,0.6186504020895695
+SMUR (SAMU Ville)_Saverne,0.6186504020895695
+SAMU: département_45 - Loiret,0.6186504020895695
+SAMU: département_46 - Lot,0.6186504020895695
+SMUR (SAMU Ville)_caen,0.6186504020895695
+SMUR (SAMU Ville)_Saint-Dizier,0.6186504020895695
+SMUR (SAMU Ville)_Sélestat,0.6186504020895695
+SMUR (SAMU Ville)_Albi,0.6186504020895695
+SMUR (SAMU Ville)_Lens,0.6186504020895695
+SMUR (SAMU Ville)_Lunéville,0.6186504020895695
+SMUR (SAMU Ville)_Martigues,0.6186504020895695
+SAMU: département_88 - Vosges,0.6186504020895695
+SMUR (SAMU Ville)_Metz,0.6186504020895695
+SMUR (SAMU Ville)_Hyères,0.6186504020895695
+SAMU: département_89 - Yonne,0.6186504020895695
+SMUR (SAMU Ville)_Montargis,0.6186504020895695
+SMUR (SAMU Ville)_Foix,0.6186504020895695
+SMUR (SAMU Ville)_Epinal,0.6186504020895695
+Traitement antiagrégants_0.0,0.6198072783937638
+BE max,0.6220299094402209
+Type de lieu_Autre non-spécifié,0.6255324198821799
+Etude PROCOAG_nan,0.625888978266218
+TRISS contondant,0.626724470890009
+SAMU: département_Hors IDF,0.6269918098728905
+Lactate max,0.628328252275417
+Créatinine max.1,0.6283828780110865
+Appréciation globale_0.0,0.6290391674062588
+Ventilation (FiO2)_Spontanée sous masque MC,0.6302396784052298
+Osmothérapie_SSH,0.6330370447022652
+Radiographie bassin_nan,0.6396614409041002
+Intubation orotrachéale (IOT) SMUR_nan,0.6400028494079275
+SMUR (SAMU Ville)_Melun,0.6400028494079275
+SAMU: département_51 - Marne,0.6417354135538571
+SMUR (SAMU Ville)_Argenteuil,0.6417354135538571
+PFC 6h,0.6427059415913545
+Ventilation (FiO2)_Contrôlée,0.6487471917133394
+Radiographie pulmonaire_0.0,0.6498428495395854
+Type de lieu_nan,0.6520923806642391
+SMUR (SAMU Ville)_Bobigny,0.6581281417546903
+SAMU: département_50 - Manche,0.6587264102880743
+SAMU: département_68 - Haut-Rhin,0.6587264102880743
+Type de lieu_Institution médicale (bâtiment et aires adjacentes),0.6587264102880743
+SMUR (SAMU Ville)_toulon,0.6587264102880743
+Acquisitions BMR_1.0,0.6608262624801602
+Délai « arrivée sur les lieux - arrivée hôpital »,0.6646955749390268
+Gants_0.0,0.6661675516664503
+Mécanisme en cause_Arme à feu,0.6661675516664503
+Température min,0.6662286423984727
+SOFA Respiration (PaO2/FiO2 (mmHg)),0.6683123244206366
+Créatinine,0.6692437216125753
+Anomalie pupillaire (Pré-hospitalier)_Pas précisé,0.6715533081594667
+SMUR (SAMU Ville)_Villeneuve-Saint-Georges,0.6718901660923882
+Ischémie du membre_0.0,0.6742447445023659
+Catécholamines_1.0,0.6747047460263393
+Situation professionnelle actuelle_Activité professionnelle à plein temps,0.6755277857863238
+Résultat de la radiographie pulmonaire_1.0,0.6756004219227169
+HTIC (>25 PIC simple sédation)_nan,0.6773824625491018
+Lésion complète_1.0,0.6785713133727379
+Si anormale préciser   / Contusion_1.0,0.6798995312074856
+Glasgow initial,0.6821812929486621
+Activité au moment du traumatisme (OMS C5)_nan,0.6822632783721356
+SAMU: département_77 - Seine-et-Marne,0.6861489661621085
+BMI,0.6867378272198819
+pH,0.68789427403843
+Si anormale préciser   / Contusion_0.0,0.6882751427870815
+Osmothérapie_Rien,0.6916445273943146
+Pression intracrânienne (PIC)_2.0,0.6959394990606804
+SAMU: département_54 - Meurthe-et-Moselle,0.6959394990606804
+SMUR (SAMU Ville)_Longjumeau,0.7003998674357407
+Saturation périphérique oxygène - SpO2,0.7119164162667145
+FC IGS II,0.7123146434062555
+Régression mydriase sous osmothérapie_1.0,0.7175655646950638
+Radiographie pulmonaire_nan,0.7185500925522815
+Origine du saignement  / Hémopéritoine_1.0,0.7204964207673941
+SMUR (SAMU Ville)_Beaujon,0.7205118816571082
+SMUR (SAMU Ville)_Corbeil,0.7205118816571082
+Origine du saignement  / Hémothorax_1.0,0.7205118816571082
+Urée sanguine,0.7209659353812421
+SMUR (SAMU Ville)_Beauvais,0.7249367532856978
+SMUR (SAMU Ville)_Orange,0.7249367532856978
+SMUR (SAMU Ville)_Boulogne sur mer,0.7249367532856978
+SMUR (SAMU Ville)_Sisteron,0.7249367532856978
+SMUR (SAMU Ville)_Sarreguemines,0.7249367532856978
+SMUR (SAMU Ville)_Castelnaudary,0.7249367532856978
+SAMU: département_05 - Hautes Alpes,0.7249367532856978
+SMUR (SAMU Ville)_Sedan,0.7249367532856978
+SMUR (SAMU Ville)_Senlis,0.7249367532856978
+SMUR (SAMU Ville)_NON CONNUE,0.7249367532856978
+SMUR (SAMU Ville)_Brignoles,0.7249367532856978
+Traumatisme médullaire le plus haut_Sacrum,0.7249367532856978
+SMUR (SAMU Ville)_Plombières,0.7249367532856978
+Lésion médullaire sans fracture ( SCYWORA )_1.0,0.7249367532856978
+SMUR (SAMU Ville)_Brignolles,0.7249367532856978
+SMUR (SAMU Ville)_Carpentras,0.7249367532856978
+SMUR (SAMU Ville)_Saint-Girons,0.7249367532856978
+SMUR (SAMU Ville)_Béthune,0.7249367532856978
+SMUR (SAMU Ville)_Pont-à-Mousson,0.7249367532856978
+SMUR (SAMU Ville)_Saint-Avold,0.7249367532856978
+SMUR (SAMU Ville)_Saint-Affrique,0.7249367532856978
+SMUR (SAMU Ville)_Carcassonne,0.7249367532856978
+SMUR (SAMU Ville)_ST TROPEZ,0.7249367532856978
+SMUR (SAMU Ville)_Romilly,0.7249367532856978
+SMUR (SAMU Ville)_Sainte-Menehould,0.7249367532856978
+SMUR (SAMU Ville)_Moissac,0.7249367532856978
+SMUR (SAMU Ville)_Marignane,0.7249367532856978
+SMUR (SAMU Ville)_Tarbes,0.7249367532856978
+SMUR (SAMU Ville)_Compiègne,0.7249367532856978
+SMUR (SAMU Ville)_Alençon,0.7249367532856978
+SMUR (SAMU Ville)_Clermont (Oise),0.7249367532856978
+SMUR (SAMU Ville)_Arles,0.7249367532856978
+SMUR (SAMU Ville)_Armenthieres,0.7249367532856978
+SMUR (SAMU Ville)_Figeac,0.7249367532856978
+SMUR (SAMU Ville)_Gap,0.7249367532856978
+SMUR (SAMU Ville)_Autre,0.7249367532856978
+SMUR (SAMU Ville)_Chaumont,0.7249367532856978
+SMUR (SAMU Ville)_Charleville-Mézières,0.7249367532856978
+SMUR (SAMU Ville)_Rethel,0.7249367532856978
+SAMU: département_65 - Hautes-Pyrénées,0.7249367532856978
+SMUR (SAMU Ville)_Castres,0.7249367532856978
+SMUR (SAMU Ville)_argentan,0.7249367532856978
+SMUR (SAMU Ville)_Bayeux,0.7249367532856978
+SMUR (SAMU Ville)_Troyes,0.7249367532856978
+SMUR (SAMU Ville)_Valenciennes,0.7249367532856978
+SMUR (SAMU Ville)_Vitry-le-François,0.7249367532856978
+SMUR (SAMU Ville)_Épernay,0.7249367532856978
+SAMU: département_61 - Orne,0.7249367532856978
+SMUR (SAMU Ville)_Cahors,0.7249367532856978
+SMUR (SAMU Ville)_lille,0.7249367532856978
+SMUR (SAMU Ville)_Bar-le-Duc,0.7249367532856978
+"Type de lieu_Ecole, lieu d'éducation (crèche, bâtiment et aires adjacentes)",0.7249367532856978
+SMUR (SAMU Ville)_granville,0.7249367532856978
+Score ISS,0.7266525107513757
+Type de lieu_Domicile (bâtiment et aire adjacente),0.7281877709144875
+Pression Artérielle Diastolique (PAD) à l arrivée du SMUR,0.7324946999393709
+Lactates,0.7346629497150469
+Pression Artérielle Systolique (PAS) minimum,0.7505745027999271
+Trauma Injury Severity Score (TRISS),0.7521623981895939
+Suspicion d atteinte neurologique à l examen_nan,0.7534627744982576
+Fracas du bassin_nan,0.7559040256025866
+Mécanisme en cause_Traumatisme par objet contondant (non pénétrant),0.7585418711131764
+SAMU: département_92 - Haut-de-Seine,0.7590824522514791
+"Situation professionnelle actuelle_Lycéen, étudiant(e), élève, en formation",0.7626610425859173
+"Transfert secondaire, pourquoi ?_Plateau technique insuffisant",0.7631084099420533
+"Activité socioprofessionnelle récente_Professions intermédiaires (instituteur, technicien, contremaitre...)",0.7631084099420533
+Si anormale préciser   / Disjonction symphyse pubienne_1.0,0.7638154040192334
+Lieu du traumatisme_0.0,0.7648328183804567
+Situation professionnelle actuelle_Activité professionnelle à temps partiel,0.7653283134044035
+Niveau d études ou diplôme le plus élevé_Non scolarisé,0.7653283134044035
+Anomalie pupillaire (Pré-hospitalier)_Non,0.7664123518336768
+Dérivation ventriculaire externe (DVE)_2.0,0.7708848850447687
+Concentré plaquettaire 24h (nombre de CUP),0.7712368261426712
+"Activité au moment du traumatisme (OMS C5)_Autre activité spécifiée, précisez ci-après",0.7721904990379367
+Si anormale préciser   / Elargissement du médiastin_0.0,0.7792042496824758
+Si anormale préciser   / Fracture pelvienne_0.0,0.7793414561077979
+Régression mydriase sous osmothérapie_nan,0.7793795076602724
+Numéro de centre_21,0.7827007037820193
+SMUR (SAMU Ville)_Plessis-Clamart,0.7827007037820193
+Fibrinogène 6h,0.7838807920592299
+HCO3-,0.7840383144751352
+CGR 6h,0.7856034469596079
+Colloïdes 24h,0.7875687112490504
+pH min,0.7884943613080359
+"Activité au moment du traumatisme (OMS C5)_Loisirs ou jeu (danse, télé, randonnée, trajets...)",0.7904535980360476
+SMUR (SAMU Ville)_Garches,0.7931513514519609
+P/F min,0.7983665826358282
+Leucocytes,0.8046820031573723
+Sévérité ARDS,0.8053069179442764
+Dérivation ventriculaire externe (DVE)_0.0,0.8088159102625171
+Cause  / Site opératoire_1.0,0.8091941580777665
+SMUR (SAMU Ville)_Vitry,0.8091941580777665
+"Type de lieu_Zone de transport (autoroute, nationale, rue, piste cyclable, parking, gare, train, aéroport...)",0.8095593775163901
+Age du patient (ans),0.8117744095942395
+DTC IP max (sur les premières 24 heures d HTIC),0.8122936081121448
+Bloc dans les premières 24h  / Neurochirurgie (ex. : Craniotomie ou DVE)_0.0,0.8139192238182755
+Ischémie du membre_nan,0.8164480086963273
+SMUR (SAMU Ville)_Saint-Denis,0.8164480086963273
+Lieu du traumatisme_1.0,0.816872395698281
+Mode de transport à l'hôpital_1.0,0.8179655392992419
+Fibrinogène (au déchoc)_nan,0.8184970727582056
+Si anormale préciser   / Hémothorax.1_0.0,0.8206999576850087
+TRISS pénétrant,0.8215395164073903
+ISS  / External,0.8215430363181961
+Activité socioprofessionnelle récente_Personnels de service pour les particuliers,0.8252689869425887
+SAMU: département_28 - Eure-et-Loir,0.8252689869425887
+"Type de lieu_Zone commerciale (magasin, station service, restaurant, bureaux...)",0.8252689869425887
+Fibrinogène,0.8253012389694656
+Rein (créat ou diurèse),0.8260930712070047
+Situation professionnelle actuelle_Sans activité professionnelle,0.8283351201375683
+Si anormale préciser   / Hémothorax.1_nan,0.8322589868921046
+Si anormale préciser   / Contusion_nan,0.8322589868921046
+Si anormale préciser   / Elargissement du médiastin_nan,0.8322589868921046
+Si anormale préciser   / Pneumothorax.1_nan,0.8322589868921046
+Procédure limitations de soins (LATA)_nan,0.8343038870301277
+ISS  / Chest,0.8361874063004636
+SMUR (SAMU Ville)_Juvisy,0.8373467594166573
+Si fait_0.0,0.8395251925967566
+Créatinine max,0.8410560414428213
+Éjection du véhicule_nan,0.8414077264409406
+Ca ionise min,0.8424034923974419
+PaO2,0.8424632551161585
+CGR 24h,0.8482726750615384
+Niveau d études ou diplôme le plus élevé_Primaire,0.8500166941164518
+Infection_1.0,0.8536206045212305
+Radiographie pulmonaire_1.0,0.8578366630468292
+Procédure limitations de soins (LATA)_1.0,0.8606911515549358
+Total Score IGS,0.8620249837332448
+"Transfert secondaire, pourquoi ?_nan",0.8650979169669402
+Si anormale préciser   / Hémothorax_1.0,0.8718521504676567
+"Activité socioprofessionnelle récente_Professions intermédiaires¬¨‚Ä†(instituteur, technicien, contremaitre...)",0.8718521504676567
+Numéro de centre_12,0.8755257872176351
+TP min,0.8783047093280286
+Mode de transport à l'hôpital_0.0,0.8849148872954986
+Résultat de la radiographie pulmonaire_nan,0.8859630029480159
+Origine du patient_Primaire,0.8872463745331218
+SAMU: département_67 - Bas-Rhin,0.8915970947195749
+pCO2,0.8929327466268426
+PFC 24h,0.8935067217476701
+Résultat de la radiographie pulmonaire_0.0,0.8938168585006296
+"Activité au moment du traumatisme (OMS C5)_Être soigné (soins, hygiène, aide aux mouvements par professionnel ou pas)",0.8938663202599988
+Transfusion de PLYO (plasma lyophilisé)_1.0,0.8938663202599988
+Trauma crânien (lésion cérébrale TDM)_nan,0.8938663202599988
+Etude PROCOAG_1.0,0.8938663202599988
+SMUR (SAMU Ville)_Reims,0.8938663202599988
+Fréquence cardiaque (FC) à l arrivée du SMUR,0.8943333034981277
+Pression intracrânienne (PIC)_nan,0.8969439963269946
+Osmothérapie_nan,0.8969439963269946
+"Niveau d études ou diplôme le plus élevé_Diplôme de l'enseignement supérieur 2ème cycle (licence, maitrise, master1, IUFM...)",0.9028570444555424
+Excès de base,0.9056309145780648
+SAMU: département_94 - Val-de-Marne,0.9072043354329814
+Dérivation ventriculaire externe (DVE)_nan,0.911484867547283
+Trauma crânien (lésion cérébrale TDM)_0.0,0.911484867547283
+"Type de lieu_Zone industrielle ou de construction (chantier, usine...)",0.9119208772738427
+SMUR (SAMU Ville)_nan,0.9137918325938548
+RTS,0.9147348182542008
+Mécanisme en cause_Chute (de sa hauteur),0.9151298469156754
+Ventilation (FiO2)_nan,0.919457059848418
+Numéro de centre_2,0.9197292761484658
+Régression mydriase sous osmothérapie_0.0,0.9202152081409626
+Origine du patient_nan,0.9221058235134972
+Si anormale préciser   / Epanchement péricardique_1.0,0.9221058235134972
+SMUR (SAMU Ville)_Lariboisière,0.9221058235134972
+TP,0.9231008245410154
+SAMU: département_78 - Yvelines,0.9238589133108158
+SOFA Cardiovasculaire_Dopamine > 15 ou Adrénaline / Noradrénaline > 0.1,0.9246198046811586
+Origine du patient_Secondaire,0.9247359778999916
+Pression intracrânienne (PIC)_1.0,0.9247806317749308
+"Hémocue, à l arrivée hôpital par équipe hôpital",0.9262291110346592
+ISS  / Head neck,0.926556486746821
+Trauma crânien (lésion cérébrale TDM)_1.0,0.9266791976699602
+Pression Artérielle Diastolique (PAD) minimum,0.9268932046509684
+SAMU: département_95 - Val-d'Oise,0.9314564715490512
+Numéro de centre_14,0.9329330060216752
+SAMU: département_59 - Nord,0.9329330060216752
+Catécholamines_2.0,0.9329330060216752
+FiO2,0.9364725688042224
+Score de Glasgow IGS II,0.9401297345075732
+Arrêt cardio-respiratoire (massage)_0.0,0.9407731805398788
+"Type de lieu_Zone de sport (piscine publique, bâtiment et aires adjacentes)",0.9444216550163071
+Annoncé comme instable_nan,0.9444216550163071
+Cause  / Respiratoire_1.0,0.9447650758130506
+Origine du saignement  / Hémorétropéritoine_0.0,0.9547515709755392
+HTIC (>25 PIC simple sédation)_1.0,0.9569095944957988
+ Total Score SOFA,0.9569097346382294
+Nombre plasma frais congelés (avant départ scanner ou bloc),0.9602764872275354
+Si anormale préciser   / Hémothorax.1_1.0,0.9665077017295328
+Fréquence cardiaque (FC) maximum,0.9697173092043831
+Numéro de centre_3,0.9727350293497558
+Numéro de centre_7,0.9728310790454558
+SAMU: département_13 - Bouches du Rhône,0.9728310790454558
+Glasgow moteur,0.9733925054844188
+Glasgow moteur initial,0.976804575982582
+Écrasé/projeté_0.0,0.9816830033666416
+Procédure limitations de soins (LATA)_0.0,0.9851151649123799
+Plaquettes,0.9861073985166394
+Fibrinogène min,0.9863055104691528
+Pression intracrânienne (PIC)_0.0,0.9879616539200096
+SMUR (SAMU Ville)_Toulouse,0.9906453410552264
+SMUR (SAMU Ville)_Lille,0.9906453410552264
+Lieu du traumatisme_nan,0.9931169431049716
+SMUR (SAMU Ville)_Rambouillet,0.993401775816928
+SMUR (SAMU Ville)_Montereau,0.993401775816928
+SMUR (SAMU Ville)_Coulommiers,0.993401775816928
+Osmothérapie_Mannitol,0.9934698391985156
+Traitement anticoagulant_0.0,0.9956797208600541
+ISS  / Abdomen,0.9973572349212121
+Numéro de centre_19,
+SAMU: département_10 - Aube,
+SMUR (SAMU Ville)_Argentan,
+SMUR (SAMU Ville)_Auxerre,
+SMUR (SAMU Ville)_Brest,
+SMUR (SAMU Ville)_Briey,
+SMUR (SAMU Ville)_CAEN,
+SMUR (SAMU Ville)_Caen,
+SMUR (SAMU Ville)_Caen 2,
+SMUR (SAMU Ville)_Cambrai,
+SMUR (SAMU Ville)_Cavaillon,
+SMUR (SAMU Ville)_Chateaudun,
+SMUR (SAMU Ville)_Creil,
+SMUR (SAMU Ville)_Decazeville,
+SMUR (SAMU Ville)_Douai,
+SMUR (SAMU Ville)_Draguignan,
+SMUR (SAMU Ville)_Evreux,
+SMUR (SAMU Ville)_FREJUS,
+SMUR (SAMU Ville)_Falaise,
+SMUR (SAMU Ville)_Flers,
+SMUR (SAMU Ville)_Forbach,
+SMUR (SAMU Ville)_Fréjus,
+SMUR (SAMU Ville)_Granville,
+SMUR (SAMU Ville)_Gérardmer,
+SMUR (SAMU Ville)_Hyeres,
+SMUR (SAMU Ville)_LE CASTELLET,
+SMUR (SAMU Ville)_Lavaur,
+SMUR (SAMU Ville)_Laveran,
+SMUR (SAMU Ville)_Lisieux,
+SMUR (SAMU Ville)_Maubeuge,
+SMUR (SAMU Ville)_Mulhouse,
+SMUR (SAMU Ville)_Neuchâteau,
+SMUR (SAMU Ville)_OPEX STRAT AE,
+SMUR (SAMU Ville)_Pithiviers,
+SMUR (SAMU Ville)_Pompiers 78,
+SMUR (SAMU Ville)_Remiremont,
+SMUR (SAMU Ville)_Romilly sur Seine (GHAM),
+SMUR (SAMU Ville)_Roubaix,
+SMUR (SAMU Ville)_Saint-Dié-des-Vosges,
+SMUR (SAMU Ville)_Sens,
+SMUR (SAMU Ville)_TROYS,
+SMUR (SAMU Ville)_Thionville,
+SMUR (SAMU Ville)_Toul,
+SMUR (SAMU Ville)_Toulon83,
+SMUR (SAMU Ville)_Tourcoing,
+SMUR (SAMU Ville)_Vandoeuvre-lès-Nancy,
+SMUR (SAMU Ville)_Verdun,
+SMUR (SAMU Ville)_Vire,
+SMUR (SAMU Ville)_arras,
+SMUR (SAMU Ville)_bayeux,
+SMUR (SAMU Ville)_brignoles,
+SMUR (SAMU Ville)_calais,
+SMUR (SAMU Ville)_cherbourg,
+SMUR (SAMU Ville)_dragon 83,
+SMUR (SAMU Ville)_draguignan,
+SMUR (SAMU Ville)_flers,
+SMUR (SAMU Ville)_l'Aigle,
+SMUR (SAMU Ville)_lens,
+SMUR (SAMU Ville)_rapasan militaire,
+SMUR (SAMU Ville)_saint lo,
+Surface corporelle brulée,
