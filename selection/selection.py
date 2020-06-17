@@ -42,7 +42,7 @@ def run(argv=None):
     args = parser.parse_args(argv)
 
     print('Retrieving task')
-    RS = args.RS
+    RS = int(args.RS)
     T = int(args.T)
     TMAX = int(args.TMAX)
     print(f'RS {RS} T {T} TMAX {TMAX}')
