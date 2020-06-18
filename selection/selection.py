@@ -31,7 +31,7 @@ parser.add_argument('--RS', dest='RS', default=0, nargs='?',
 parser.add_argument('--T', dest='T', default=0, nargs='?',
                     help='The trial #.')
 parser.add_argument('--TMAX', dest='TMAX', default=5, nargs='?',
-                    help='The trial #.')
+                    help='The max # of trials.')
 
 sep = ','
 encoding = 'ISO-8859-1'
