@@ -25,6 +25,10 @@ parser.add_argument('--train4', dest='train', const=train4, default=train2,
                     help='Whether to use train2 or train4 for prediction.')
 parser.add_argument('--RS', dest='RS', default=None, nargs='?',
                     help='The random state to use.')
+parser.add_argument('--T', dest='T', default=None, nargs='?',
+                    help='The trial #.')
+parser.add_argument('--n_top_pvals', dest='n_top_pvals', default=100, nargs='?',
+                    help='The trial #.')
 
 
 def run(argv=None):
@@ -34,6 +38,8 @@ def run(argv=None):
     task_name = args.task_name
     strategy_name = args.strategy_name
     RS = args.RS
+    T = args.T
+    n_top_pvals = args.n_top_pvals
 
     # Try to convert to int if id passed
     try:
@@ -44,10 +50,19 @@ def run(argv=None):
     if isinstance(strategy_name, int):
         strategy_name = list(strategies.keys())[strategy_name]
 
-    task, strategy = tasks[task_name], strategies[strategy_name]
+    # Build arguments to get task
+    kwargs = dict()
+    if RS:
+        kwargs['RS']: RS
+    if T:
+        kwargs['T']: T
+    if n_top_pvals:
+        kwargs['n_top_pvals'] = int(n_top_pvals)
+
+    task, strategy = tasks.get(task_name, **kwargs), strategies[strategy_name]
 
     logger.info(f'Run task {task_name} using {strategy_name}')
-    logger.info(f'Asked RS: {RS}')
+    logger.info(f'Asked RS {RS} T {T} n_top_pvals {n_top_pvals}')
 
     if RS:
         RS = int(RS)
