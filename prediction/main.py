@@ -50,16 +50,8 @@ def run(argv=None):
     if isinstance(strategy_name, int):
         strategy_name = list(strategies.keys())[strategy_name]
 
-    # Build arguments to get task
-    kwargs = dict()
-    if RS:
-        kwargs['RS']: RS
-    if T:
-        kwargs['T']: T
-    if n_top_pvals:
-        kwargs['n_top_pvals'] = int(n_top_pvals)
-
-    task, strategy = tasks.get(task_name, **kwargs), strategies[strategy_name]
+    task = tasks.get(task_name, RS=RS, T=T, n_top_pvals=n_top_pvals)
+    strategy = strategies[strategy_name]
 
     logger.info(f'Run task {task_name} using {strategy_name}')
     logger.info(f'Asked RS {RS} T {T} n_top_pvals {n_top_pvals}')
@@ -67,4 +59,4 @@ def run(argv=None):
     if RS:
         RS = int(RS)
 
-    _ = args.train(task, strategy, RS=RS)
+    _ = args.train(task, strategy, RS=RS, T=T)

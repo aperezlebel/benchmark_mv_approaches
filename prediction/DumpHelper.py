@@ -58,28 +58,33 @@ def listify(d):
         return d
 
 
-def get_RS_tag(RS):
-    return '' if RS is None else f'RS{RS}_'
+def get_tag(RS, T):
+    RS_tag = '' if RS is None else f'RS{RS}_'
+    T_tag = '' if T is None else f'T{T}_'
+    return RS_tag + T_tag
+
 
 class DumpHelper:
+    """Class used to dump prediction results."""
     _count = None
 
-    def __init__(self, task, strat, RS=None):
+    def __init__(self, task, strat, RS=None, T=None):
         self.task = task
         self.strat = strat
         self.RS = RS
+        self.T = T
 
         self.db_folder = f'{results_folder}{self.task.meta.db}/'
 
         dump_count = self._get_dump_count()
-        RS_tag = get_RS_tag(RS)
+        tag = get_tag(RS, T)
 
         self.task_folder = (f'{self.db_folder}{self.task.meta.name}_'
                             f'{dump_count}/')
         logger.info(f'Task folder: {self.task_folder}')
 
         if strat is not None:
-            self.strat_folder = f'{self.task_folder}{RS_tag}{strat.name}/'
+            self.strat_folder = f'{self.task_folder}{tag}{strat.name}/'
             logger.info(f'Strat folder: {self.strat_folder}')
 
         self._dump_infos()
