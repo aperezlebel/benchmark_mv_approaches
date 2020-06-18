@@ -13,9 +13,12 @@ logger = logging.getLogger(__name__)
 logger.addHandler(logging.StreamHandler())  # Print also in console.
 
 
-def train(task, strategy, RS=None):
+def train(task, strategy, RS=None, **kwargs):
     if task.is_classif() != strategy.is_classification():
         raise ValueError('Task and strategy mix classif and regression.')
+
+    assert 'T' in kwargs
+    T = kwargs['T']
 
     X, y = task.X, task.y
 
@@ -28,7 +31,7 @@ def train(task, strategy, RS=None):
         logger.info(f'Resetting strategy RS to {RS}')
         strategy.reset_RS(RS)  # Must be done before init DumpHelper
 
-    dh = DumpHelper(task, strategy, RS=RS)  # Used to dump results
+    dh = DumpHelper(task, strategy, RS=RS, T=T)  # Used to dump results
 
     if RS is None:
         RS = 42

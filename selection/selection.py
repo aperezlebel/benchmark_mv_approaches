@@ -47,7 +47,7 @@ def run(argv=None):
     TMAX = int(args.TMAX)
     print(f'RS {RS} T {T} TMAX {TMAX}')
     task_name = args.task_name
-    task = tasks[task_name]
+    task = tasks.get(task_name, n_top_pvals=None)
 
     temp_dir = f'selected/{task.meta.tag}/temp/'
 

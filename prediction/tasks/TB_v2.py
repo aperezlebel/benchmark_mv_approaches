@@ -16,24 +16,30 @@ def death_task(**kwargs):
         output_features=['Décès'],
     )
 
-    if 'RS' in kwargs and 'T' in kwargs:
+    assert 'n_top_pvals' in kwargs
+    n_top_pvals = kwargs['n_top_pvals']
+
+    if n_top_pvals is None:
+        death_pvals_keep_transform = None
+        death_idx_transform = None
+
+    else:
+
+        assert 'RS' in kwargs
+        assert 'T' in kwargs
+
         RS = kwargs['RS']
         T = kwargs['T']
         death_pvals_dir = 'pvals/TB/death_pvals/'
         death_idx_path = f'{death_pvals_dir}RS{RS}-T{T}-used_idx.csv'
         death_pvals_path = f'{death_pvals_dir}RS{RS}-T{T}-pvals_filtered.csv'
 
-    if (
-        'RS' in kwargs and
-        'T' in kwargs and
-        os.path.exists(death_idx_path) and
-        os.path.exists(death_pvals_path)
-    ):
+        assert os.path.exists(death_idx_path)
+        assert os.path.exists(death_pvals_path)
+
         pvals = pd.read_csv(death_pvals_path, header=None,
                             index_col=0, squeeze=True)
 
-        assert 'n_top_pvals' in kwargs
-        n_top_pvals = kwargs['n_top_pvals']
         pvals = pvals.sort_values()[:n_top_pvals]
         death_top_pvals = list(pvals.index)
 
@@ -47,10 +53,6 @@ def death_task(**kwargs):
             input_features=[],
             transform=lambda df: df.drop(death_drop_idx.index, axis=0),
         )
-
-    else:
-        death_pvals_keep_transform = None
-        death_idx_transform = None
 
     return TaskMeta(
         name='death_pvals',
@@ -417,19 +419,27 @@ def septic_task(**kwargs):
         output_features=['Choc septique'],
     )
 
-    if 'RS' in kwargs and 'T' in kwargs:
+    assert 'n_top_pvals' in kwargs
+    n_top_pvals = kwargs['n_top_pvals']
+
+    if n_top_pvals is None:
+        septic_pvals_keep_transform = None
+        septic_idx_transform = None
+
+    else:
+
+        assert 'RS' in kwargs
+        assert 'T' in kwargs
+
         RS = kwargs['RS']
         T = kwargs['T']
         septic_pvals_dir = 'pvals/TB/septic_pvals/'
         septic_idx_path = f'{septic_pvals_dir}RS{RS}-T{T}-used_idx.csv'
         septic_pvals_path = f'{septic_pvals_dir}RS{RS}-T{T}-pvals_filtered.csv'
 
-    if (
-        'RS' in kwargs and
-        'T' in kwargs and
-        os.path.exists(septic_idx_path) and
-        os.path.exists(septic_pvals_path)
-    ):
+        assert os.path.exists(septic_idx_path)
+        assert os.path.exists(septic_pvals_path)
+
         pvals = pd.read_csv(septic_pvals_path, header=None,
                             index_col=0, squeeze=True)
 
@@ -449,10 +459,6 @@ def septic_task(**kwargs):
             input_features=[],
             transform=lambda df: df.drop(septic_drop_idx.index, axis=0),
         )
-
-    else:
-        septic_pvals_keep_transform = None
-        septic_idx_transform = None
 
     return TaskMeta(
         name='septic_pvals',
