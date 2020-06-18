@@ -188,24 +188,34 @@ def breast_task(**kwargs):
 def breast_pvals_task(**kwargs):
     """Return TaskMeta for breast cancer prediction."""
     # Define which features to keep
-    if 'RS' in kwargs and 'T' in kwargs:
+
+    assert 'n_top_pvals' in kwargs
+    n_top_pvals = kwargs['n_top_pvals']
+
+    if n_top_pvals is None:
+        breast_pvals_keep_transform = None
+        breast_idx_transform = Transform(
+            input_features=['31-0.0'],
+            transform=select_idx_breast,
+        )
+
+    else:
+
+        assert 'RS' in kwargs
+        assert 'T' in kwargs
+
         RS = kwargs['RS']
         T = kwargs['T']
         breast_pvals_dir = 'pvals/UKBB/breast_pvals/'
         breast_idx_path = f'{breast_pvals_dir}RS{RS}-T{T}-used_idx.csv'
         breast_pvals_path = f'{breast_pvals_dir}RS{RS}-T{T}-pvals_filtered.csv'
 
-    if (
-        'RS' in kwargs and
-        'T' in kwargs and
-        os.path.exists(breast_idx_path) and
-        os.path.exists(breast_pvals_path)
-    ):
+        assert os.path.exists(breast_idx_path)
+        assert os.path.exists(breast_pvals_path)
+
         pvals = pd.read_csv(breast_pvals_path, header=None,
                             index_col=0, squeeze=True)
 
-        assert 'n_top_pvals' in kwargs
-        n_top_pvals = kwargs['n_top_pvals']
         pvals = pvals.sort_values()[:n_top_pvals]
         breast_top_pvals = list(pvals.index)
 
@@ -220,13 +230,6 @@ def breast_pvals_task(**kwargs):
             input_features=['31-0.0'],
             transform=lambda df: select_idx_breast(df).drop(breast_drop_idx.index,
                                                             axis=0),
-        )
-
-    else:
-        breast_pvals_keep_transform = None
-        breast_idx_transform = Transform(
-            input_features=['31-0.0'],
-            transform=select_idx_breast,
         )
 
     return TaskMeta(
@@ -302,25 +305,30 @@ def skin_task(**kwargs):
         output_features=['C43-C44'],
     )
 
-    # Define which features to keep
-    if 'RS' in kwargs and 'T' in kwargs:
+    assert 'n_top_pvals' in kwargs
+    n_top_pvals = kwargs['n_top_pvals']
+
+    if n_top_pvals is None:
+        skin_pvals_keep_transform = None
+        skin_idx_transform = None
+
+    else:
+
+        assert 'RS' in kwargs
+        assert 'T' in kwargs
+
         RS = kwargs['RS']
         T = kwargs['T']
         skin_pvals_dir = 'pvals/UKBB/skin_pvals/'
         skin_idx_path = f'{skin_pvals_dir}RS{RS}-T{T}-used_idx.csv'
         skin_pvals_path = f'{skin_pvals_dir}RS{RS}-T{T}-pvals_filtered.csv'
 
-    if (
-        'RS' in kwargs and
-        'T' in kwargs and
-        os.path.exists(skin_idx_path) and
-        os.path.exists(skin_pvals_path)
-    ):
+        assert os.path.exists(skin_idx_path)
+        assert os.path.exists(skin_pvals_path)
+
         pvals = pd.read_csv(skin_pvals_path, header=None, index_col=0,
                             squeeze=True)
 
-        assert 'n_top_pvals' in kwargs
-        n_top_pvals = kwargs['n_top_pvals']
         pvals = pvals.sort_values()[:n_top_pvals]
         skin_top_pvals = list(pvals.index)
 
@@ -334,10 +342,6 @@ def skin_task(**kwargs):
             input_features=[],
             transform=lambda df: df.drop(skin_drop_idx.index, axis=0),
         )
-
-    else:
-        skin_pvals_keep_transform = None
-        skin_idx_transform = None
 
     return TaskMeta(
         name='skin_pvals',
@@ -389,25 +393,30 @@ def parkinson_task(**kwargs):
         output_features=['Parkinson'],
     )
 
-    # Define which features to keep
-    if 'RS' in kwargs and 'T' in kwargs:
+    assert 'n_top_pvals' in kwargs
+    n_top_pvals = kwargs['n_top_pvals']
+
+    if n_top_pvals is None:
+        parkinson_pvals_keep_transform = None
+        parkinson_idx_transform = None
+
+    else:
+
+        assert 'RS' in kwargs
+        assert 'T' in kwargs
+
         RS = kwargs['RS']
         T = kwargs['T']
         parkinson_pvals_dir = 'pvals/UKBB/parkinson_pvals/'
         parkinson_idx_path = f'{parkinson_pvals_dir}RS{RS}-T{T}-used_idx.csv'
         parkinson_pvals_path = f'{parkinson_pvals_dir}RS{RS}-T{T}-pvals_filtered.csv'
 
-    if (
-        'RS' in kwargs and
-        'T' in kwargs and
-        os.path.exists(parkinson_idx_path) and
-        os.path.exists(parkinson_pvals_path)
-    ):
+        assert os.path.exists(parkinson_idx_path)
+        assert os.path.exists(parkinson_pvals_path)
+
         pvals = pd.read_csv(parkinson_pvals_path, header=None, index_col=0,
                             squeeze=True)
 
-        assert 'n_top_pvals' in kwargs
-        n_top_pvals = kwargs['n_top_pvals']
         pvals = pvals.sort_values()[:n_top_pvals]
         parkinson_top_pvals = list(pvals.index)
 
@@ -422,10 +431,6 @@ def parkinson_task(**kwargs):
             input_features=[],
             transform=lambda df: df.drop(parkinson_drop_idx.index, axis=0),
         )
-
-    else:
-        parkinson_pvals_keep_transform = None
-        parkinson_idx_transform = None
 
     return TaskMeta(
         name='parkinson_pvals',
@@ -451,25 +456,30 @@ def fluid_task(**kwargs):
         output_features=['20016-0.0'],
     )
 
-    # Define which features to keep
-    if 'RS' in kwargs and 'T' in kwargs:
+    assert 'n_top_pvals' in kwargs
+    n_top_pvals = kwargs['n_top_pvals']
+
+    if n_top_pvals is None:
+        fluid_pvals_keep_transform = None
+        fluid_idx_transform = None
+
+    else:
+
+        assert 'RS' in kwargs
+        assert 'T' in kwargs
+
         RS = kwargs['RS']
         T = kwargs['T']
         fluid_pvals_dir = 'pvals/UKBB/fluid/'
         fluid_idx_path = f'{fluid_pvals_dir}RS{RS}-T{T}-used_idx.csv'
         fluid_pvals_path = f'{fluid_pvals_dir}RS{RS}-T{T}-pvals_filtered.csv'
 
-    if (
-        'RS' in kwargs and
-        'T' in kwargs and
-        os.path.exists(fluid_idx_path) and
-        os.path.exists(fluid_pvals_path)
-    ):
+        assert os.path.exists(fluid_idx_path)
+        assert os.path.exists(fluid_pvals_path)
+
         pvals = pd.read_csv(fluid_pvals_path,
                             header=None, index_col=0, squeeze=True)
 
-        assert 'n_top_pvals' in kwargs
-        n_top_pvals = kwargs['n_top_pvals']
         pvals = pvals.sort_values()[:n_top_pvals]
         fluid_top_pvals = list(pvals.index)
 
@@ -483,10 +493,6 @@ def fluid_task(**kwargs):
             input_features=[],
             transform=lambda df: df.drop(fluid_drop_idx.index, axis=0),
         )
-
-    else:
-        fluid_pvals_keep_transform = None
-        fluid_idx_transform = None
 
     return TaskMeta(
         name='fluid_pvals',

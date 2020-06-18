@@ -21,25 +21,30 @@ def income_task(**kwargs):
         'INCGRP5',
     }
 
-    # Define which features to keep
-    if 'RS' in kwargs and 'T' in kwargs:
+    assert 'n_top_pvals' in kwargs
+    n_top_pvals = kwargs['n_top_pvals']
+
+    if n_top_pvals is None:
+        income_pvals_keep_transform = None
+        income_idx_transform = None
+
+    else:
+
+        assert 'RS' in kwargs
+        assert 'T' in kwargs
+
         RS = kwargs['RS']
         T = kwargs['T']
         income_pvals_dir = 'pvals/NHIS/income_pvals/'
         income_idx_path = f'{income_pvals_dir}RS{RS}-T{T}-used_idx.csv'
         income_pvals_path = f'{income_pvals_dir}RS{RS}-T{T}-pvals_filtered.csv'
 
-    if (
-        'RS' in kwargs and
-        'T' in kwargs and
-        os.path.exists(income_idx_path) and
-        os.path.exists(income_pvals_path)
-    ):
+        assert os.path.exists(income_idx_path)
+        assert os.path.exists(income_pvals_path)
+
         pvals = pd.read_csv(income_pvals_path, header=None,
                             index_col=0, squeeze=True)
 
-        assert 'n_top_pvals' in kwargs
-        n_top_pvals = kwargs['n_top_pvals']
         for f in income_drop_features:  # Drop asked features from pvals
             pvals = pvals[~pvals.index.str.contains(f)]
         pvals = pvals.sort_values()[:n_top_pvals]
@@ -56,10 +61,6 @@ def income_task(**kwargs):
             input_features=[],
             transform=lambda df: df.drop(income_drop_idx.index, axis=0),
         )
-
-    else:
-        income_pvals_keep_transform = None
-        income_idx_transform = None
 
     return TaskMeta(
         name='income_pvals',
@@ -92,25 +93,30 @@ def bmi_task(**kwargs):
         'AWEIGHTP',
     }
 
-    # Define which features to keep
-    if 'RS' in kwargs and 'T' in kwargs:
+    assert 'n_top_pvals' in kwargs
+    n_top_pvals = kwargs['n_top_pvals']
+
+    if n_top_pvals is None:
+        bmi_pvals_keep_transform = None
+        bmi_idx_transform = None
+
+    else:
+
+        assert 'RS' in kwargs
+        assert 'T' in kwargs
+
         RS = kwargs['RS']
         T = kwargs['T']
         bmi_pvals_dir = 'pvals/NHIS/bmi/'
         bmi_idx_path = f'{bmi_pvals_dir}RS{RS}-T{T}-used_idx.csv'
         bmi_pvals_path = f'{bmi_pvals_dir}RS{RS}-T{T}-pvals_filtered.csv'
 
-    if (
-        'RS' in kwargs and
-        'T' in kwargs and
-        os.path.exists(bmi_idx_path) and
-        os.path.exists(bmi_pvals_path)
-    ):
+        assert os.path.exists(bmi_idx_path)
+        assert os.path.exists(bmi_pvals_path)
+
         pvals = pd.read_csv(bmi_pvals_path, header=None,
                             index_col=0, squeeze=True)
 
-        assert 'n_top_pvals' in kwargs
-        n_top_pvals = kwargs['n_top_pvals']
         for f in bmi_drop_features:  # Drop asked features from pvals
             pvals = pvals[~pvals.index.str.contains(f)]
         pvals = pvals.sort_values()[:n_top_pvals]
@@ -126,10 +132,6 @@ def bmi_task(**kwargs):
             input_features=[],
             transform=lambda df: df.drop(bmi_drop_idx.index, axis=0),
         )
-
-    else:
-        bmi_pvals_keep_transform = None
-        bmi_idx_transform = None
 
     return TaskMeta(
         name='bmi_pvals',

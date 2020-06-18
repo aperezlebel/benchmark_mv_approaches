@@ -50,25 +50,30 @@ def septic_task(**kwargs):
         output_features=['y'],
     )
 
-    # Define which features to keep
-    if 'RS' in kwargs and 'T' in kwargs:
+    assert 'n_top_pvals' in kwargs
+    n_top_pvals = kwargs['n_top_pvals']
+
+    if n_top_pvals is None:
+        septic_pvals_keep_transform = None
+        septic_idx_transform = None
+
+    else:
+
+        assert 'RS' in kwargs
+        assert 'T' in kwargs
+
         RS = kwargs['RS']
         T = kwargs['T']
         septic_pvals_dir = 'pvals/MIMIC/septic_pvals/'
         septic_idx_path = f'{septic_pvals_dir}RS{RS}-T{T}used_idx.csv'
         septic_pvals_path = f'{septic_pvals_dir}RS{RS}-T{T}pvals_filtered.csv'
 
-    if (
-        'RS' in kwargs and
-        'T' in kwargs and
-        os.path.exists(septic_idx_path) and
-        os.path.exists(septic_pvals_path)
-    ):
+        assert os.path.exists(septic_idx_path)
+        assert os.path.exists(septic_pvals_path)
+
         pvals = pd.read_csv(septic_pvals_path, header=None,
                             index_col=0, squeeze=True)
 
-        assert 'n_top_pvals' in kwargs
-        n_top_pvals = kwargs['n_top_pvals']
         pvals = pvals.sort_values()[:n_top_pvals]
         septic_top_pvals = list(pvals.index)
 
@@ -83,10 +88,6 @@ def septic_task(**kwargs):
             input_features=[],
             transform=lambda df: df.drop(septic_drop_idx.index, axis=0),
         )
-
-    else:
-        septic_pvals_keep_transform = None
-        septic_idx_transform = None
 
     return TaskMeta(
         name='septic_pvals',
@@ -134,25 +135,30 @@ def hemo_task(**kwargs):
         output_features=['y'],
     )
 
-    # Define which features to keep
-    if 'RS' in kwargs and 'T' in kwargs:
+    assert 'n_top_pvals' in kwargs
+    n_top_pvals = kwargs['n_top_pvals']
+
+    if n_top_pvals is None:
+        hemo_pvals_keep_transform = None
+        hemo_idx_transform = None
+
+    else:
+
+        assert 'RS' in kwargs
+        assert 'T' in kwargs
+
         RS = kwargs['RS']
         T = kwargs['T']
         hemo_pvals_dir = 'pvals/MIMIC/hemo_pvals/'
         hemo_idx_path = f'{hemo_pvals_dir}RS{RS}-T{T}used_idx.csv'
         hemo_pvals_path = f'{hemo_pvals_dir}RS{RS}-T{T}pvals_filtered.csv'
 
-    if (
-        'RS' in kwargs and
-        'T' in kwargs and
-        os.path.exists(hemo_idx_path) and
-        os.path.exists(hemo_pvals_path)
-    ):
+        assert os.path.exists(hemo_idx_path)
+        assert os.path.exists(hemo_pvals_path)
+
         pvals = pd.read_csv(hemo_pvals_path, header=None,
                             index_col=0, squeeze=True)
 
-        assert 'n_top_pvals' in kwargs
-        n_top_pvals = kwargs['n_top_pvals']
         pvals = pvals.sort_values()[:n_top_pvals]
         hemo_top_pvals = list(pvals.index)
 
@@ -166,10 +172,6 @@ def hemo_task(**kwargs):
             input_features=[],
             transform=lambda df: df.drop(hemo_drop_idx.index, axis=0),
         )
-
-    else:
-        hemo_pvals_keep_transform = None
-        hemo_idx_transform = None
 
     return TaskMeta(
         name='hemo_pvals',
