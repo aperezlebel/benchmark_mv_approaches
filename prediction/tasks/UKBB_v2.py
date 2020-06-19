@@ -498,7 +498,7 @@ def fluid_task(**kwargs):
         name='fluid_pvals',
         db='UKBB',
         df_name='40663_filtered',
-        classif=True,
+        classif=False,
         idx_column='eid',
         idx_selection=fluid_idx_transform,
         predict=fluid_predict_transform,
