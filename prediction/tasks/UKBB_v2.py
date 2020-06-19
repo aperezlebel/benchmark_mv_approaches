@@ -510,7 +510,7 @@ def fluid_task(**kwargs):
 
 
 task_metas = {
-    'breast_25': breast_pvals_task,
+    'breast_25': breast_task,
     'breast_pvals': breast_pvals_task,
     'skin_pvals': skin_task,
     'parkinson_pvals': parkinson_task,

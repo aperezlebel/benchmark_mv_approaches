@@ -42,7 +42,7 @@ class TB(Database):
         series_mv[series == 'NDC'] = NOT_AVAILABLE
         series_mv[series == 'IMP'] = NOT_AVAILABLE
 
-        print(series.name, end='\r')
+        # print(series.name, end='\r')
 
         if series.name == 'PaO2/FIO2 (mmHg) si VM ou CPAP':
             series_mv[series == 'Non applicable :  ni VM ni CPAP'] = NOT_APPLICABLE
