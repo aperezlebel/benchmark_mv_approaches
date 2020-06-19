@@ -111,14 +111,13 @@ def run(argv=None):
 
     temp_df_transposed_path = temp_dir+'X_transposed.csv'
 
-    if not os.path.exists(temp_df_transposed_path):
-        print('Retrieving X')
-        X = task.X
-        print(f'X loaded with shape {X.shape}')
+    print('Retrieving X')
+    X = task.X
+    print(f'X loaded with shape {X.shape}')
 
-        os.makedirs(temp_dir, exist_ok=True)
-        X_t = X.transpose()
-        X_t.to_csv(temp_df_transposed_path, quoting=csv.QUOTE_ALL)
+    os.makedirs(temp_dir, exist_ok=True)
+    X_t = X.transpose()
+    X_t.to_csv(temp_df_transposed_path, quoting=csv.QUOTE_ALL)
 
     X_t = pd.read_csv(temp_df_transposed_path, iterator=True, chunksize=1,
                       index_col=0)
