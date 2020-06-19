@@ -5,6 +5,8 @@ import os
 import yaml
 import shutil
 import logging
+from datetime import datetime
+
 
 results_folder = 'results/'
 logger = logging.getLogger(__name__)
@@ -66,7 +68,6 @@ def get_tag(RS, T):
 
 class DumpHelper:
     """Class used to dump prediction results."""
-    _count = None
 
     def __init__(self, task, strat, RS=None, T=None):
         self.task = task
@@ -76,12 +77,12 @@ class DumpHelper:
 
         self.db_folder = f'{results_folder}{self.task.meta.db}/'
 
-        dump_count = self._get_dump_count()
         tag = get_tag(RS, T)
 
-        self.task_folder = (f'{self.db_folder}{self.task.meta.name}_'
-                            f'{dump_count}/')
+        self.task_folder = f'{self.db_folder}{self.task.meta.name}/'
         logger.info(f'Task folder: {self.task_folder}')
+
+        self.backup_folder = f'{self.task_folder}backup/'
 
         if strat is not None:
             self.strat_folder = f'{self.task_folder}{tag}{strat.name}/'
@@ -90,44 +91,24 @@ class DumpHelper:
         self._dump_infos()
         self._dump_features()
 
-    def _get_dump_count(self):
-        if DumpHelper._count is not None:
-            return DumpHelper._count
-
-        count_filepath = self.db_folder+'dump_count.txt'
-
-        if not os.path.exists(count_filepath):
-            count = 0
-        else:
-            with open(count_filepath, 'r') as file:
-                c = file.read()
-                if c == '':
-                    count = 0
-                else:
-                    count = int(c) + 1
-
-        # Dump new count
-        os.makedirs(self.db_folder, exist_ok=True)
-        with open(count_filepath, 'w') as file:
-            file.write(str(count))
-
-        DumpHelper._count = count
-        return count
-
     def _dump_infos(self):
         """Dump the infos of the task and strategy used."""
-
         if self.strat is not None:
+            # Check if task directory already exists
+            if os.path.isdir(self.strat_folder):
+                # Move it in the backup folder
+                os.makedirs(self.backup_folder, exist_ok=True)
+                time_tag = datetime.now().strftime("%Y-%m-%d_%H:%M:%S.%f")
+                dest = f'{self.backup_folder}{self.strat.name}_{time_tag}'
+
+                # Move lead to error on next dumping so copy + delete
+                shutil.copytree(self.strat_folder, dest)
+                shutil.rmtree(self.strat_folder)
+
             # Create all necessary folders and ignore if already exist
             os.makedirs(self.strat_folder, exist_ok=True)
 
-            # Clear strategy folder before dumping
-            shutil.rmtree(self.strat_folder)
-
-            # Create again an empty strategy folder
-            os.makedirs(self.strat_folder, exist_ok=True)
-
-            _dump_infos(self.task, f'{self.task_folder}task_infos.yml')
+            _dump_infos(self.task, f'{self.strat_folder}task_infos.yml')
             _dump_infos(self.strat, f'{self.strat_folder}strat_infos.yml')
 
         else:
@@ -137,7 +118,7 @@ class DumpHelper:
             _dump_infos(self.task, f'{self.task_folder}task_infos.yml')
 
     def _dump_features(self):
-        filepath = self.task_folder+'features.yml'
+        filepath = self.strat_folder+'features.yml'
         _dump_yaml(list(self.task.X.columns), filepath)
 
     def _filepath(self, filename):
@@ -222,7 +203,7 @@ class DumpHelper:
             content.to_csv(filepath)
 
     def _dump(self, data, filename, fold=None):
-        """Wraper to dump data (dict or df) in a file"""
+        """Wraper to dump data (dict or df) in a file."""
         filepath = self._filepath(filename)
         DumpHelper._append_fold(filepath, data, fold=fold)
 
