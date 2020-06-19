@@ -25,7 +25,7 @@ parser.add_argument('--train4', dest='train', const=train4, default=train2,
                     help='Whether to use train2 or train4 for prediction.')
 parser.add_argument('--RS', dest='RS', default=None, nargs='?',
                     help='The random state to use.')
-parser.add_argument('--T', dest='T', default=None, nargs='?',
+parser.add_argument('--T', dest='T', default=0, nargs='?',
                     help='The trial #.')
 parser.add_argument('--n_top_pvals', dest='n_top_pvals', default=100, nargs='?',
                     help='The trial #.')
