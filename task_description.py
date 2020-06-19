@@ -74,9 +74,5 @@ def plot_index_sizes(min_test_size):
     plt.legend()
     plt.show()
 
-
-
 if __name__ == '__main__':
     plot_index_sizes(min_test_size=0.1)
-
-
