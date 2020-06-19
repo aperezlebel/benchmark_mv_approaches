@@ -45,7 +45,7 @@ class UKBB(Database):
 
         series_mv[series.isna()] = NOT_AVAILABLE
 
-        print(series.name, end='\r')
+        # print(series.name, end='\r')
 
         return series_mv
 
