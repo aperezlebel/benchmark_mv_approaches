@@ -35,5 +35,11 @@ class _TaskAccessor(object):
         """Access a task with default parameters."""
         return self.get(tag)
 
+    def keys(self):
+        """Iteratate over task names and metas."""
+        for db, metas in self.task_metas.items():
+            for task_name in metas.keys():
+                yield f'{db}/{task_name}'
+
 
 tasks = _TaskAccessor()
