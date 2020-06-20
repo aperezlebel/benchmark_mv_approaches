@@ -109,7 +109,7 @@ def run(argv=None):
 
     index = y.index
 
-    temp_df_transposed_path = temp_dir+'X_transposed.csv'
+    temp_df_transposed_path = temp_dir+f'RS{RS}-T{T}-X_transposed.csv'
 
     print('Retrieving X')
     X = task.X
