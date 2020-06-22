@@ -65,8 +65,8 @@ def septic_task(**kwargs):
         RS = kwargs['RS']
         T = kwargs['T']
         septic_pvals_dir = 'pvals/MIMIC/septic_pvals/'
-        septic_idx_path = f'{septic_pvals_dir}RS{RS}-T{T}used_idx.csv'
-        septic_pvals_path = f'{septic_pvals_dir}RS{RS}-T{T}pvals_filtered.csv'
+        septic_idx_path = f'{septic_pvals_dir}RS{RS}-T{T}-used_idx.csv'
+        septic_pvals_path = f'{septic_pvals_dir}RS{RS}-T{T}-pvals.csv'
 
         assert os.path.exists(septic_idx_path)
         assert os.path.exists(septic_pvals_path)
@@ -150,8 +150,8 @@ def hemo_task(**kwargs):
         RS = kwargs['RS']
         T = kwargs['T']
         hemo_pvals_dir = 'pvals/MIMIC/hemo_pvals/'
-        hemo_idx_path = f'{hemo_pvals_dir}RS{RS}-T{T}used_idx.csv'
-        hemo_pvals_path = f'{hemo_pvals_dir}RS{RS}-T{T}pvals_filtered.csv'
+        hemo_idx_path = f'{hemo_pvals_dir}RS{RS}-T{T}-used_idx.csv'
+        hemo_pvals_path = f'{hemo_pvals_dir}RS{RS}-T{T}-pvals.csv'
 
         assert os.path.exists(hemo_idx_path)
         assert os.path.exists(hemo_pvals_path)

@@ -37,7 +37,7 @@ def income_task(**kwargs):
         T = kwargs['T']
         income_pvals_dir = 'pvals/NHIS/income_pvals/'
         income_idx_path = f'{income_pvals_dir}RS{RS}-T{T}-used_idx.csv'
-        income_pvals_path = f'{income_pvals_dir}RS{RS}-T{T}-pvals_filtered.csv'
+        income_pvals_path = f'{income_pvals_dir}RS{RS}-T{T}-pvals.csv'
 
         assert os.path.exists(income_idx_path)
         assert os.path.exists(income_pvals_path)
@@ -107,10 +107,11 @@ def bmi_task(**kwargs):
 
         RS = kwargs['RS']
         T = kwargs['T']
-        bmi_pvals_dir = 'pvals/NHIS/bmi/'
+        bmi_pvals_dir = 'pvals/NHIS/bmi_pvals/'
         bmi_idx_path = f'{bmi_pvals_dir}RS{RS}-T{T}-used_idx.csv'
-        bmi_pvals_path = f'{bmi_pvals_dir}RS{RS}-T{T}-pvals_filtered.csv'
+        bmi_pvals_path = f'{bmi_pvals_dir}RS{RS}-T{T}-pvals.csv'
 
+        print(bmi_pvals_path)
         assert os.path.exists(bmi_idx_path)
         assert os.path.exists(bmi_pvals_path)
 
