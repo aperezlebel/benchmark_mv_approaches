@@ -37,9 +37,8 @@ class PlotHelperV4(object):
                 for filename in filenames:
                     abs_filepaths.append(f'{root}/{filename}')
 
-        prefix = os.path.commonprefix(abs_dirpaths)
-        rel_dir_paths = [os.path.relpath(p, prefix) for p in abs_dirpaths]
-        rel_file_paths = [os.path.relpath(p, prefix) for p in abs_filepaths]
+        rel_dir_paths = [os.path.relpath(p, root_folder) for p in abs_dirpaths]
+        rel_file_paths = [os.path.relpath(p, root_folder) for p in abs_filepaths]
 
         # Step 3.1: Convert relative paths to nested python dictionnary (dirs)
         nested_dir_dict = {}
@@ -59,6 +58,7 @@ class PlotHelperV4(object):
 
         # Step 4: Fill the class attributes with the nested dicts
         self._nested_dir_dict = nested_dir_dict
+        print(f'nested dir dict {self._nested_dir_dict}')
         self._nested_file_dict = nested_file_dict
 
         # Step 5: Compute scores for reference method
@@ -243,7 +243,7 @@ class PlotHelperV4(object):
 
         relative_scores = {m: (s - ref_score) for m, s in scores.items()}
 
-        return relative_scores
+        return relative_scores, scores
 
     def availale_methods_by_size(self, db, t, size):
         """Get the methods available for a given size."""
@@ -315,7 +315,7 @@ class PlotHelperV4(object):
                 for db in dbs:
                     for t in self.tasks(db):
                         methods = self.availale_methods_by_size(db, t, size)
-                        rel_scores = self.relative_scores(db, t, methods, size)
+                        rel_scores, abs_scores = self.relative_scores(db, t, methods, size)
                         for m, rs in rel_scores.items():
                             short_m = self.short_method_name(m)
                             renamed_m = self.rename(short_m)
@@ -323,7 +323,7 @@ class PlotHelperV4(object):
                             db_id = db_order[db]
                             rdb = self.rename(db)
                             y = self._y(priority, db_id, n_m, n_db)
-                            s = self.score(db, t, m, size, mean=True)
+                            s = abs_scores[m]
                             rows.append(
                                 (size, db, rdb, t, priority, m, renamed_m, rs, s, y, ref)
                             )
