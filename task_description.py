@@ -22,11 +22,9 @@ def compute_index_sizes():
         db, name = tag.split('/')
         print(tag)
         try:
-            if db == 'UKBB':
-                raise AssertionError  # skip for testing
-            task = tasks.get(tag, n_top_pvals=100)
+            task = tasks.get(tag, n_top_pvals=None)
             y = task.y
-            s = y.shape[0]
+            s = int(2/3*y.shape[0])
             print(f'\t{s}')
         except AssertionError:
             s = None
@@ -39,15 +37,14 @@ def compute_index_sizes():
     df.to_csv(index_sizes_path)
 
 
-def plot_index_sizes(min_test_size):
+def plot_index_sizes(min_test_size, points=None):
     """Plot the stored index sizes. must be computed before."""
     if not os.path.exists(index_sizes_path):
         raise ValueError(f'No index sizes found at {index_sizes_path}')
 
     fig, ax = plt.subplots(figsize=(12, 6))
 
-    ax.set_title('Size of the indexes of the prediction tasks (after removing '
-                 'indexes used for pvals if any)')
+    ax.set_title('Number of rows available for the prediction')
     df = pd.read_csv(index_sizes_path, index_col=0)
     df = df.sort_values(by='index_size', ascending=False)
     df = df.dropna(subset=['index_size'])
@@ -66,13 +63,19 @@ def plot_index_sizes(min_test_size):
     for p in ax.patches:
         if p in patches_to_avoid:
             continue
-        _x = p.get_x() + p.get_width()/2
+        _x = p.get_x() + p.get_width()
         _y = p.get_y() + p.get_height()/2
         value = int(p.get_width())
         ax.text(_x, _y, value, ha='right', color='white')
 
     plt.legend()
+    plt.xscale('log')
+    if points:
+        for p in points:
+            ax.axvline(p, color='red')
     plt.show()
 
+
 if __name__ == '__main__':
-    plot_index_sizes(min_test_size=0.1)
+    # compute_index_sizes()
+    plot_index_sizes(min_test_size=0.1, points=[5000, 10000, 15000, 20000])
