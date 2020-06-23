@@ -470,7 +470,7 @@ def fluid_task(**kwargs):
 
         RS = kwargs['RS']
         T = kwargs['T']
-        fluid_pvals_dir = 'pvals/UKBB/fluid/'
+        fluid_pvals_dir = 'pvals/UKBB/fluid_pvals/'
         fluid_idx_path = f'{fluid_pvals_dir}RS{RS}-T{T}-used_idx.csv'
         fluid_pvals_path = f'{fluid_pvals_dir}RS{RS}-T{T}-pvals_filtered.csv'
 

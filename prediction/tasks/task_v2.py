@@ -221,8 +221,7 @@ class Task(object):
         # Step 1: Load available features from initial df
         df = pd.read_csv(df_path, sep=sep, encoding=encoding, nrows=0,
                          index_col=index_col)
-        drop = self.meta.drop + self.meta.predict.output_features
-        self._f_init = {s for s in set(df.columns) if s not in drop}
+        self._f_init = {s for s in set(df.columns) if s not in self.meta.drop}
         self._f_init.update(index_col)
 
         # Step 1.2: load index
@@ -261,6 +260,9 @@ class Task(object):
         y_name = self.meta.predict.output_features[0]
         self._y = df[[y_name]]
         self._f_y = [y_name]  # Store the name of the feature to predict
+
+        # Drop the feature to predict from _f_init
+        self._f_init.discard(y_name)
 
         # Step 4: Add NAN values of y to index to drop and drop them from y
         y_mv = get_missing_values(self._y[y_name], db.heuristic)
