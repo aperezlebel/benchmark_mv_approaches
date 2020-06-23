@@ -221,7 +221,8 @@ class Task(object):
         # Step 1: Load available features from initial df
         df = pd.read_csv(df_path, sep=sep, encoding=encoding, nrows=0,
                          index_col=index_col)
-        self._f_init = {s for s in set(df.columns) if s not in self.meta.drop}
+        drop = self.meta.drop + self.meta.predict.output_features
+        self._f_init = {s for s in set(df.columns) if s not in drop}
         self._f_init.update(index_col)
 
         # Step 1.2: load index

@@ -9,7 +9,7 @@ for db_dir in next(os.walk('.'))[1]:
 
 for pvals_dir in pvals_dirs:
     for filename in next(os.walk(pvals_dir))[2]:
-        if 'pvals_filtered.csv' not in filename:
+        if 'pvals.csv' not in filename:
             continue  # not pvals, skipping
 
         pvals_path = f'{pvals_dir}/{filename}'

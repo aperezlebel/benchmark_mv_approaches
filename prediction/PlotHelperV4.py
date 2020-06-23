@@ -37,9 +37,8 @@ class PlotHelperV4(object):
                 for filename in filenames:
                     abs_filepaths.append(f'{root}/{filename}')
 
-        prefix = os.path.commonprefix(abs_dirpaths)
-        rel_dir_paths = [os.path.relpath(p, prefix) for p in abs_dirpaths]
-        rel_file_paths = [os.path.relpath(p, prefix) for p in abs_filepaths]
+        rel_dir_paths = [os.path.relpath(p, root_folder) for p in abs_dirpaths]
+        rel_file_paths = [os.path.relpath(p, root_folder) for p in abs_filepaths]
 
         # Step 3.1: Convert relative paths to nested python dictionnary (dirs)
         nested_dir_dict = {}
@@ -59,6 +58,7 @@ class PlotHelperV4(object):
 
         # Step 4: Fill the class attributes with the nested dicts
         self._nested_dir_dict = nested_dir_dict
+        print(f'nested dir dict {self._nested_dir_dict}')
         self._nested_file_dict = nested_file_dict
 
         # Step 5: Compute scores for reference method
@@ -243,7 +243,7 @@ class PlotHelperV4(object):
 
         relative_scores = {m: (s - ref_score) for m, s in scores.items()}
 
-        return relative_scores
+        return relative_scores, scores
 
     def availale_methods_by_size(self, db, t, size):
         """Get the methods available for a given size."""
@@ -264,7 +264,7 @@ class PlotHelperV4(object):
         assert 0 <= db < n_db
         return n_m - m - (db+1)/(n_db+1)
 
-    def plot(self, method_order=None, db_order=None):
+    def plot(self, method_order=None, db_order=None, compute=True):
         """Plot the full available results."""
         dbs = self.databases()
         existing_methods = self.existing_methods()
@@ -308,32 +308,38 @@ class PlotHelperV4(object):
         n_m = len(existing_methods)
         n_sizes = len(existing_sizes)
 
-        rows = []
-        ref = self._reference_method
-        for i, size in enumerate(existing_sizes):
-            for db in dbs:
-                for t in self.tasks(db):
-                    methods = self.availale_methods_by_size(db, t, size)
-                    rel_scores = self.relative_scores(db, t, methods, size)
-                    for m, rs in rel_scores.items():
-                        short_m = self.short_method_name(m)
-                        renamed_m = self.rename(short_m)
-                        priority = method_order[renamed_m]
-                        db_id = db_order[db]
-                        rdb = self.rename(db)
-                        y = self._y(priority, db_id, n_m, n_db)
-                        s = self.score(db, t, m, size, mean=True)
-                        rows.append(
-                            (size, db, rdb, t, priority, m, renamed_m, rs, s, y, ref)
-                        )
+        if compute:
+            rows = []
+            ref = self._reference_method
+            for i, size in enumerate(existing_sizes):
+                for db in dbs:
+                    for t in self.tasks(db):
+                        methods = self.availale_methods_by_size(db, t, size)
+                        rel_scores, abs_scores = self.relative_scores(db, t, methods, size)
+                        for m, rs in rel_scores.items():
+                            short_m = self.short_method_name(m)
+                            renamed_m = self.rename(short_m)
+                            priority = method_order[renamed_m]
+                            db_id = db_order[db]
+                            rdb = self.rename(db)
+                            y = self._y(priority, db_id, n_m, n_db)
+                            s = abs_scores[m]
+                            rows.append(
+                                (size, db, rdb, t, priority, m, renamed_m, rs, s, y, ref)
+                            )
 
-        cols = ['n', 'db', 'Databases', 't', 'p', 'm', 'rm', 'relative_score', 'score', 'y', 'ref']
+            cols = ['n', 'db', 'Databases', 't', 'p', 'm', 'rm', 'relative_score', 'score', 'y', 'ref']
 
-        df = pd.DataFrame(rows, columns=cols)
-        print(df)
-        suffix = self.root_folder.replace('/', '_')
-        os.makedirs('scores/', exist_ok=True)
-        df.to_csv(f'scores/scores_{suffix}.csv')
+            df = pd.DataFrame(rows, columns=cols)
+            print(df)
+            suffix = self.root_folder.replace('/', '_')
+            os.makedirs('scores/', exist_ok=True)
+            df.to_csv(f'scores/scores_{suffix}.csv', index=None)
+        else:
+            suffix = self.root_folder.replace('/', '_')
+            df = pd.read_csv(f'scores/scores_{suffix}.csv')
+            df['n'] = df['n'].astype(str)
+            print(df)
 
         fig, axes = plt.subplots(nrows=1, ncols=n_sizes, figsize=(20, 6))
         plt.subplots_adjust(

@@ -111,7 +111,6 @@ def bmi_task(**kwargs):
         bmi_idx_path = f'{bmi_pvals_dir}RS{RS}-T{T}-used_idx.csv'
         bmi_pvals_path = f'{bmi_pvals_dir}RS{RS}-T{T}-pvals.csv'
 
-        print(bmi_pvals_path)
         assert os.path.exists(bmi_idx_path)
         assert os.path.exists(bmi_pvals_path)
 
