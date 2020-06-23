@@ -146,7 +146,9 @@ def run(argv=None):
 
         _, pval = f_callable(x, y_dropped)
 
-        return pval[0]
+        # Keep only 6 significant digits (not the same as keeping 6 digits)
+        # eg 1.23456789e-10 -> 1.234567e-10
+        return float(f'{pval[0]:.6g}')
 
     def handler(row, y):
         name = row.index[0]
