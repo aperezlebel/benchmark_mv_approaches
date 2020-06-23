@@ -217,7 +217,7 @@ def breast_pvals_task(**kwargs):
                             index_col=0, squeeze=True)
 
         pvals = pvals.sort_values()[:n_top_pvals]
-        breast_top_pvals = list(pvals.index)
+        breast_top_pvals = list(pvals.index.astype(str))
 
         breast_pvals_keep_transform = Transform(
             output_features=breast_top_pvals
@@ -330,7 +330,7 @@ def skin_task(**kwargs):
                             squeeze=True)
 
         pvals = pvals.sort_values()[:n_top_pvals]
-        skin_top_pvals = list(pvals.index)
+        skin_top_pvals = list(pvals.index.astype(str))
 
         skin_pvals_keep_transform = Transform(
             output_features=skin_top_pvals
@@ -418,7 +418,7 @@ def parkinson_task(**kwargs):
                             squeeze=True)
 
         pvals = pvals.sort_values()[:n_top_pvals]
-        parkinson_top_pvals = list(pvals.index)
+        parkinson_top_pvals = list(pvals.index.astype(str))
 
         parkinson_pvals_keep_transform = Transform(
             output_features=parkinson_top_pvals
@@ -481,7 +481,7 @@ def fluid_task(**kwargs):
                             header=None, index_col=0, squeeze=True)
 
         pvals = pvals.sort_values()[:n_top_pvals]
-        fluid_top_pvals = list(pvals.index)
+        fluid_top_pvals = list(pvals.index.astype(str))
 
         fluid_pvals_keep_transform = Transform(
             output_features=fluid_top_pvals

@@ -41,7 +41,7 @@ def death_task(**kwargs):
                             index_col=0, squeeze=True)
 
         pvals = pvals.sort_values()[:n_top_pvals]
-        death_top_pvals = list(pvals.index)
+        death_top_pvals = list(pvals.index.astype(str))
 
         death_pvals_keep_transform = Transform(
             output_features=death_top_pvals
@@ -446,7 +446,7 @@ def septic_task(**kwargs):
         assert 'n_top_pvals' in kwargs
         n_top_pvals = kwargs['n_top_pvals']
         pvals = pvals.sort_values()[:n_top_pvals]
-        septic_top_pvals = list(pvals.index)
+        septic_top_pvals = list(pvals.index.astype(str))
 
         septic_pvals_keep_transform = Transform(
             output_features=septic_top_pvals

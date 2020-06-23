@@ -48,7 +48,7 @@ def income_task(**kwargs):
         for f in income_drop_features:  # Drop asked features from pvals
             pvals = pvals[~pvals.index.str.contains(f)]
         pvals = pvals.sort_values()[:n_top_pvals]
-        income_top_pvals = list(pvals.index)
+        income_top_pvals = list(pvals.index.astype(str))
 
         income_pvals_keep_transform = Transform(
             output_features=income_top_pvals
@@ -121,7 +121,7 @@ def bmi_task(**kwargs):
         for f in bmi_drop_features:  # Drop asked features from pvals
             pvals = pvals[~pvals.index.str.contains(f)]
         pvals = pvals.sort_values()[:n_top_pvals]
-        bmi_top_pvals = list(pvals.index)
+        bmi_top_pvals = list(pvals.index.astype(str))
 
         bmi_pvals_keep_transform = Transform(
             output_features=bmi_top_pvals

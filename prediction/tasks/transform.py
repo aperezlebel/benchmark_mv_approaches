@@ -22,4 +22,8 @@ class Transform(object):
 
     def get_parent(self, features):
         """From a set of features, derive the parent features."""
-        return {f.split(self.child_sep)[0] for f in features}
+        def parent(f):
+            if isinstance(f, str):
+                return f.split(self.child_sep)[0]
+            return f
+        return {parent(f) for f in features}

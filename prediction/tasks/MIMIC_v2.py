@@ -75,7 +75,7 @@ def septic_task(**kwargs):
                             index_col=0, squeeze=True)
 
         pvals = pvals.sort_values()[:n_top_pvals]
-        septic_top_pvals = list(pvals.index)
+        septic_top_pvals = list(pvals.index.astype(str))
 
         septic_pvals_keep_transform = Transform(
             output_features=septic_top_pvals
@@ -160,7 +160,7 @@ def hemo_task(**kwargs):
                             index_col=0, squeeze=True)
 
         pvals = pvals.sort_values()[:n_top_pvals]
-        hemo_top_pvals = list(pvals.index)
+        hemo_top_pvals = list(pvals.index.astype(str))
 
         hemo_pvals_keep_transform = Transform(
             output_features=hemo_top_pvals
