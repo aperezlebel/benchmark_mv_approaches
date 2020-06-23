@@ -271,7 +271,7 @@ class PlotHelperV4(object):
 
         return dfgb.apply(rel_score)
 
-    def plot(self, method_order=None, db_order=None, compute=True):
+    def plot(self, method_order=None, db_order=None, compute=True, reference_method=None):
         """Plot the full available results."""
         dbs = self.databases()
         existing_methods = self.existing_methods()
@@ -347,32 +347,18 @@ class PlotHelperV4(object):
 
             # Aggregate accross T by computing mean
             dfgb = df.groupby(['n', 'db', 't', 'rm', 'y', 'Database', 'p'])
-            # dfgb.apply(lambda df: df.mean(axis=0))
             df = dfgb.agg({'score': 'mean'})
             df['rm'] = df.index.get_level_values('rm')
-            # def aux(df):
-            #     df['score'] = df['score'].mean()
-            #     return df
-            # df2 = dfgb.apply(aux)
-
-            print(df)
-
-            # Compute and add relative score
-            df = self._add_relative_score(df, reference_method=self._reference_method)
-            df['n'] = df.index.get_level_values('n')
-            df['y'] = df.index.get_level_values('y')
-            df['Database'] = df.index.get_level_values('Database')
             print(df)
 
             suffix = self.root_folder.replace('/', '_')
             os.makedirs('scores/', exist_ok=True)
-            df.to_csv(f'scores/scores_{suffix}.csv', index=None)
+            df.to_csv(f'scores/scores_{suffix}.csv')
 
-        else:
-            suffix = self.root_folder.replace('/', '_')
-            df = pd.read_csv(f'scores/scores_{suffix}.csv')
-            df['n'] = df['n'].astype(str)
-            print(df)
+        suffix = self.root_folder.replace('/', '_')
+        df = pd.read_csv(f'scores/scores_{suffix}.csv')
+        df['n'] = df['n'].astype(str)
+        print(df)
 
         fig, axes = plt.subplots(nrows=1, ncols=n_sizes, figsize=(20, 6))
         plt.subplots_adjust(
@@ -385,6 +371,10 @@ class PlotHelperV4(object):
 
         markers = ['o', '^', 'v', 's']
         db_markers = {db: markers[i] for i, db in enumerate(db_order_list_renamed)}
+
+        # Compute and add relative score
+        df = self._add_relative_score(df, reference_method=reference_method)
+        print(df)
 
         for i, size in enumerate(existing_sizes):
             ax = axes[i]
