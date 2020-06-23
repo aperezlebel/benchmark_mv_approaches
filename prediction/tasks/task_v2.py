@@ -1,7 +1,8 @@
 """Implement the new way of coding Tasks."""
 import pandas as pd
 import numpy as np
-from dataclasses import dataclass
+from dataclasses import dataclass, field
+from typing import Set
 import logging
 
 from missing_values import get_missing_values
@@ -27,6 +28,19 @@ class TaskMeta(object):
     select: Transform = None
     encode_select: str = None
     encode_transform: str = None
+    drop: Set[str] = field(default_factory=set)
+
+    def __post_init__(self):
+        if isinstance(self.drop, list):
+            self.drop = set(self.drop)
+
+        if self.idx_column is None:
+            self.idx_column = []
+        elif not isinstance(self.idx_column, list):
+            self.idx_column = [self.idx_column]
+
+        if self.drop.intersection(self.predict.output_features):
+            raise ValueError('Some predict output features are in drop.')
 
     def get_infos(self):
         """Return a dict containing infos on the object."""
@@ -190,7 +204,7 @@ class Task(object):
 
         if index_col:
             df = pd.read_csv(df_path, sep=sep, encoding=encoding,
-                             usecols=[index_col], index_col=index_col)
+                             usecols=index_col, index_col=index_col)
             self._file_index = df.index
 
     def _load_y(self):
@@ -207,7 +221,8 @@ class Task(object):
         # Step 1: Load available features from initial df
         df = pd.read_csv(df_path, sep=sep, encoding=encoding, nrows=0,
                          index_col=index_col)
-        self._f_init = set(df.columns)
+        self._f_init = {s for s in set(df.columns) if s not in self.meta.drop}
+        self._f_init.update(index_col)
 
         # Step 1.2: load index
         self._load_index()
@@ -217,7 +232,8 @@ class Task(object):
         idx_to_drop = pd.Index([])  # At start, no indexes to drop
         if idx_transformer:
             logging.debug('Derive indexes to drop.')
-            features_to_load = idx_transformer.input_features+[index_col]
+            features_to_load = set(idx_transformer.input_features+index_col)
+            features_to_load = features_to_load.intersection(self._f_init)
             df = pd.read_csv(df_path, sep=sep, encoding=encoding,
                              usecols=features_to_load, index_col=index_col)
             idx = df.index
@@ -229,7 +245,8 @@ class Task(object):
 
         # Step 3: Derive the feature to predict y
         logging.debug('Derive the feature to predict y.')
-        features_to_load = self.meta.predict.input_features+[index_col]
+        features_to_load = set(self.meta.predict.input_features+index_col)
+        features_to_load = features_to_load.intersection(self._f_init)
         df = pd.read_csv(df_path, sep=sep, encoding=encoding,
                          usecols=features_to_load, skiprows=self._rows_to_drop,
                          index_col=index_col)
@@ -273,7 +290,7 @@ class Task(object):
         index_col = self.meta.idx_column
 
         # Step 5.1: Load asked features
-        features_to_load = set([index_col])
+        features_to_load = set(index_col)
         select = self.meta.select
         if select:
             if select.output_features and select.input_features:
@@ -285,11 +302,13 @@ class Task(object):
             else:
                 select_f = select.input_features
             features_to_load.update(select_f)
+            features_to_load = features_to_load.intersection(self._f_init)
 
         transform = self.meta.transform
         if transform:
             transform_f = set(transform.input_features)
             features_to_load.update(transform_f)
+            features_to_load = features_to_load.intersection(self._f_init)
 
         # If nothing specified, we load everything
         if not select and not transform:

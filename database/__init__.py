@@ -9,4 +9,5 @@ dbs = {
     'TB': TB(),
     'UKBB': UKBB(),
     'MIMIC': MIMIC(),
+    'NHIS': NHIS(),
 }

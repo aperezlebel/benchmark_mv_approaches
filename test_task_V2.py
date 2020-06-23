@@ -1,10 +1,8 @@
-from prediction.tasks.task_v2 import Task
-from prediction.tasks.MIMIC_v2 import task_metas
+"""test tasks."""
+from prediction.tasks import tasks
 
 
-meta = task_metas[0]
-t = Task(meta)
-
+t = tasks.get('TB/death_pvals', T=0, n_top_pvals=100)
 
 X = t.X
 y = t.y

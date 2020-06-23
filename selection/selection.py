@@ -28,6 +28,10 @@ parser.add_argument('program')
 parser.add_argument('task_name', nargs='?', default=None)
 parser.add_argument('--RS', dest='RS', default=0, nargs='?',
                     help='The random state to use.')
+parser.add_argument('--T', dest='T', default=0, nargs='?',
+                    help='The trial #.')
+parser.add_argument('--TMAX', dest='TMAX', default=5, nargs='?',
+                    help='The max # of trials.')
 
 sep = ','
 encoding = 'ISO-8859-1'
@@ -38,9 +42,12 @@ def run(argv=None):
     args = parser.parse_args(argv)
 
     print('Retrieving task')
-    RS = args.RS
+    RS = int(args.RS)
+    T = int(args.T)
+    TMAX = int(args.TMAX)
+    print(f'RS {RS} T {T} TMAX {TMAX}')
     task_name = args.task_name
-    task = tasks[task_name]
+    task = tasks.get(task_name, n_top_pvals=None)
 
     temp_dir = f'selected/{task.meta.tag}/temp/'
 
@@ -54,19 +61,23 @@ def run(argv=None):
     if task.is_classif():
         logger.info('Classification, using f_classif')
         f_callable = f_classif
-        ss = StratifiedShuffleSplit(n_splits=1,
+        ss = StratifiedShuffleSplit(n_splits=TMAX,
                                     test_size=2/3,
                                     random_state=RS)
     else:
         logger.info('Regression, using f_regression')
         f_callable = f_regression
-        ss = ShuffleSplit(n_splits=1, test_size=2/3,
+        ss = ShuffleSplit(n_splits=TMAX, test_size=2/3,
                           random_state=RS)
 
-    # Alter the task to select only 1/3 for selection
-    keep_idx, drop_idx = next(ss.split(y, y))
-
     index = y.index
+
+    assert T >= 0
+
+    # Alter the task to select only 1/3 for selection
+    split_iter = ss.split(y, y)
+    for _ in range(T+1):
+        keep_idx, drop_idx = next(split_iter)
 
     # Convert to index
     keep_index = [index[i] for i in keep_idx]
@@ -82,9 +93,9 @@ def run(argv=None):
     )
 
     series = pd.Series(keep_index)
-    os.makedirs(f'selected/{task.meta.tag}', exist_ok=True)
-    series.to_csv(f'selected/{task.meta.tag}/used_idx.csv', header=None,
-                  index=False)
+    dump_path = f'pvals/{task.meta.tag}/RS{RS}-T{T}-used_idx.csv'
+    os.makedirs(os.path.dirname(dump_path), exist_ok=True)
+    series.to_csv(dump_path, header=None, index=False)
     print(f'Idx used of shape {series.size}')
 
     # Ignore existing pvals selection
@@ -98,16 +109,15 @@ def run(argv=None):
 
     index = y.index
 
-    temp_df_transposed_path = temp_dir+'X_transposed.csv'
+    temp_df_transposed_path = temp_dir+f'RS{RS}-T{T}-X_transposed.csv'
 
-    if not os.path.exists(temp_df_transposed_path):
-        print('Retrieving X')
-        X = task.X
-        print(f'X loaded with shape {X.shape}')
+    print('Retrieving X')
+    X = task.X
+    print(f'X loaded with shape {X.shape}')
 
-        os.makedirs(temp_dir, exist_ok=True)
-        X_t = X.transpose()
-        X_t.to_csv(temp_df_transposed_path, quoting=csv.QUOTE_ALL)
+    os.makedirs(temp_dir, exist_ok=True)
+    X_t = X.transpose()
+    X_t.to_csv(temp_df_transposed_path, quoting=csv.QUOTE_ALL)
 
     X_t = pd.read_csv(temp_df_transposed_path, iterator=True, chunksize=1,
                       index_col=0)
@@ -194,6 +204,6 @@ def run(argv=None):
 
     pvals = pd.Series(pvals, index=names)
     print(pvals)
-    dump_path = f'selected/{task.meta.tag}/pvals.csv'
+    dump_path = f'pvals/{task.meta.tag}/RS{RS}-T{T}-pvals.csv'
     os.makedirs(os.path.dirname(dump_path), exist_ok=True)
     pvals.to_csv(dump_path, header=False)
