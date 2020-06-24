@@ -347,7 +347,7 @@ Cause du décès_Choc hémorragique,0.9086083520276156
 Cause du décès_Choc septique,0.41260740549588015
 Cause du décès_Défaillance multi-viscérale,0.34231410357819547
 Cause du décès_LATA,0.7054692604731807
-Cause du décès_Mort encéphalique,0.5244118502686554
+Cause du décès_Mort encéphalique,0.5244118502686556
 Cause du décès_Trauma cranien,0.17648739712100692
 Cause du décès_nan,0.48652269480248955
 "Transfert secondaire, pourquoi ?_Pas de transfert",0.18532180479883517
@@ -471,7 +471,7 @@ Catécholamines max dans choc hémorragique,6.589992325550158e-33
 CGR 6h,1.856525550470978e-07
 PFC 6h,2.4586525447215145e-05
 Fibrinogène 6h,0.0005061381841943794
-Cristalloïdes 24h,0.06794452719062884
+Cristalloïdes 24h,0.06794452719062882
 Colloïdes 24h,0.6911993616059174
 CGR 24h,0.0001415240655985671
 PFC 24h,0.0002675994544650129
