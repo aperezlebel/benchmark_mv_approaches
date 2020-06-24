@@ -276,6 +276,8 @@ class Task(object):
         if self.is_classif():
             y_mv = get_missing_values(self._y, db.heuristic)
             self._y, _ = ordinal_encode(self._y, y_mv)
+        else:  # cast to float for regression
+            self._y = self._y.astype(float)
 
         self._y.sort_index(inplace=True)  # to have consistent order with X
 
