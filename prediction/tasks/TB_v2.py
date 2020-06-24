@@ -71,13 +71,15 @@ def death_task(**kwargs):
 
 # Task 2: platelet prediction (https://arxiv.org/abs/1909.06631)
 # --------------------------------------------------------------
+# This is outside the callable because used in the pvals version of the task
+platelet_predict_transform = Transform(
+    input_features=['Plaquettes'],
+    output_features=['Plaquettes'],
+)
+
+
 def platelet_task(**kwargs):
     """Return TaskMeta for platelet prediction."""
-    platelet_predict_transform = Transform(
-        input_features=['Plaquettes'],
-        output_features=['Plaquettes'],
-    )
-
     def define_new_features_platelet(df):
         """Callable used to define new features from a bunch of features."""
         # github.com/wjiang94/ABSLOPE/blob/master/ABSLOPE/OnlineSupp/OnlineSupp.pdf
@@ -158,6 +160,63 @@ def platelet_task(**kwargs):
         select=None,
         encode_select='all',
         encode_transform='ordinal',
+    )
+
+
+# Task 2.2: platelet prediction using pvals
+# -----------------------------------------
+def platelet_pvals_task(**kwargs):
+    """Return TaskMeta for platelet prediction."""
+    assert 'n_top_pvals' in kwargs
+    n_top_pvals = kwargs['n_top_pvals']
+
+    if n_top_pvals is None:
+        platelet_pvals_keep_transform = None
+        platelet_idx_transform = None
+
+    else:
+
+        assert 'RS' in kwargs
+        assert 'T' in kwargs
+
+        RS = kwargs['RS']
+        T = kwargs['T']
+        platelet_pvals_dir = 'pvals/TB/platelet_pvals/'
+        platelet_idx_path = f'{platelet_pvals_dir}RS{RS}-T{T}-used_idx.csv'
+        platelet_pvals_path = f'{platelet_pvals_dir}RS{RS}-T{T}-pvals_filtered.csv'
+
+        assert os.path.exists(platelet_idx_path)
+        assert os.path.exists(platelet_pvals_path)
+
+        pvals = pd.read_csv(platelet_pvals_path, header=None,
+                            index_col=0, squeeze=True)
+
+        pvals = pvals.sort_values()[:n_top_pvals]
+        platelet_top_pvals = list(pvals.index.astype(str))
+
+        platelet_pvals_keep_transform = Transform(
+            output_features=platelet_top_pvals
+        )
+
+        platelet_drop_idx = pd.read_csv(platelet_idx_path, index_col=0, squeeze=True)
+
+        platelet_idx_transform = Transform(
+            input_features=[],
+            transform=lambda df: df.drop(platelet_drop_idx.index, axis=0),
+        )
+
+    return TaskMeta(
+        name='platelet_pvals',
+        db='TB',
+        df_name='20000',
+        classif=False,
+        idx_column='ID_PATIENT',
+        idx_selection=platelet_idx_transform,
+        predict=platelet_predict_transform,
+        transform=None,
+        select=platelet_pvals_keep_transform,
+        encode_select='all',
+        encode_transform=None,
     )
 
 
@@ -478,6 +537,7 @@ def septic_task(**kwargs):
 task_metas = {
     'death_pvals': death_task,
     'platelet': platelet_task,
+    'platelet_pvals': platelet_pvals_task,
     'shock_hemo': shock_hemo_task,
     'acid': acid_task,
     'septic_pvals': septic_task,
