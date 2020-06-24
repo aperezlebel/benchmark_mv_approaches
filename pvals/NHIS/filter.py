@@ -1,4 +1,7 @@
 """Remove features listed in exclude file."""
+# ----------------
+# USELESS FOR NOW
+# ----------------
 import os
 import pandas as pd
 
