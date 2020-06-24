@@ -45,8 +45,10 @@ def income_task(**kwargs):
         pvals = pd.read_csv(income_pvals_path, header=None,
                             index_col=0, squeeze=True)
 
+        # Match exact feature or start with and followed by '_' (categorical)
         for f in income_drop_features:  # Drop asked features from pvals
-            pvals = pvals[~pvals.index.str.contains(f)]
+            regex = f'(^{f}$|^{f}_)'
+            pvals = pvals[~pvals.index.str.match(regex)]
         pvals = pvals.sort_values()[:n_top_pvals]
         income_top_pvals = list(pvals.index.astype(str))
 
@@ -74,7 +76,6 @@ def income_task(**kwargs):
         select=income_pvals_keep_transform,
         encode_select='all',
         encode_transform=None,
-        drop=income_drop_features,
     )
 
 
@@ -89,6 +90,7 @@ def bmi_task(**kwargs):
 
     # Drop features linked to feature to predict
     bmi_drop_features = {
+        'BMI',
         'AHEIGHT',
         'AWEIGHTP',
     }
@@ -117,10 +119,13 @@ def bmi_task(**kwargs):
         pvals = pd.read_csv(bmi_pvals_path, header=None,
                             index_col=0, squeeze=True)
 
+        # Match exact feature or start with and followed by '_' (categorical)
         for f in bmi_drop_features:  # Drop asked features from pvals
-            pvals = pvals[~pvals.index.str.contains(f)]
+            regex = f'(^{f}$|^{f}_)'
+            pvals = pvals[~pvals.index.str.match(regex)]
         pvals = pvals.sort_values()[:n_top_pvals]
         bmi_top_pvals = list(pvals.index.astype(str))
+        print(bmi_top_pvals)
 
         bmi_pvals_keep_transform = Transform(
             output_features=bmi_top_pvals
@@ -145,7 +150,6 @@ def bmi_task(**kwargs):
         select=bmi_pvals_keep_transform,
         encode_select='all',
         encode_transform=None,
-        drop=bmi_drop_features,
     )
 
 
