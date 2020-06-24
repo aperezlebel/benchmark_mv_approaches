@@ -1,0 +1,895 @@
+Numéro de centre_1,0.104655
+Numéro de centre_10,0.600892
+Numéro de centre_11,0.440281
+Numéro de centre_12,0.677825
+Numéro de centre_13,0.386005
+Numéro de centre_14,0.443427
+Numéro de centre_16,0.506017
+Numéro de centre_17,0.732109
+Numéro de centre_19,
+Numéro de centre_2,0.733738
+Numéro de centre_21,0.721164
+Numéro de centre_3,0.220804
+Numéro de centre_4,0.976038
+Numéro de centre_5,0.0729927
+Numéro de centre_6,0.266419
+Numéro de centre_7,0.4285
+Numéro de centre_8,0.0769584
+"Mécanisme en cause_AVP (voiture, camion, bus)",0.815217
+Mécanisme en cause_AVP 2 roues motorisé,0.589006
+"Mécanisme en cause_AVP autre (avion, bateau, train, autres)",0.0699678
+Mécanisme en cause_AVP bicyclette,0.698463
+Mécanisme en cause_AVP piéton,0.218928
+Mécanisme en cause_Arme blanche,0.355756
+Mécanisme en cause_Arme à feu,0.597813
+Mécanisme en cause_Autre,0.747372
+Mécanisme en cause_Chute (de sa hauteur),0.791459
+Mécanisme en cause_Chute d'une hauteur,0.0997876
+Mécanisme en cause_Inconnu,0.0571761
+Mécanisme en cause_Traumatisme par objet contondant (non pénétrant),0.410381
+Mécanisme en cause_nan,0.553224
+Intentionnalité_Accident (non intentionnel),0.485946
+Intentionnalité_Agression,0.238195
+"Intentionnalité_Auto-infligé (suicide, blessure)",0.373625
+Intentionnalité_Autre,0.241365
+Intentionnalité_Inconnue,0.147412
+Intentionnalité_nan,0.228798
+Origine du patient_GGNC,0.983622
+Origine du patient_Primaire,0.432349
+Origine du patient_SAU,0.631014
+Origine du patient_Secondaire,0.617959
+Origine du patient_nan,0.67713
+SAMU: département_04 - Alpes de haute provence,0.66601
+SAMU: département_05 - Hautes Alpes,0.964266
+SAMU: département_06 - Alpes maritimes,0.552069
+SAMU: département_08 - Ardennes,
+SAMU: département_09 - Ariège,0.0755779
+SAMU: département_10 - Aube,0.753289
+SAMU: département_11 - Aude,0.558546
+SAMU: département_12 - Aveyron,
+SAMU: département_13 - Bouches du Rhône,0.342176
+SAMU: département_14 - Calvados,0.150334
+SAMU: département_27 - Eure,0.412631
+SAMU: département_28 - Eure-et-Loir,0.89979
+SAMU: département_31 - Haute-Garonne,0.995931
+SAMU: département_32 - Gers,0.926418
+SAMU: département_45 - Loiret,0.0645981
+SAMU: département_46 - Lot,0.174027
+SAMU: département_47 - Lot-et-Garonne,
+SAMU: département_50 - Manche,0.957482
+SAMU: département_51 - Marne,0.744592
+SAMU: département_52 - Haute Marne,
+SAMU: département_54 - Meurthe-et-Moselle,0.894904
+SAMU: département_55 - Meuse,0.496231
+SAMU: département_57 - Moselle,0.344243
+SAMU: département_59 - Nord,0.14854
+SAMU: département_60 - Oise,0.193585
+SAMU: département_61 - Orne,0.524716
+SAMU: département_62 - Pas-de-Calais,0.377423
+SAMU: département_65 - Hautes-Pyrénées,
+SAMU: département_67 - Bas-Rhin,0.260845
+SAMU: département_68 - Haut-Rhin,0.777223
+SAMU: département_75 - Paris,0.998724
+SAMU: département_77 - Seine-et-Marne,0.713101
+SAMU: département_78 - Yvelines,0.631332
+SAMU: département_81 - Tarn,0.483694
+SAMU: département_82 - Tarn-et-Garonne,0.726823
+SAMU: département_83 - Var,0.796456
+SAMU: département_84 - Vaucluse,0.350185
+SAMU: département_88 - Vosges,0.653849
+SAMU: département_89 - Yonne,0.322093
+SAMU: département_91 - Essonne,0.0615415
+SAMU: département_92 - Haut-de-Seine,0.12752
+SAMU: département_93 - Seine-Saint-Denis,0.623875
+SAMU: département_94 - Val-de-Marne,0.372474
+SAMU: département_95 - Val-d'Oise,0.942382
+SAMU: département_BSPP,0.689043
+SAMU: département_Hors IDF,0.27582
+SAMU: département_nan,0.0430373
+SMUR (SAMU Ville)_ARRAS,0.899144
+SMUR (SAMU Ville)_Agen,
+SMUR (SAMU Ville)_Aix-en-provence,0.79219
+SMUR (SAMU Ville)_Albi,
+SMUR (SAMU Ville)_Alençon,0.993883
+SMUR (SAMU Ville)_Alpes Maritimes (Villeneuve Loubet),
+SMUR (SAMU Ville)_Apt,
+SMUR (SAMU Ville)_Argentan,
+SMUR (SAMU Ville)_Argenteuil,0.959325
+SMUR (SAMU Ville)_Arles,
+SMUR (SAMU Ville)_Armenthieres,0.00389002
+SMUR (SAMU Ville)_Arpajon,0.909869
+SMUR (SAMU Ville)_Arras,0.650068
+SMUR (SAMU Ville)_Aubagne,
+SMUR (SAMU Ville)_Auch,0.926418
+SMUR (SAMU Ville)_Aulnay-sous-Bois,0.961518
+SMUR (SAMU Ville)_Autre,0.434019
+SMUR (SAMU Ville)_Auxerre,0.0636947
+SMUR (SAMU Ville)_Avignon,0.400098
+SMUR (SAMU Ville)_Avranches,0.858638
+SMUR (SAMU Ville)_BRIGNOLES,
+SMUR (SAMU Ville)_Bar-le-Duc,0.402608
+SMUR (SAMU Ville)_Bayeux,0.958101
+SMUR (SAMU Ville)_Beaujon,0.599694
+SMUR (SAMU Ville)_Beaumont,0.943099
+SMUR (SAMU Ville)_Beauvais,0.60645
+SMUR (SAMU Ville)_Bobigny,0.998097
+SMUR (SAMU Ville)_Boulogne sur mer,
+SMUR (SAMU Ville)_Brest,
+SMUR (SAMU Ville)_Briançon,
+SMUR (SAMU Ville)_Briey,0.00387103
+SMUR (SAMU Ville)_Brignoles,0.925798
+SMUR (SAMU Ville)_Brignolles,0.0684343
+SMUR (SAMU Ville)_Béthune,
+SMUR (SAMU Ville)_CAEN,
+SMUR (SAMU Ville)_Caen 1,0.169305
+SMUR (SAMU Ville)_Caen 2,0.503282
+SMUR (SAMU Ville)_Cahors,0.164678
+SMUR (SAMU Ville)_Calais,
+SMUR (SAMU Ville)_Canjuers,0.694891
+SMUR (SAMU Ville)_Carcassonne,0.527336
+SMUR (SAMU Ville)_Carpentras,0.79822
+SMUR (SAMU Ville)_Castelnaudary,0.845371
+SMUR (SAMU Ville)_Castres,0.483694
+SMUR (SAMU Ville)_Cavaillon,0.958101
+SMUR (SAMU Ville)_Champerret,0.592148
+SMUR (SAMU Ville)_Charleville-Mézières,
+SMUR (SAMU Ville)_Chartres,0.331903
+SMUR (SAMU Ville)_Cherbourg,0.501616
+SMUR (SAMU Ville)_Clermont (Oise),0.479958
+SMUR (SAMU Ville)_Colmar,0.0885014
+SMUR (SAMU Ville)_Corbeil,0.695899
+SMUR (SAMU Ville)_Coulommiers,0.277049
+SMUR (SAMU Ville)_Creil,
+SMUR (SAMU Ville)_Digne-les-Bains,0.820886
+SMUR (SAMU Ville)_Dignes,
+SMUR (SAMU Ville)_Douai,0.723969
+SMUR (SAMU Ville)_Draguignan,0.454424
+SMUR (SAMU Ville)_Dreux,0.751304
+SMUR (SAMU Ville)_Dunkerque,0.399245
+SMUR (SAMU Ville)_Eaubonne,0.741459
+SMUR (SAMU Ville)_Epinal,0.376722
+SMUR (SAMU Ville)_Etampes,0.551952
+SMUR (SAMU Ville)_Evreux,
+SMUR (SAMU Ville)_FREJUS,0.434019
+SMUR (SAMU Ville)_Falaise,0.444856
+SMUR (SAMU Ville)_Figeac,
+SMUR (SAMU Ville)_Flers,0.888069
+SMUR (SAMU Ville)_Foix,0.181928
+SMUR (SAMU Ville)_Fontainebleau,0.0720292
+SMUR (SAMU Ville)_Forbach,0.283818
+SMUR (SAMU Ville)_Fréjus,0.883609
+SMUR (SAMU Ville)_Gap,0.964266
+SMUR (SAMU Ville)_Garches,0.473203
+SMUR (SAMU Ville)_Gisors,0.578127
+SMUR (SAMU Ville)_Gonesse,0.714827
+SMUR (SAMU Ville)_Gourdon,0.252817
+SMUR (SAMU Ville)_Granville,0.323411
+SMUR (SAMU Ville)_Grasse,0.802853
+SMUR (SAMU Ville)_Gérardmer,
+SMUR (SAMU Ville)_HYERES,0.740192
+SMUR (SAMU Ville)_Haguenau,0.337547
+SMUR (SAMU Ville)_Hyeres,0.25853
+SMUR (SAMU Ville)_Hyères,0.826738
+SMUR (SAMU Ville)_Hôtel Dieu,0.772904
+SMUR (SAMU Ville)_Joigny,
+SMUR (SAMU Ville)_Juvisy,0.426515
+SMUR (SAMU Ville)_L Aigle,
+SMUR (SAMU Ville)_La ferté Macé,0.148689
+SMUR (SAMU Ville)_Lagny,0.490568
+SMUR (SAMU Ville)_Lanemezan,
+SMUR (SAMU Ville)_Lariboisière,0.36865
+SMUR (SAMU Ville)_Lavaur,
+SMUR (SAMU Ville)_Laveran,
+SMUR (SAMU Ville)_Lens,0.178399
+SMUR (SAMU Ville)_Ligny-en-Barrois,
+SMUR (SAMU Ville)_Lille,0.472678
+SMUR (SAMU Ville)_Lisieux,0.0982333
+SMUR (SAMU Ville)_Longjumeau,0.400497
+SMUR (SAMU Ville)_Lunéville,0.318763
+SMUR (SAMU Ville)_Manosque,
+SMUR (SAMU Ville)_Mantes-la-Jolie,0.188613
+SMUR (SAMU Ville)_Marignane,0.392917
+SMUR (SAMU Ville)_Marne la vallée,0.713573
+SMUR (SAMU Ville)_Marne-la-Vallée,0.435433
+SMUR (SAMU Ville)_Marseille,0.330263
+SMUR (SAMU Ville)_Marseille - Nord,0.332452
+SMUR (SAMU Ville)_Marseille - Timone,0.102478
+SMUR (SAMU Ville)_Martigues,0.473574
+SMUR (SAMU Ville)_Masséna,0.276454
+SMUR (SAMU Ville)_Maubeuge,
+SMUR (SAMU Ville)_Meaux,0.418999
+SMUR (SAMU Ville)_Melun,0.982015
+SMUR (SAMU Ville)_Metz,0.900547
+SMUR (SAMU Ville)_Moissac,0.337094
+SMUR (SAMU Ville)_Mondor,0.297226
+SMUR (SAMU Ville)_Mont-Saint-Martin,
+SMUR (SAMU Ville)_Montargis,0.117069
+SMUR (SAMU Ville)_Montauban,0.879867
+SMUR (SAMU Ville)_Montereau,0.829028
+SMUR (SAMU Ville)_Montfermeil,0.0164741
+SMUR (SAMU Ville)_Montreuil,0.803901
+SMUR (SAMU Ville)_Mulhouse,0.192512
+SMUR (SAMU Ville)_Ménilmontant,0.72817
+SMUR (SAMU Ville)_NON CONNUE,0.851374
+SMUR (SAMU Ville)_NON RENSEIGNE,
+SMUR (SAMU Ville)_NON RENSIGNE,0.154299
+SMUR (SAMU Ville)_Nancy,0.9916
+SMUR (SAMU Ville)_Necker,0.115111
+SMUR (SAMU Ville)_Nemours,0.890117
+SMUR (SAMU Ville)_Neuchâteau,0.240235
+SMUR (SAMU Ville)_Nogent-le-Rotrou,0.750529
+SMUR (SAMU Ville)_Orange,0.426037
+SMUR (SAMU Ville)_Orléans,
+SMUR (SAMU Ville)_Orsay,0.769139
+SMUR (SAMU Ville)_Pertuis,
+SMUR (SAMU Ville)_Pithiviers,0.60645
+SMUR (SAMU Ville)_Pitié Salpêtrière,0.894414
+SMUR (SAMU Ville)_Plessis-Clamart,0.992504
+SMUR (SAMU Ville)_Plombières,0.27284
+SMUR (SAMU Ville)_Poissy,0.0861224
+SMUR (SAMU Ville)_Pompiers 78,
+SMUR (SAMU Ville)_Pompiers des Bouches du Rhône,0.0154178
+SMUR (SAMU Ville)_Pontoise,0.97126
+SMUR (SAMU Ville)_Provins,0.551562
+SMUR (SAMU Ville)_Rambouillet,0.163655
+SMUR (SAMU Ville)_Reims,0.432818
+SMUR (SAMU Ville)_Rethel,
+SMUR (SAMU Ville)_Rodez,
+SMUR (SAMU Ville)_Romilly,
+SMUR (SAMU Ville)_Romilly sur Seine (GHAM),
+SMUR (SAMU Ville)_Roubaix,0.116522
+SMUR (SAMU Ville)_Rouen,
+SMUR (SAMU Ville)_SAMU 83,
+SMUR (SAMU Ville)_SANARY,0.56364
+SMUR (SAMU Ville)_Saint Lo,0.750529
+SMUR (SAMU Ville)_Saint Raphael,
+SMUR (SAMU Ville)_Saint-Avold,0.207483
+SMUR (SAMU Ville)_Saint-Céré,0.896715
+SMUR (SAMU Ville)_Saint-Denis,0.92995
+SMUR (SAMU Ville)_Saint-Dizier,
+SMUR (SAMU Ville)_Saint-Gaudens,
+SMUR (SAMU Ville)_Saint-Germain-en-Laye,0.352375
+SMUR (SAMU Ville)_Saint-Girons,0.327292
+SMUR (SAMU Ville)_Saint-Tropez,0.86623
+SMUR (SAMU Ville)_Sainte-Menehould,
+SMUR (SAMU Ville)_Salon,0.601568
+SMUR (SAMU Ville)_Sarrebourg,0.351524
+SMUR (SAMU Ville)_Sarreguemines,
+SMUR (SAMU Ville)_Saverne,
+SMUR (SAMU Ville)_Sedan,
+SMUR (SAMU Ville)_Senlis,
+SMUR (SAMU Ville)_Sens,0.7385
+SMUR (SAMU Ville)_Sisteron,0.448618
+SMUR (SAMU Ville)_St Lo,0.439611
+SMUR (SAMU Ville)_Strasbourg,0.423359
+SMUR (SAMU Ville)_Sélestat,0.309374
+SMUR (SAMU Ville)_Sézanne,
+SMUR (SAMU Ville)_TOULON,0.790068
+SMUR (SAMU Ville)_Thionville,0.430764
+SMUR (SAMU Ville)_Toul,0.862094
+SMUR (SAMU Ville)_Toulon,0.466656
+SMUR (SAMU Ville)_Toulon83,
+SMUR (SAMU Ville)_Toulouse,0.995931
+SMUR (SAMU Ville)_Tourcoing,0.103198
+SMUR (SAMU Ville)_Troyes,0.918747
+SMUR (SAMU Ville)_Vaison,
+SMUR (SAMU Ville)_Valenciennes,0.916039
+SMUR (SAMU Ville)_Vandoeuvre-lès-Nancy,
+SMUR (SAMU Ville)_Verdun,
+SMUR (SAMU Ville)_Vernon,0.523425
+SMUR (SAMU Ville)_Versailles,0.661346
+SMUR (SAMU Ville)_Villefranche de Rouergue,
+SMUR (SAMU Ville)_Villeneuve-Saint-Georges,0.851834
+SMUR (SAMU Ville)_Vire,0.777203
+SMUR (SAMU Ville)_Vitry,0.410217
+SMUR (SAMU Ville)_Vouziers,
+SMUR (SAMU Ville)_Wissembourg,0.29746
+SMUR (SAMU Ville)_bayeux,0.559598
+SMUR (SAMU Ville)_brignoles,
+SMUR (SAMU Ville)_caen,0.144883
+SMUR (SAMU Ville)_cote fleurie,
+SMUR (SAMU Ville)_dragon 83,
+SMUR (SAMU Ville)_draguignan,
+SMUR (SAMU Ville)_dunkerque,
+SMUR (SAMU Ville)_granville,
+SMUR (SAMU Ville)_lens,0.834694
+SMUR (SAMU Ville)_lille,0.425818
+SMUR (SAMU Ville)_nan,0.154752
+SMUR (SAMU Ville)_nevers,0.620252
+SMUR (SAMU Ville)_pompiers 83,
+SMUR (SAMU Ville)_rapasan militaire,
+SMUR (SAMU Ville)_rappatriment,0.173142
+SMUR (SAMU Ville)_roubaix,0.112166
+SMUR (SAMU Ville)_saint hilaire du Harcouet,
+SMUR (SAMU Ville)_saint lo,0.0535622
+SMUR (SAMU Ville)_samu 83,0.202599
+SMUR (SAMU Ville)_samu 83 brignoles,
+SMUR (SAMU Ville)_seyne sur mer,
+SMUR (SAMU Ville)_toulon,0.47225
+SMUR (SAMU Ville)_tourcoing,0.756347
+SMUR (SAMU Ville)_valenciennes,0.0844831
+SMUR (SAMU Ville)_Épernay,0.162361
+Anomalie pupillaire (Pré-hospitalier)_Anisocorie (unilatérale),0.617534
+Anomalie pupillaire (Pré-hospitalier)_Mydriase Bilatérale,0.167395
+Anomalie pupillaire (Pré-hospitalier)_Non,0.29588
+Anomalie pupillaire (Pré-hospitalier)_Pas précisé,0.904383
+Anomalie pupillaire (Pré-hospitalier)_nan,0.74621
+Mannitol / SSH_Mannitol,0.274059
+Mannitol / SSH_Pas de mydriase,0.29588
+Mannitol / SSH_Rien,0.129003
+Mannitol / SSH_SSH,0.478226
+Mannitol / SSH_nan,0.21901
+Anomalie pupillaire (Phase hospitalière)_Anisocorie (unilatérale),0.953923
+Anomalie pupillaire (Phase hospitalière)_Mydriase (bilatérale),0.261763
+Anomalie pupillaire (Phase hospitalière)_Non,0.580397
+Anomalie pupillaire (Phase hospitalière)_nan,0.369705
+Ventilation (FiO2)_Contrôlée,0.335223
+Ventilation (FiO2)_Spontanée air ambiant,0.415304
+Ventilation (FiO2)_Spontanée sous lunettes,0.945913
+Ventilation (FiO2)_Spontanée sous masque HC,0.875425
+Ventilation (FiO2)_Spontanée sous masque MC,0.672145
+Ventilation (FiO2)_nan,0.976412
+Mode d admission_Chirurgie programmée,0.229322
+Mode d admission_Chirurgie urgente,0.819735
+Mode d admission_Médecine,0.267811
+Mode d admission_nan,0.369821
+Maladies chroniques_Aucune,0.94392
+Maladies chroniques_Cancer métastasé,0.182305
+Maladies chroniques_Maladie hémato.,0.56894
+Maladies chroniques_SIDA,0.501616
+Maladies chroniques_nan,0.871788
+SOFA Cardiovasculaire_Dopamine > 15 ou Adrénaline / Noradrénaline > 0.1,0.597212
+SOFA Cardiovasculaire_Dopamine > 5 ou Adrénaline / Noradrénaline ? 0.1,0.599405
+SOFA Cardiovasculaire_Dopamine ?5 ou Dobutamine,0.00415191
+SOFA Cardiovasculaire_PAM < 70 mmHg,0.910366
+SOFA Cardiovasculaire_Pas d'hypotension,0.761974
+SOFA Cardiovasculaire_nan,0.857449
+Premier type d action thérapeutique essentielle_Autre,0.850576
+Premier type d action thérapeutique essentielle_Chirurgie orthopédique,0.780418
+Premier type d action thérapeutique essentielle_Laparotomie,0.68897
+Premier type d action thérapeutique essentielle_Packing bassin extrapéritonéal,0.206333
+Premier type d action thérapeutique essentielle_Pas de choc hémorragique,0.428758
+Premier type d action thérapeutique essentielle_Technique radiointerventionnelle,0.13655
+Premier type d action thérapeutique essentielle_Thoracotomie,0.80443
+Premier type d action thérapeutique essentielle_nan,0.385189
+Osmothérapie_Mannitol,0.145014
+Osmothérapie_Rien,0.252651
+Osmothérapie_SSH,0.418253
+Osmothérapie_nan,0.564408
+Traumatisme médullaire le plus haut_Cervical,0.813451
+Traumatisme médullaire le plus haut_Lombaire,0.253991
+Traumatisme médullaire le plus haut_Sacrum,0.560199
+Traumatisme médullaire le plus haut_Thoracique,0.763283
+Traumatisme médullaire le plus haut_nan,0.484325
+Cause du décès_A survécu,0.767839
+Cause du décès_Autre (précisez ci-dessous),0.37049
+Cause du décès_Choc hémorragique,0.0481387
+Cause du décès_Choc septique,0.243361
+Cause du décès_Défaillance multi-viscérale,0.608489
+Cause du décès_LATA,0.964536
+Cause du décès_Mort encéphalique,0.0140682
+Cause du décès_Trauma cranien,0.141467
+Cause du décès_nan,0.0660634
+"Transfert secondaire, pourquoi ?_Pas de transfert",0.682493
+"Transfert secondaire, pourquoi ?_Plateau technique insuffisant",0.58869
+"Transfert secondaire, pourquoi ?_Rapprochement familial",0.958526
+"Transfert secondaire, pourquoi ?_nan",0.503578
+Sortie_Autre réanimation,0.243789
+Sortie_Centre de rééducation,0.793797
+Sortie_Domicile,0.110595
+Sortie_Service hospitalier,0.63077
+Sortie_nan,0.618576
+Situation professionnelle actuelle_Activité professionnelle à plein temps,0.0906556
+Situation professionnelle actuelle_Activité professionnelle à plein temps ,0.20411
+Situation professionnelle actuelle_Activité professionnelle à temps partiel,0.508547
+Situation professionnelle actuelle_Activité professionnelle à temps partiel ,0.117075
+"Situation professionnelle actuelle_Autre, précisez ci-dessous",0.996643
+Situation professionnelle actuelle_Chômage,0.70631
+Situation professionnelle actuelle_Chômage ,0.0404368
+"Situation professionnelle actuelle_Lycéen, étudiant(e), élève, en formation",0.850073
+Situation professionnelle actuelle_Sans activité professionnelle,0.0186189
+Situation professionnelle actuelle_nan,0.161953
+Activité socioprofessionnelle récente_Agriculteurs exploitants,0.871764
+"Activité socioprofessionnelle récente_Artisans, commerçants et chefs d'entreprises",0.195154
+Activité socioprofessionnelle récente_Autre,0.460278
+"Activité socioprofessionnelle récente_Cadres, professions intellectuelles supérieures",0.26713
+Activité socioprofessionnelle récente_Employé de la fonction publique ou administratif des entreprises,0.952611
+Activité socioprofessionnelle récente_Employés de commerce,0.990459
+"Activité socioprofessionnelle récente_Ouvriers qualifié, non qualifiés, chauffeurs",0.285551
+Activité socioprofessionnelle récente_Personnels de service pour les particuliers,0.424455
+"Activité socioprofessionnelle récente_Professions intermédiaires (instituteur, technicien, contremaitre...)",0.163789
+"Activité socioprofessionnelle récente_Professions intermédiaires¬¨‚Ä†(instituteur, technicien, contremaitre...)",0.250731
+Activité socioprofessionnelle récente_Retraités,0.468503
+Activité socioprofessionnelle récente_Sans activité professionnelle ou inactif,0.142042
+Activité socioprofessionnelle récente_nan,0.342491
+"Activité au moment du traumatisme (OMS C5)_Activité vitale (sommeil, repos, manger, boire, s'habiller, se soigner, se laver...)",0.0196033
+Activité au moment du traumatisme (OMS C5)_Autre activité non spécifiée,0.0363356
+"Activité au moment du traumatisme (OMS C5)_Autre activité spécifiée, précisez ci-après",0.455968
+"Activité au moment du traumatisme (OMS C5)_Education (école, lycée, université...)",0.350908
+"Activité au moment du traumatisme (OMS C5)_Loisirs ou jeu (danse, télé, randonnée, trajets...)",0.0248201
+Activité au moment du traumatisme (OMS C5)_Sport ou exercice pendant temps de loisirs,0.923578
+"Activité au moment du traumatisme (OMS C5)_Trajet non classé ailleurs (ex trajet pour sport pdt loisir, pour école)",0.70824
+"Activité au moment du traumatisme (OMS C5)_Travail non rémunéré (ménage, courses, bricolage, soins aux enfants, trajets personnels)",0.734817
+Activité au moment du traumatisme (OMS C5)_Travail rémunéré (trajets pour travail rémunéré),0.44351
+Activité au moment du traumatisme (OMS C5)_nan,0.0581766
+"Activité au moment du traumatisme (OMS C5)_Être soigné (soins, hygiène, aide aux mouvements par professionnel ou pas)",0.862626
+Type de lieu_Autre non-spécifié,0.0376196
+"Type de lieu_Autre spécifié, précisez ci-dessous",0.609817
+Type de lieu_Domicile (bâtiment et aire adjacente),0.347748
+"Type de lieu_Ecole, lieu d'éducation (crèche, bâtiment et aires adjacentes)",0.715753
+"Type de lieu_Ecole, lieu d'éducation (crèche, bâtiment et aires adjacentes) ",0.521993
+Type de lieu_Institution médicale (bâtiment et aires adjacentes),0.814528
+"Type de lieu_Nature, Forêt, Montagne (lac, plage...)",0.489695
+"Type de lieu_Résidence, institution (maison de retraite, prison, terrain militaire...)",0.547322
+Type de lieu_Zone Agriculture ou production primaire (ferme si domicile),0.0424629
+"Type de lieu_Zone commerciale (magasin, station service, restaurant, bureaux...)",0.275102
+"Type de lieu_Zone de loisirs/divertissement/activité culturelle et bâtiment public (parc, église, musée, mairie...)",0.563757
+"Type de lieu_Zone de sport (piscine publique, bâtiment et aires adjacentes)",0.260264
+"Type de lieu_Zone de transport (autoroute, nationale, rue, piste cyclable, parking, gare, train, aéroport...)",0.322854
+"Type de lieu_Zone industrielle ou de construction (chantier, usine...)",0.650401
+Type de lieu_nan,0.755587
+Niveau d études ou diplôme le plus élevé_Bac,0.622125
+"Niveau d études ou diplôme le plus élevé_Collège, CAP, BEP",0.881369
+"Niveau d études ou diplôme le plus élevé_Diplôme de l'enseignement supérieur 2ème cycle (licence, maitrise, master1, IUFM...)",0.374989
+"Niveau d études ou diplôme le plus élevé_Diplôme de l'enseignement supérieur 3ème cycle (master2 ou doctorat, DEA ou DESS) ou école d'ingénieur ou « grandes écoles »",0.832526
+"Niveau d études ou diplôme le plus élevé_Diplôme niveau bac + 2 (DEUG, DUT, BTS, PCEM)",0.767059
+Niveau d études ou diplôme le plus élevé_Non scolarisé,0.970081
+Niveau d études ou diplôme le plus élevé_Primaire,0.336237
+Niveau d études ou diplôme le plus élevé_nan,0.779863
+Age du patient (ans),1.70654e-25
+BMI,0.0920008
+Durée de l incarcération (min),0.00296314
+Surface corporelle brulée,
+Pression Artérielle Systolique (PAS) à l arrivée du SMUR,4.80988e-06
+Pression Artérielle Diastolique (PAD) à l arrivée du SMUR,2.51067e-07
+Fréquence cardiaque (FC) à l arrivée du SMUR,0.000631843
+Pression Artérielle Systolique (PAS) minimum,1.31145e-24
+Pression Artérielle Diastolique (PAD) minimum,1.98403e-25
+Fréquence cardiaque (FC) maximum,2.17292e-07
+Lactates pré-hospitalier,0.00628098
+Cristalloïdes,5.59827e-25
+Colloïdes,3.59233e-31
+Hémocue initial,4.56966e-08
+"Hémocue, à l arrivée hôpital par équipe hôpital",9.44365e-48
+Delta Hémocue,1.15873e-12
+SpO2 min,3.74047e-05
+Délai « départ base - arrivée sur les lieux »,0.00462104
+Délai « arrivée sur les lieux - arrivée hôpital »,3.96866e-05
+FC en phase hospitalière,0.0127393
+Pression Artérielle Systolique - PAS,4.8413e-19
+Pression Artérielle Diastolique - PAD,1.84054e-19
+Saturation périphérique oxygène - SpO2,2.3502e-07
+Température,3.55472e-18
+"Doppler TransCrânien (DTC), Index de Pulsatilité (IP) max",3.59876e-06
+pH,5.66573e-34
+PaO2,1.75549e-08
+pCO2,0.0419111
+Lactates,5.34931e-34
+Lactates H2,4.58965e-14
+"Sinon, lactates > H2",0.00174541
+Excès de base,7.09311e-14
+FiO2,1.18912e-35
+Hb conventionnelle laboratoire,8.42974e-90
+Plaquettes,0.0
+TP,1.49559e-84
+Fibrinogène,2.20516e-85
+Créatinine,2.98568e-08
+Bicar mesuré,1.16868e-18
+Troponine standard,3.02261e-05
+Troponine ultrasensible,0.00244274
+Alcoolémie (g/L),0.0543495
+Délai départ au scanner ou bloc,0.0382531
+Dernière PAS avant départ scan ou bloc,0.000191635
+Dernière PAD avant départ scan ou bloc,2.66982e-06
+Dose noradrénaline au moment départ au scan,2.25057e-13
+Total Score IGS,6.17788e-79
+ Total Score SOFA,4.78445e-94
+Température min,9.60218e-08
+Délai « admission trauma center - incision/ponction pour geste »,0.00279064
+Délai introduction catécholamines dans choc hémorragique,0.136744
+Catécholamines max dans choc hémorragique,2.16962e-07
+CGR 6h,1.20525e-08
+PFC 6h,5.80031e-09
+Fibrinogène 6h,1.52393e-07
+Cristalloïdes 24h,0.226992
+Colloïdes 24h,0.0409583
+CGR 24h,1.6524e-06
+PFC 24h,1.12588e-06
+Fibrinogène 24h,9.87299e-08
+PaCO2 min,0.640667
+pH min,5.15519e-08
+Lactate max,2.46664e-09
+Créatinine max,0.621517
+Ca ionise min,0.413104
+P/F min,0.323611
+Bicar min,1.83932e-07
+BE max,1.58367e-05
+TP min,1.27203e-21
+Fibrinogène min,5.13213e-19
+Hémoglobine min,2.83368e-14
+Plaquettes min,2.42739e-14
+Délai PIC : arrivée hôpital - pose de PIC,0.874276
+Délai DVE : arrivée hôpital - pose de DVE,0.345961
+DTC IP max (sur les premières 24 heures d HTIC),0.00105797
+Score ASIA moteur,0.301555
+"Durée de séjour en réa- si date de sortie connue, durée de séjour = (date sortie - date d entrée)- si date de sortie inconnue, d",6.80687e-07
+"Rachis récupération, score ASIA moteur",0.268211
+Nombre de jours de VM,0.000288965
+Créatinine max.1,3.52428e-06
+CPK max,0.0011576
+Myoglobine max,0.00319455
+Nombre de jours à l'hôpital,0.000111278
+Score ISS,2.497e-33
+Trauma Injury Severity Score (TRISS),4.60612e-15
+Random,0.525552
+RTS,7.06908e-36
+TRISS contondant,6.41423e-48
+TRISS pénétrant,6.20256e-43
+Sexe_0.0,0.926759
+Sexe_1.0,0.933939
+Sexe_nan,0.966466
+Casque_0.0,0.607184
+Casque_1.0,0.367753
+Casque_nan,0.32656
+Gants_0.0,0.754989
+Gants_1.0,0.353406
+Gants_nan,0.347695
+Éjection du véhicule_0.0,0.920497
+Éjection du véhicule_1.0,0.857471
+Éjection du véhicule_nan,0.964952
+Passager décédé dans le même véhicule_0.0,0.628602
+Passager décédé dans le même véhicule_1.0,0.016653
+Passager décédé dans le même véhicule_nan,0.852514
+Appréciation globale_0.0,0.864642
+Appréciation globale_1.0,0.349526
+Appréciation globale_nan,0.314316
+Incarcération_0.0,0.925614
+Incarcération_1.0,0.242586
+Incarcération_nan,0.51597
+Cinétique non-spécifié/non-évaluable_0.0,0.951967
+Cinétique non-spécifié/non-évaluable_1.0,0.915372
+Cinétique non-spécifié/non-évaluable_nan,0.901618
+Écrasé/projeté_0.0,0.918886
+Écrasé/projeté_1.0,0.465584
+Écrasé/projeté_nan,0.604855
+Chute_0.0,0.158433
+Chute_1.0,0.564165
+Chute_nan,0.121316
+Blast_0.0,0.686931
+Blast_1.0,0.891091
+Blast_nan,0.665554
+Ischémie du membre_0.0,0.647311
+Ischémie du membre_1.0,0.948889
+Ischémie du membre_nan,0.46874
+Amputation_0.0,0.272677
+Amputation_1.0,0.412095
+Amputation_nan,0.462407
+Fracas du bassin_0.0,0.565249
+Fracas du bassin_1.0,0.705947
+Fracas du bassin_nan,0.607116
+Brulûre_0.0,0.0604224
+Brulûre_1.0,0.536462
+Brulûre_nan,0.0451379
+Annoncé comme instable_0.0,0.277893
+Annoncé comme instable_1.0,0.186117
+Annoncé comme instable_nan,0.564873
+"Grossesse, 2e ou 3e trimestre_0.0",0.393144
+"Grossesse, 2e ou 3e trimestre_1.0",0.11849
+"Grossesse, 2e ou 3e trimestre_nan",0.537269
+Traitement anticoagulant_0.0,0.714487
+Traitement anticoagulant_1.0,0.0632825
+Traitement anticoagulant_nan,0.133089
+Traitement antiagrégants_0.0,0.414542
+Traitement antiagrégants_1.0,0.822011
+Traitement antiagrégants_nan,0.167008
+Mode de transport à l'hôpital_0.0,0.49046
+Mode de transport à l'hôpital_1.0,0.856627
+Mode de transport à l'hôpital_nan,0.271821
+Suspicion d atteinte neurologique à l examen_0.0,0.96667
+Suspicion d atteinte neurologique à l examen_1.0,0.982818
+Suspicion d atteinte neurologique à l examen_nan,0.954807
+Régression mydriase sous osmothérapie_0.0,0.0214758
+Régression mydriase sous osmothérapie_1.0,0.957119
+Régression mydriase sous osmothérapie_nan,0.0453954
+Arrêt cardio-respiratoire (massage)_0.0,0.284299
+Arrêt cardio-respiratoire (massage)_1.0,0.145994
+Arrêt cardio-respiratoire (massage)_nan,0.850145
+Catécholamines_0.0,0.628378
+Catécholamines_1.0,0.429347
+Catécholamines_2.0,0.264664
+Catécholamines_nan,0.644175
+Intubation orotrachéale (IOT) SMUR_0.0,0.481883
+Intubation orotrachéale (IOT) SMUR_1.0,0.657481
+Intubation orotrachéale (IOT) SMUR_nan,0.337355
+ Utilisation mesures hémostatiques externes_0.0,0.274642
+ Utilisation mesures hémostatiques externes_1.0,0.154194
+ Utilisation mesures hémostatiques externes_nan,0.69079
+Utilisation mesures hémostatiques externes   / Garrot_0.0,0.536837
+Utilisation mesures hémostatiques externes   / Garrot_1.0,0.35734
+Utilisation mesures hémostatiques externes   / Garrot_nan,0.69079
+Utilisation mesures hémostatiques externes   / Clamp_0.0,0.69079
+Utilisation mesures hémostatiques externes   / Clamp_1.0,
+Utilisation mesures hémostatiques externes   / Clamp_nan,0.69079
+Utilisation mesures hémostatiques externes   / Compressif_0.0,0.44874
+Utilisation mesures hémostatiques externes   / Compressif_1.0,0.343357
+Utilisation mesures hémostatiques externes   / Compressif_nan,0.69079
+Utilisation mesures hémostatiques externes   / Autre_0.0,0.575396
+Utilisation mesures hémostatiques externes   / Autre_1.0,0.497328
+Utilisation mesures hémostatiques externes   / Autre_nan,0.69079
+Utilisation ceinture bassin_0.0,0.647156
+Utilisation ceinture bassin_1.0,0.747452
+Utilisation ceinture bassin_nan,0.549498
+Transfusion de PLYO (plasma lyophilisé)_0.0,0.618317
+Transfusion de PLYO (plasma lyophilisé)_1.0,0.983406
+Transfusion de PLYO (plasma lyophilisé)_nan,0.616083
+Activation procédure choc hémorragique_0.0,0.383346
+Activation procédure choc hémorragique_1.0,0.95997
+Activation procédure choc hémorragique_nan,0.11792
+Période de travail_0.0,0.70698
+Période de travail_1.0,0.678469
+Période de travail_nan,0.648166
+Echographie d orientation (FAST)_0.0,0.447593
+Echographie d orientation (FAST)_1.0,0.409219
+Echographie d orientation (FAST)_nan,0.803093
+Résultat de la FAST écho_0.0,0.0238654
+Résultat de la FAST écho_1.0,0.0310924
+Résultat de la FAST écho_nan,0.457488
+Si anormale préciser   / Hémopéritoine_0.0,0.853517
+Si anormale préciser   / Hémopéritoine_1.0,0.435705
+Si anormale préciser   / Hémopéritoine_nan,0.489327
+Si anormale préciser   / Hémothorax_0.0,0.0859887
+Si anormale préciser   / Hémothorax_1.0,0.00788862
+Si anormale préciser   / Hémothorax_nan,0.489327
+Si anormale préciser   / Pneumothorax_0.0,0.0931375
+Si anormale préciser   / Pneumothorax_1.0,0.0547689
+Si anormale préciser   / Pneumothorax_nan,0.489327
+Si anormale préciser   / Epanchement péricardique_0.0,0.533543
+Si anormale préciser   / Epanchement péricardique_1.0,0.775451
+Si anormale préciser   / Epanchement péricardique_nan,0.489327
+Si anormale préciser   / Autre diagnostic_0.0,0.30798
+Si anormale préciser   / Autre diagnostic_1.0,0.0632419
+Si anormale préciser   / Autre diagnostic_nan,0.489327
+Radiographie pulmonaire_0.0,0.321261
+Radiographie pulmonaire_1.0,0.527553
+Radiographie pulmonaire_nan,0.618228
+Résultat de la radiographie pulmonaire_0.0,0.129022
+Résultat de la radiographie pulmonaire_1.0,0.15337
+Résultat de la radiographie pulmonaire_nan,0.585647
+Si anormale préciser   / Pneumothorax.1_0.0,0.316146
+Si anormale préciser   / Pneumothorax.1_1.0,0.382799
+Si anormale préciser   / Pneumothorax.1_nan,0.553342
+Si anormale préciser   / Hémothorax.1_0.0,0.360586
+Si anormale préciser   / Hémothorax.1_1.0,0.311958
+Si anormale préciser   / Hémothorax.1_nan,0.553342
+Si anormale préciser   / Contusion_0.0,0.272241
+Si anormale préciser   / Contusion_1.0,0.240279
+Si anormale préciser   / Contusion_nan,0.553342
+Si anormale préciser   / Elargissement du médiastin_0.0,0.650971
+Si anormale préciser   / Elargissement du médiastin_1.0,0.215797
+Si anormale préciser   / Elargissement du médiastin_nan,0.553342
+Radiographie bassin_0.0,0.269859
+Radiographie bassin_1.0,0.665891
+Radiographie bassin_nan,0.349871
+Si fait_0.0,0.527844
+Si fait_1.0,0.641777
+Si fait_nan,0.737227
+Si anormale préciser   / Fracture pelvienne_0.0,0.626336
+Si anormale préciser   / Fracture pelvienne_1.0,0.830999
+Si anormale préciser   / Fracture pelvienne_nan,0.73019
+Si anormale préciser   / Disjonction symphyse pubienne_0.0,0.668402
+Si anormale préciser   / Disjonction symphyse pubienne_1.0,0.7367
+Si anormale préciser   / Disjonction symphyse pubienne_nan,0.73019
+Drainage thoracique avant scanner ?_0.0,0.87231
+Drainage thoracique avant scanner ?_1.0,0.287343
+Drainage thoracique avant scanner ?_nan,0.704798
+Bloc ou artério direct_0.0,0.339455
+Bloc ou artério direct_1.0,0.600186
+Bloc ou artério direct_nan,0.447661
+Cathéters posés avant scanner ?_0.0,0.933605
+Cathéters posés avant scanner ?_1.0,0.954282
+Cathéters posés avant scanner ?_2.0,0.611856
+Cathéters posés avant scanner ?_nan,0.703236
+Fibrinogène (au déchoc)_0.0,0.452381
+Fibrinogène (au déchoc)_1.0,0.93388
+Fibrinogène (au déchoc)_nan,0.437169
+Etude PROCOAG_0.0,0.615917
+Etude PROCOAG_1.0,0.0977753
+Etude PROCOAG_nan,0.437099
+Fractures ouvertes_0.0,0.41118
+Fractures ouvertes_1.0,0.378387
+Fractures ouvertes_nan,0.915651
+Bloc dans les 24 premières heures_0.0,0.427982
+Bloc dans les 24 premières heures_1.0,0.719444
+Bloc dans les 24 premières heures_nan,0.76525
+Bloc dans les premières 24h  / Orthopédie_0.0,0.907045
+Bloc dans les premières 24h  / Orthopédie_1.0,0.772439
+Bloc dans les premières 24h  / Orthopédie_nan,0.719444
+Bloc dans les premières 24h  / Neurochirurgie (ex. : Craniotomie ou DVE)_0.0,0.5628
+Bloc dans les premières 24h  / Neurochirurgie (ex. : Craniotomie ou DVE)_1.0,0.697576
+Bloc dans les premières 24h  / Neurochirurgie (ex. : Craniotomie ou DVE)_nan,0.719444
+Bloc dans les premières 24h  / Thoracique_0.0,0.839692
+Bloc dans les premières 24h  / Thoracique_1.0,0.610158
+Bloc dans les premières 24h  / Thoracique_nan,0.719444
+Bloc dans les premières 24h  / Chirurgie Vasculaire_0.0,0.441773
+Bloc dans les premières 24h  / Chirurgie Vasculaire_1.0,0.305019
+Bloc dans les premières 24h  / Chirurgie Vasculaire_nan,0.719444
+Bloc dans les premières 24h  / Viscéral_0.0,0.901284
+Bloc dans les premières 24h  / Viscéral_1.0,0.622813
+Bloc dans les premières 24h  / Viscéral_nan,0.719444
+Bloc dans les premières 24h  / Maxillo-facial_0.0,0.617451
+Bloc dans les premières 24h  / Maxillo-facial_1.0,0.606378
+Bloc dans les premières 24h  / Maxillo-facial_nan,0.719444
+Bloc dans les premières 24h  / Radiologie interventionelle_0.0,0.595782
+Bloc dans les premières 24h  / Radiologie interventionelle_1.0,0.517656
+Bloc dans les premières 24h  / Radiologie interventionelle_nan,0.719444
+Bloc dans les premières 24h  / Autre_0.0,0.731171
+Bloc dans les premières 24h  / Autre_1.0,0.930324
+Bloc dans les premières 24h  / Autre_nan,0.719444
+Température.1_0.0,0.795844
+Température.1_1.0,0.753793
+Température.1_nan,0.840471
+Choc hémorragique (? 4 CGR sur 6h)_0.0,0.367126
+Choc hémorragique (? 4 CGR sur 6h)_1.0,0.590674
+Choc hémorragique (? 4 CGR sur 6h)_nan,0.237379
+Origine du saignement  / Hémopéritoine_0.0,0.291721
+Origine du saignement  / Hémopéritoine_1.0,0.494512
+Origine du saignement  / Hémopéritoine_nan,0.590674
+Origine du saignement  / Hémorétropéritoine_0.0,0.580604
+Origine du saignement  / Hémorétropéritoine_1.0,0.934702
+Origine du saignement  / Hémorétropéritoine_nan,0.590674
+Origine du saignement  / Hémothorax_0.0,0.620815
+Origine du saignement  / Hémothorax_1.0,0.845659
+Origine du saignement  / Hémothorax_nan,0.590674
+Origine du saignement  / Orthopédique_0.0,0.523131
+Origine du saignement  / Orthopédique_1.0,0.955101
+Origine du saignement  / Orthopédique_nan,0.590674
+Origine du saignement  / Autres_0.0,0.458481
+Origine du saignement  / Autres_1.0,0.81514
+Origine du saignement  / Autres_nan,0.590674
+ACR_0.0,0.563814
+ACR_1.0,0.635693
+ACR_nan,0.754902
+Novoseven_0.0,0.460408
+Novoseven_1.0,0.623283
+Novoseven_nan,0.517667
+Acide tranexamique_0.0,0.954105
+Acide tranexamique_1.0,0.507078
+Acide tranexamique_nan,0.554966
+Trauma crânien (lésion cérébrale TDM)_0.0,0.524383
+Trauma crânien (lésion cérébrale TDM)_1.0,0.79342
+Trauma crânien (lésion cérébrale TDM)_nan,0.0493308
+Pression intracrânienne (PIC)_0.0,0.486354
+Pression intracrânienne (PIC)_1.0,0.236737
+Pression intracrânienne (PIC)_2.0,0.048211
+Pression intracrânienne (PIC)_nan,0.524383
+Dérivation ventriculaire externe (DVE)_0.0,0.964946
+Dérivation ventriculaire externe (DVE)_1.0,0.459689
+Dérivation ventriculaire externe (DVE)_2.0,0.11891
+Dérivation ventriculaire externe (DVE)_nan,0.521197
+Hypothermie thérapeutique_0.0,0.761617
+Hypothermie thérapeutique_1.0,0.547083
+Hypothermie thérapeutique_2.0,0.738647
+Hypothermie thérapeutique_nan,0.544586
+Craniectomie dé-compressive_0.0,0.937302
+Craniectomie dé-compressive_1.0,0.66684
+Craniectomie dé-compressive_2.0,0.0893153
+Craniectomie dé-compressive_nan,0.521197
+Fracture du rachis et/ ou lésion médullaire_0.0,0.608768
+Fracture du rachis et/ ou lésion médullaire_1.0,0.888283
+Fracture du rachis et/ ou lésion médullaire_nan,0.124486
+Rachis neurologique_0.0,0.834387
+Rachis neurologique_1.0,0.514545
+Rachis neurologique_nan,0.848556
+Lésion complète_0.0,0.0104169
+Lésion complète_1.0,0.1447
+Lésion complète_nan,0.322977
+Lésion médullaire sans fracture ( SCYWORA )_0.0,0.858366
+Lésion médullaire sans fracture ( SCYWORA )_1.0,
+Lésion médullaire sans fracture ( SCYWORA )_nan,0.858366
+Décès_0.0,0.480708
+Décès_1.0,0.0690508
+Décès_nan,0.220614
+Procédure limitations de soins (LATA)_0.0,0.696667
+Procédure limitations de soins (LATA)_1.0,0.480837
+Procédure limitations de soins (LATA)_nan,0.297619
+HTIC (>25 PIC simple sédation)_0.0,0.582046
+HTIC (>25 PIC simple sédation)_1.0,0.355236
+HTIC (>25 PIC simple sédation)_nan,0.891948
+Trachéotomie_0.0,0.726641
+Trachéotomie_1.0,0.984026
+Trachéotomie_nan,0.724867
+Syndrome de Detresse respiratoire Aigue_0.0,0.895894
+Syndrome de Detresse respiratoire Aigue_1.0,0.400118
+Syndrome de Detresse respiratoire Aigue_nan,0.600043
+ECMO_0.0,0.330687
+ECMO_1.0,0.310784
+ECMO_nan,0.218964
+Épisode de catécholamines en continu_0.0,0.483888
+Épisode de catécholamines en continu_1.0,0.938732
+Épisode de catécholamines en continu_nan,0.58362
+Plaquettes < 150 000_0.0,0.646207
+Plaquettes < 150 000_1.0,0.561946
+Plaquettes < 150 000_nan,0.398464
+Épisode diurèse < 500 mL/j_0.0,0.420064
+Épisode diurèse < 500 mL/j_1.0,0.786409
+Épisode diurèse < 500 mL/j_nan,0.485295
+Epuration extrarénale (EER)_0.0,0.700719
+Epuration extrarénale (EER)_1.0,0.628728
+Epuration extrarénale (EER)_nan,0.777286
+Infection_0.0,0.906523
+Infection_1.0,0.433729
+Infection_nan,0.478345
+Cause  / Respiratoire_0.0,0.784055
+Cause  / Respiratoire_1.0,0.499433
+Cause  / Respiratoire_nan,0.478345
+Cause  / Urinaire_0.0,0.163835
+Cause  / Urinaire_1.0,0.0392672
+Cause  / Urinaire_nan,0.478345
+Cause  / Abdominal_0.0,0.58303
+Cause  / Abdominal_1.0,0.361359
+Cause  / Abdominal_nan,0.478345
+Cause  / Cérébral (méningite...)_0.0,0.337026
+Cause  / Cérébral (méningite...)_1.0,0.0233681
+Cause  / Cérébral (méningite...)_nan,0.478345
+Cause  / Site opératoire_0.0,0.709784
+Cause  / Site opératoire_1.0,0.168236
+Cause  / Site opératoire_nan,0.478345
+"Cause  / Matérielle (KT, DVE...)_0.0",0.475456
+"Cause  / Matérielle (KT, DVE...)_1.0",0.964029
+"Cause  / Matérielle (KT, DVE...)_nan",0.478345
+Choc septique_0.0,0.741774
+Choc septique_1.0,0.924765
+Choc septique_nan,0.76695
+Acquisitions BMR_0.0,0.782445
+Acquisitions BMR_1.0,0.476248
+Acquisitions BMR_nan,0.979126
+Patient vivant en couple_0.0,0.624216
+Patient vivant en couple_1.0,0.884394
+Patient vivant en couple_nan,0.500941
+Lieu du traumatisme_0.0,0.216014
+Lieu du traumatisme_1.0,0.856261
+Lieu du traumatisme_nan,0.131446
+ASA-PS,3.53126e-12
+Score de Glasgow en phase hospitalière,1.13052e-43
+Score de Glasgow IGS II,1.14203e-16
+Pression artérielle systolique IGS II,1.54934e-14
+FC IGS II,0.00790404
+PaO2/FIO2 (mmHg) si VM ou CPAP,0.000574664
+Diurèse (L/24h),8.7311e-13
+Urée sanguine,0.000140829
+Leucocytes,2.87387e-19
+Kaliémie,0.000236243
+Natrémie,2.71243e-06
+HCO3-,2.64033e-08
+Bilirubine,0.0298009
+SOFA Respiration (PaO2/FiO2 (mmHg)),1.19845e-11
+SOFA Coagulation (plaquette x 10^3/mm3),1.64972e-120
+Glasgow,2.54868e-16
+Hépatique (bilirubine),0.000374006
+Rein (créat ou diurèse),5.06226e-09
+Sévérité ARDS,0.90838
+Glasgow initial,5.18583e-23
+Glasgow moteur initial,1.56019e-19
+Nombre culots globulaires transfusés en préhospitalier,3.91773e-08
+Glasgow moteur,2.721e-21
+Nombre culots globulaires (avant départ scanner ou bloc),1.89808e-66
+Nombre plasma frais congelés (avant départ scanner ou bloc),4.14321e-47
+Nombre concentré plaquettaire (avant départ scanner ou bloc),2.12482e-22
+Concentré plaquettaire 6h (nombre de CUP),6.15528e-10
+Concentré plaquettaire 24h (nombre de CUP),2.51794e-08
+Nombre d intubations,3.09573e-09
+Glasgow de sortie,0.603238
+Nombre jours d EER,0.453078
+Nombre total de CGR,4.54928e-42
+Nombre total de PFC,6.72111e-50
+Nombre total CP,4.41652e-42
+Délai jusqu à normalisation BEJour d entrée = 0,0.205194
+Délai normalisation lactateJour d entrée = 0,0.0114028
+Nombre de pneumopathies,0.0781219
+Jour de la première pneumopathie,0.499638
+ISS  / Head neck,4.4632e-17
+ISS  / Face,0.130055
+ISS  / Chest,3.28334e-05
+ISS  / Abdomen,1.16691e-05
+ISS  / Extremities,0.0224405
+ISS  / External,0.0433153
