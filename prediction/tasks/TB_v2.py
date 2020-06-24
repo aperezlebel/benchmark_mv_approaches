@@ -71,13 +71,15 @@ def death_task(**kwargs):
 
 # Task 2: platelet prediction (https://arxiv.org/abs/1909.06631)
 # --------------------------------------------------------------
+# This is outside the callable because used in the pvals version of the task
+platelet_predict_transform = Transform(
+    input_features=['Plaquettes'],
+    output_features=['Plaquettes'],
+)
+
+
 def platelet_task(**kwargs):
     """Return TaskMeta for platelet prediction."""
-    platelet_predict_transform = Transform(
-        input_features=['Plaquettes'],
-        output_features=['Plaquettes'],
-    )
-
     def define_new_features_platelet(df):
         """Callable used to define new features from a bunch of features."""
         # github.com/wjiang94/ABSLOPE/blob/master/ABSLOPE/OnlineSupp/OnlineSupp.pdf
@@ -161,16 +163,76 @@ def platelet_task(**kwargs):
     )
 
 
-# Task 3: Hemorrhagic shock prediciton (https://arxiv.org/pdf/1805.04602)
-# -----------------------------------------------------------------------
-def shock_hemo_task(**kwargs):
-    """Return TaskMeta for shock_hemo prediction."""
-    shock_hemo_predict_transform = Transform(
-        input_features=['Choc hémorragique (? 4 CGR sur 6h)'],
-        output_features=['Choc hémorragique (? 4 CGR sur 6h)'],
+# Task 2.2: platelet prediction using pvals
+# -----------------------------------------
+def platelet_pvals_task(**kwargs):
+    """Return TaskMeta for platelet prediction."""
+    assert 'n_top_pvals' in kwargs
+    n_top_pvals = kwargs['n_top_pvals']
+
+    if n_top_pvals is None:
+        platelet_pvals_keep_transform = None
+        platelet_idx_transform = None
+
+    else:
+
+        assert 'RS' in kwargs
+        assert 'T' in kwargs
+
+        RS = kwargs['RS']
+        T = kwargs['T']
+        platelet_pvals_dir = 'pvals/TB/platelet_pvals/'
+        platelet_idx_path = f'{platelet_pvals_dir}RS{RS}-T{T}-used_idx.csv'
+        platelet_pvals_path = f'{platelet_pvals_dir}RS{RS}-T{T}-pvals_filtered.csv'
+
+        assert os.path.exists(platelet_idx_path)
+        assert os.path.exists(platelet_pvals_path)
+
+        pvals = pd.read_csv(platelet_pvals_path, header=None,
+                            index_col=0, squeeze=True)
+
+        pvals = pvals.sort_values()[:n_top_pvals]
+        platelet_top_pvals = list(pvals.index.astype(str))
+
+        platelet_pvals_keep_transform = Transform(
+            output_features=platelet_top_pvals
+        )
+
+        platelet_drop_idx = pd.read_csv(platelet_idx_path, index_col=0, squeeze=True)
+
+        platelet_idx_transform = Transform(
+            input_features=[],
+            transform=lambda df: df.drop(platelet_drop_idx.index, axis=0),
+        )
+
+    return TaskMeta(
+        name='platelet_pvals',
+        db='TB',
+        df_name='20000',
+        classif=False,
+        idx_column='ID_PATIENT',
+        idx_selection=platelet_idx_transform,
+        predict=platelet_predict_transform,
+        transform=None,
+        select=platelet_pvals_keep_transform,
+        encode_select='all',
+        encode_transform=None,
     )
 
-    def define_new_features_shock_hemo(df):
+
+# Task 3: Hemorrhagic shock prediciton (https://arxiv.org/pdf/1805.04602)
+# -----------------------------------------------------------------------
+# This is outside the callable because used in the pvals version of the task
+hemo_predict_transform = Transform(
+    input_features=['Choc hémorragique (? 4 CGR sur 6h)'],
+    output_features=['Choc hémorragique (? 4 CGR sur 6h)'],
+)
+
+
+def hemo_task(**kwargs):
+    """Return TaskMeta for hemo shock prediction."""
+
+    def define_new_features_hemo(df):
         """Callable used to define new features from a bunch of features."""
         df = df.astype(float)
 
@@ -192,7 +254,7 @@ def shock_hemo_task(**kwargs):
 
         return df
 
-    shock_hemo_new_features_tranform = Transform(
+    hemo_new_features_tranform = Transform(
         input_features=[
             'Age du patient (ans)',
             'BMI',
@@ -209,7 +271,7 @@ def shock_hemo_task(**kwargs):
             'Colloïdes',
             'Cristalloïdes',
         ],
-        transform=define_new_features_shock_hemo,
+        transform=define_new_features_hemo,
         output_features=[
             'Age',
             'BMI',
@@ -227,17 +289,74 @@ def shock_hemo_task(**kwargs):
     )
 
     return TaskMeta(
-        name='shock_hemo',
+        name='hemo',
         db='TB',
         df_name='20000',
         classif=True,
         idx_column='ID_PATIENT',
         idx_selection=None,
-        predict=shock_hemo_predict_transform,
-        transform=shock_hemo_new_features_tranform,
+        predict=hemo_predict_transform,
+        transform=hemo_new_features_tranform,
         select=None,
         encode_transform=None,
         encode_select=None,
+    )
+
+
+# Task 3.2: Hemorrhagic shock prediciton using pvals
+# --------------------------------------------------
+def hemo_pvals_task(**kwargs):
+    """Return TaskMeta for hemo shock prediction."""
+    assert 'n_top_pvals' in kwargs
+    n_top_pvals = kwargs['n_top_pvals']
+
+    if n_top_pvals is None:
+        hemo_pvals_keep_transform = None
+        hemo_idx_transform = None
+
+    else:
+
+        assert 'RS' in kwargs
+        assert 'T' in kwargs
+
+        RS = kwargs['RS']
+        T = kwargs['T']
+        hemo_pvals_dir = 'pvals/TB/hemo_pvals/'
+        hemo_idx_path = f'{hemo_pvals_dir}RS{RS}-T{T}-used_idx.csv'
+        hemo_pvals_path = f'{hemo_pvals_dir}RS{RS}-T{T}-pvals_filtered.csv'
+
+        assert os.path.exists(hemo_idx_path)
+        assert os.path.exists(hemo_pvals_path)
+
+        pvals = pd.read_csv(hemo_pvals_path, header=None,
+                            index_col=0, squeeze=True)
+
+        pvals = pvals.sort_values()[:n_top_pvals]
+        hemo_top_pvals = list(pvals.index.astype(str))
+
+        hemo_pvals_keep_transform = Transform(
+            output_features=hemo_top_pvals
+        )
+
+        hemo_drop_idx = pd.read_csv(hemo_idx_path, index_col=0, squeeze=True)
+
+        hemo_idx_transform = Transform(
+            input_features=[],
+            transform=lambda df: df.drop(hemo_drop_idx.index, axis=0),
+        )
+
+    return TaskMeta(
+        name='hemo_pvals',
+        db='TB',
+        df_name='20000',
+        classif=True,
+        idx_column='ID_PATIENT',
+        idx_selection=hemo_idx_transform,
+        predict=hemo_predict_transform,
+        transform=None,
+        select=hemo_pvals_keep_transform,
+        encode_transform=None,
+        encode_select='all',
     )
 
 
@@ -478,7 +597,9 @@ def septic_task(**kwargs):
 task_metas = {
     'death_pvals': death_task,
     'platelet': platelet_task,
-    'shock_hemo': shock_hemo_task,
+    'platelet_pvals': platelet_pvals_task,
+    'hemo': hemo_task,
+    'hemo_pvals': hemo_pvals_task,
     'acid': acid_task,
     'septic_pvals': septic_task,
 }
