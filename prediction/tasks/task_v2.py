@@ -319,7 +319,10 @@ class Task(object):
 
         df = pd.read_csv(df_path, sep=sep, usecols=features_to_load,
                          encoding=encoding, skiprows=self._rows_to_drop,
-                         index_col=index_col)
+                         index_col=index_col, low_memory=False)
+        # We add low_memory=False because if True, types are inferred by chunk
+        # and some mixed types may happen (eg 1 and 1.0) which lead to an
+        # error when ordinal encoding (2 categories instead of one).
         mv = get_missing_values(df, db.heuristic)
         df = fill_df(df, mv != 0, np.nan)
 
