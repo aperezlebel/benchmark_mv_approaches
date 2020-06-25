@@ -31,7 +31,7 @@ for pvals_dir in pvals_dirs:
             continue  # not pvals, skipping
 
         pvals_path = f'{pvals_dir}/{filename}'
-        pvals = pd.read_csv(pvals_path, header=None)
+        pvals = pd.read_csv(pvals_path, header=None, dtype=str)
 
         # remove features
         exclude_path = f'{pvals_dir}/{exclude_filename}'
