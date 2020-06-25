@@ -68,7 +68,7 @@ def income_task(**kwargs):
         name='income_pvals',
         db='NHIS',
         df_name='X_income',
-        classif=True,
+        classif=False,
         idx_column='IDX',
         idx_selection=income_idx_transform,
         predict=income_predict_transform,
