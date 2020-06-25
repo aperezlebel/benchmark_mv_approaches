@@ -31,9 +31,10 @@ method_order = [
 ]
 
 db_order = [
-    # 'TB',
+    'TB',
     'MIMIC',
     'NHIS',
+    'UKBB',
 ]
 
 ph = PlotHelperV4(root_folder='results_graham/',
