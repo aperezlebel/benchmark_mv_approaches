@@ -167,6 +167,11 @@ def platelet_task(**kwargs):
 # -----------------------------------------
 def platelet_pvals_task(**kwargs):
     """Return TaskMeta for platelet prediction."""
+    # Drop features linked to feature to predict
+    platelet_drop_features = {
+        'Plaquettes',
+    }
+
     assert 'n_top_pvals' in kwargs
     n_top_pvals = kwargs['n_top_pvals']
 
@@ -191,6 +196,10 @@ def platelet_pvals_task(**kwargs):
         pvals = pd.read_csv(platelet_pvals_path, header=None,
                             index_col=0, squeeze=True)
 
+        # Match exact feature or start with and followed by '_' (categorical)
+        for f in platelet_drop_features:  # Drop asked features from pvals
+            regex = f'(^{f}$|^{f}_)'
+            pvals = pvals[~pvals.index.str.match(regex)]
         pvals = pvals.sort_values()[:n_top_pvals]
         platelet_top_pvals = list(pvals.index.astype(str))
 
