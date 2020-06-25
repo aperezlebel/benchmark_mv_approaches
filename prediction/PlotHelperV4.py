@@ -135,8 +135,6 @@ class PlotHelperV4(object):
         for db in self.databases():
             for t in self.tasks(db):
                 for m in self.methods(db, t):
-                    if self._is_reference_method(m):
-                        continue
                     s = m.split('Regression')
                     if len(s) == 1:
                         s = m.split('Classification')
@@ -228,22 +226,12 @@ class PlotHelperV4(object):
 
         return scores
 
-    def relative_scores(self, db, t, methods, size):
-        """Get relative scores of given methods for (db, task, size).
+    def absolute_scores(self, db, t, methods, size):
+        """Get absolute scores of given methods for (db, task, size).
 
         Size and methods must exist (not check performed).
         """
-        methods = {m for m in methods if not self._is_reference_method(m)}
-        scores = {m: self.score(db, t, m, size, mean=True) for m in methods}
-        # std = np.std(list(scores.values()))
-        if hasattr(self, '_reference_score'):
-            ref_score = self._reference_score[size][db][t]
-        else:
-            ref_score = np.mean(list(scores.values()))
-
-        relative_scores = {m: (s - ref_score) for m, s in scores.items()}
-
-        return relative_scores, scores
+        return {m: self.score(db, t, m, size, mean=True) for m in methods}
 
     def availale_methods_by_size(self, db, t, size):
         """Get the methods available for a given size."""
@@ -264,7 +252,26 @@ class PlotHelperV4(object):
         assert 0 <= db < n_db
         return n_m - m - (db+1)/(n_db+1)
 
-    def plot(self, method_order=None, db_order=None, compute=True):
+    @staticmethod
+    def _add_relative_score(df, reference_method=None):
+        dfgb = df.groupby(['n', 'db', 't'])
+        print(df.columns)
+
+        def rel_score(df):
+            if reference_method is None:  # use mean
+                ref_score = df['score'].mean()
+            else:
+                ref_score = float(df.loc[df['rm'] == reference_method, 'score'])
+                df['ref'] = reference_method
+                df['ref_score'] = ref_score
+
+            df['rel_score'] = df['score'] - ref_score
+
+            return df
+
+        return dfgb.apply(rel_score)
+
+    def plot(self, method_order=None, db_order=None, compute=True, reference_method=None):
         """Plot the full available results."""
         dbs = self.databases()
         existing_methods = self.existing_methods()
@@ -315,31 +322,43 @@ class PlotHelperV4(object):
                 for db in dbs:
                     for t in self.tasks(db):
                         methods = self.availale_methods_by_size(db, t, size)
-                        rel_scores, abs_scores = self.relative_scores(db, t, methods, size)
-                        for m, rs in rel_scores.items():
+                        abs_scores = self.absolute_scores(db, t, methods, size)
+                        for m, s in abs_scores.items():
+                            if 'Regression' in m:
+                                tag = m.split('Regression')[0]
+                            elif 'Classification' in m:
+                                tag = m.split('Classification')[0]
+                            else:
+                                tag = 'Error while retrieving tag'
                             short_m = self.short_method_name(m)
                             renamed_m = self.rename(short_m)
                             priority = method_order[renamed_m]
                             db_id = db_order[db]
                             rdb = self.rename(db)
                             y = self._y(priority, db_id, n_m, n_db)
-                            s = abs_scores[m]
                             rows.append(
-                                (size, db, rdb, t, priority, m, renamed_m, rs, s, y, ref)
+                                (size, db, rdb, t, tag, priority, m, renamed_m, s, y, ref)
                             )
 
-            cols = ['n', 'db', 'Databases', 't', 'p', 'm', 'rm', 'relative_score', 'score', 'y', 'ref']
+            cols = ['n', 'db', 'Database', 't', 'tag', 'p', 'm', 'rm', 'score', 'y', 'ref']
 
             df = pd.DataFrame(rows, columns=cols)
             print(df)
+
+            # Aggregate accross T by computing mean
+            dfgb = df.groupby(['n', 'db', 't', 'rm', 'y', 'Database', 'p'])
+            df = dfgb.agg({'score': 'mean'})
+            df['rm'] = df.index.get_level_values('rm')
+            print(df)
+
             suffix = self.root_folder.replace('/', '_')
             os.makedirs('scores/', exist_ok=True)
-            df.to_csv(f'scores/scores_{suffix}.csv', index=None)
-        else:
-            suffix = self.root_folder.replace('/', '_')
-            df = pd.read_csv(f'scores/scores_{suffix}.csv')
-            df['n'] = df['n'].astype(str)
-            print(df)
+            df.to_csv(f'scores/scores_{suffix}.csv')
+
+        suffix = self.root_folder.replace('/', '_')
+        df = pd.read_csv(f'scores/scores_{suffix}.csv')
+        df['n'] = df['n'].astype(str)
+        print(df)
 
         fig, axes = plt.subplots(nrows=1, ncols=n_sizes, figsize=(20, 6))
         plt.subplots_adjust(
@@ -352,6 +371,10 @@ class PlotHelperV4(object):
 
         markers = ['o', '^', 'v', 's']
         db_markers = {db: markers[i] for i, db in enumerate(db_order_list_renamed)}
+
+        # Compute and add relative score
+        df = self._add_relative_score(df, reference_method=reference_method)
+        print(df)
 
         for i, size in enumerate(existing_sizes):
             ax = axes[i]
@@ -366,15 +389,15 @@ class PlotHelperV4(object):
 
             # Boxplot
             sns.set_palette(sns.color_palette('gray'))
-            sns.boxplot(x='relative_score', y='rm', data=df_gb, orient='h',
+            sns.boxplot(x='rel_score', y='rm', data=df_gb, orient='h',
                         ax=ax, order=method_order_list, showfliers=False)
 
             # Scatter plot
             sns.set_palette(sns.color_palette('colorblind'))
-            sns.scatterplot(x='relative_score', y='y', hue='Databases',
+            sns.scatterplot(x='rel_score', y='y', hue='Database',
                             data=df_gb, ax=twinx,
                             hue_order=db_order_list_renamed,
-                            style='Databases',
+                            style='Database',
                             markers=db_markers,#['o', '^', 'v', 's'],
                             s=75,
                             )
