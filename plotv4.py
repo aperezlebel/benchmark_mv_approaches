@@ -13,7 +13,7 @@ rename = {
     '_imputed_Iterative+mask': 'Iter+mask',
     '_imputed_KNN': 'KNN',
     '_imputed_KNN+mask': 'KNN+mask',
-    'relative_score': 'Relative prediction score',
+    'rel_score': 'Relative prediction score',
     'TB': 'Traumabase',
     'UKBB': 'UK BioBank',
 }
