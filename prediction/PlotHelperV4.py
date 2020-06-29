@@ -210,7 +210,12 @@ class PlotHelperV4(object):
             y_true_col = 'y_true'
             y_col = 'y_pred'
 
-        df = pd.read_csv(df_path)
+        try:
+            df = pd.read_csv(df_path)
+        except pd.errors.EmptyDataError:
+            if mean:
+                return None
+            return dict()
 
         scores = dict()
 
@@ -324,6 +329,9 @@ class PlotHelperV4(object):
                         methods = self.availale_methods_by_size(db, t, size)
                         abs_scores = self.absolute_scores(db, t, methods, size)
                         for m, s in abs_scores.items():
+                            if s is None:
+                                print(f'Skipping {db}/{t}/{m}')
+                                continue
                             if 'Regression' in m:
                                 tag = m.split('Regression')[0]
                             elif 'Classification' in m:
@@ -348,7 +356,7 @@ class PlotHelperV4(object):
             # Aggregate accross T by computing mean
             dfgb = df.groupby(['n', 'db', 't', 'rm', 'y', 'Database', 'p'])
             df = dfgb.agg({'score': 'mean'})
-            df['rm'] = df.index.get_level_values('rm')
+            # df['rm'] = df.index.get_level_values('rm')
             print(df)
 
             suffix = self.root_folder.replace('/', '_')
