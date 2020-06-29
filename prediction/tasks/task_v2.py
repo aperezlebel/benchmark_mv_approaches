@@ -29,6 +29,7 @@ class TaskMeta(object):
     encode_select: str = None
     encode_transform: str = None
     drop: Set[str] = field(default_factory=set)
+    encode_y: bool = True
 
     def __post_init__(self):
         if isinstance(self.drop, list):
@@ -259,6 +260,7 @@ class Task(object):
         df = self.meta.predict.transform(df)
         y_name = self.meta.predict.output_features[0]
         self._y = df[[y_name]]
+        print(f'self._y dtype 1: {self._y.dtypes}')
         self._f_y = [y_name]  # Store the name of the feature to predict
 
         # Drop the feature to predict from _f_init
@@ -268,18 +270,22 @@ class Task(object):
         y_mv = get_missing_values(self._y[y_name], db.heuristic)
         idx_to_drop_y = self._y[y_name].index[y_mv != 0]
 
+        print(f'self._y dtype 2: {self._y.dtypes}')
         idx_to_drop = idx_to_drop.union(idx_to_drop_y)  # merge the indexes
         self._rows_to_drop = self._idx_to_rows(idx_to_drop)
         self._y = self._y.drop(idx_to_drop_y, axis=0)
 
         # Step 5: Encode y if needed
-        if self.is_classif():
+        print(f'self._y dtype 3: {self._y.dtypes}')
+        if self.is_classif() and self.meta.encode_y:
             y_mv = get_missing_values(self._y, db.heuristic)
             self._y, _ = ordinal_encode(self._y, y_mv)
-        else:  # cast to float for regression
+        elif self.meta.encode_y:  # cast to float for regression
             self._y = self._y.astype(float)
 
+        print(f'self._y dtype 4: {self._y.dtypes}')
         self._y.sort_index(inplace=True)  # to have consistent order with X
+        print(f'self._y dtype 5: {self._y.dtypes}')
 
     def _load_X_base(self):
         if self._y is None:
@@ -306,12 +312,13 @@ class Task(object):
                 select_f = select.get_parent(select.output_features)
             else:
                 select_f = select.input_features
+            select_f = set(select_f).intersection(self._f_init)
             features_to_load.update(select_f)
             features_to_load = features_to_load.intersection(self._f_init)
 
         transform = self.meta.transform
         if transform:
-            transform_f = set(transform.input_features)
+            transform_f = set(transform.input_features).intersection(self._f_init)
             features_to_load.update(transform_f)
             features_to_load = features_to_load.intersection(self._f_init)
 
