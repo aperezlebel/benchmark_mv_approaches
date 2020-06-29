@@ -116,6 +116,7 @@ def breast_task(**kwargs):
         df['E28.2'] = ICD10_equal(df, 'E282') | ICD9_equal(df, '2564')
 
         # Has cancer
+        print(f"df['50'] dtype: {df['C50'].dtype}")
         df['Cancer != C50'] = (
             (~df[ICD10_cancer].isna() | ~df[ICD9_cancer].isna()) & ~df['C50']
         )
@@ -180,6 +181,7 @@ def breast_task(**kwargs):
         select=breast_keep_transform,
         encode_select='all',
         encode_transform=None,
+        encode_y=False,
     )
 
 
