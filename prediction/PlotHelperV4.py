@@ -3,6 +3,7 @@ import os
 import yaml
 import pandas as pd
 import numpy as np
+import re
 from sklearn.metrics import r2_score, roc_auc_score
 import matplotlib
 matplotlib.use('MacOSX')
@@ -58,7 +59,6 @@ class PlotHelperV4(object):
 
         # Step 4: Fill the class attributes with the nested dicts
         self._nested_dir_dict = nested_dir_dict
-        print(f'nested dir dict {self._nested_dir_dict}')
         self._nested_file_dict = nested_file_dict
 
         # Step 5: Compute scores for reference method
@@ -124,9 +124,13 @@ class PlotHelperV4(object):
 
         return s[1]
 
-    def rename(self, x):
+    @staticmethod
+    def rename_str(rename_dict, s):
+        return rename_dict.get(s, s)
+
+    def rename(self, s):
         """Rename a string."""
-        return self._rename.get(x, x)
+        return self.rename_str(self._rename, s)
 
     def existing_methods(self):
         """Return the existing methods used by the tasks in the root_folder."""
@@ -201,11 +205,13 @@ class PlotHelperV4(object):
 
         if is_classif:
             scorer = roc_auc_score
+            scorer_name = 'roc_auc_score'
             df_path = f'{method_path}{size}_probas.csv'
             y_true_col = 'y_true'
             y_col = f'proba_{true_class}'
         else:
             scorer = r2_score
+            scorer_name = 'r2_score'
             df_path = f'{method_path}{size}_prediction.csv'
             y_true_col = 'y_true'
             y_col = 'y_pred'
@@ -229,14 +235,14 @@ class PlotHelperV4(object):
         if mean:
             scores = np.mean(list(scores.values()))
 
-        return scores
+        return scores, scorer_name
 
-    def absolute_scores(self, db, t, methods, size):
+    def absolute_scores(self, db, t, methods, size, mean=True):
         """Get absolute scores of given methods for (db, task, size).
 
         Size and methods must exist (not check performed).
         """
-        return {m: self.score(db, t, m, size, mean=True) for m in methods}
+        return {m: self.score(db, t, m, size, mean=mean) for m in methods}
 
     def availale_methods_by_size(self, db, t, size):
         """Get the methods available for a given size."""
@@ -251,7 +257,8 @@ class PlotHelperV4(object):
 
         return available_methods
 
-    def _y(self, m, db, n_m, n_db):
+    @staticmethod
+    def _y(m, db, n_m, n_db):
         """Get y-axis position given # db and # m and n_db and n_m."""
         assert 0 <= m < n_m
         assert 0 <= db < n_db
@@ -259,76 +266,35 @@ class PlotHelperV4(object):
 
     @staticmethod
     def _add_relative_score(df, reference_method=None):
-        dfgb = df.groupby(['n', 'db', 't'])
-        print(df.columns)
+        dfgb = df.groupby(['size', 'db', 'task'])
 
         def rel_score(df):
             if reference_method is None:  # use mean
                 ref_score = df['score'].mean()
             else:
-                ref_score = float(df.loc[df['rm'] == reference_method, 'score'])
-                df['ref'] = reference_method
-                df['ref_score'] = ref_score
+                methods = df['method']
+                ref_score = float(df.loc[methods == reference_method, 'score'])
+                df['reference'] = reference_method
+                df['referece_score'] = ref_score
 
-            df['rel_score'] = df['score'] - ref_score
+            df['relative_score'] = df['score'] - ref_score
 
             return df
 
         return dfgb.apply(rel_score)
 
-    def plot(self, method_order=None, db_order=None, compute=True, reference_method=None):
-        """Plot the full available results."""
-        dbs = self.databases()
-        existing_methods = self.existing_methods()
+    def dump(self, filepath):
+        """Scan results in result_folder and compute scores."""
         existing_sizes = self.existing_sizes()
-
-        # Convert existing methods from short name to renamed name
-        existing_methods = {self.rename(m) for m in existing_methods}
-
-        # Reorder the methods if asked
-        temp = []
-        if method_order:
-            # Add methods with order in order
-            for m in method_order:
-                if m in existing_methods:
-                    temp.append(m)
-
-        # Add methods without order
-        for m in existing_methods:
-            if m not in temp:
-                temp.append(m)
-
-        method_order_list = temp
-        method_order = {m: i for i, m in enumerate(method_order_list)}
-
-        # Reorder the db if asked
-        temp = []
-        if db_order:
-            for db in db_order:
-                if db in db_order:
-                    temp.append(db)
-
-        for db in dbs:
-            if db not in temp:
-                temp.append(db)
-
-        db_order_list = temp
-        db_order_list_renamed = [self.rename(db) for db in db_order_list]
-        db_order = {db: i for i, db in enumerate(db_order_list)}
-
-        n_db = len(dbs)
-        n_m = len(existing_methods)
-        n_sizes = len(existing_sizes)
-
-        if compute:
-            rows = []
-            ref = self._reference_method
-            for i, size in enumerate(existing_sizes):
-                for db in dbs:
-                    for t in self.tasks(db):
-                        methods = self.availale_methods_by_size(db, t, size)
-                        abs_scores = self.absolute_scores(db, t, methods, size)
-                        for m, s in abs_scores.items():
+        rows = []
+        for i, size in enumerate(existing_sizes):
+            for db in self.databases():
+                for t in self.tasks(db):
+                    methods = self.availale_methods_by_size(db, t, size)
+                    abs_scores = self.absolute_scores(db, t, methods, size,
+                                                      mean=False)
+                    for m, (scores, scorer) in abs_scores.items():
+                        for fold, s in scores.items():
                             if s is None:
                                 print(f'Skipping {db}/{t}/{m}')
                                 continue
@@ -338,35 +304,89 @@ class PlotHelperV4(object):
                                 tag = m.split('Classification')[0]
                             else:
                                 tag = 'Error while retrieving tag'
+                                print(tag)
+                            params = re.search('RS(.+?)_T(.+?)_', tag)
+                            T = params.group(2)
                             short_m = self.short_method_name(m)
                             renamed_m = self.rename(short_m)
-                            priority = method_order[renamed_m]
-                            db_id = db_order[db]
-                            rdb = self.rename(db)
-                            y = self._y(priority, db_id, n_m, n_db)
                             rows.append(
-                                (size, db, rdb, t, tag, priority, m, renamed_m, s, y, ref)
+                                (size, db, t, renamed_m, T, fold, s, scorer)
                             )
 
-            cols = ['n', 'db', 'Database', 't', 'tag', 'p', 'm', 'rm', 'score', 'y', 'ref']
+        cols = ['size', 'db', 'task', 'method', 'trial', 'fold', 'score', 'scorer']
 
-            df = pd.DataFrame(rows, columns=cols)
-            print(df)
-
-            # Aggregate accross T by computing mean
-            dfgb = df.groupby(['n', 'db', 't', 'rm', 'y', 'Database', 'p'])
-            df = dfgb.agg({'score': 'mean'})
-            # df['rm'] = df.index.get_level_values('rm')
-            print(df)
-
-            suffix = self.root_folder.replace('/', '_')
-            os.makedirs('scores/', exist_ok=True)
-            df.to_csv(f'scores/scores_{suffix}.csv')
-
-        suffix = self.root_folder.replace('/', '_')
-        df = pd.read_csv(f'scores/scores_{suffix}.csv')
-        df['n'] = df['n'].astype(str)
+        df = pd.DataFrame(rows, columns=cols).astype({
+            'size': int,
+            'trial': int,
+            'fold': int,
+            })
+        df.sort_values(by=['size', 'db', 'task', 'method', 'trial', 'fold'],
+                       inplace=True, ignore_index=True)
         print(df)
+
+        df.to_csv(filepath)
+
+    @staticmethod
+    def plot(filepath, db_order=None, method_order=None, reference_method=None, rename=dict()):
+        """Plot the full available results."""
+        df = pd.read_csv(filepath)
+
+        sizes = list(df['size'].unique())
+        n_sizes = len(sizes)
+        dbs = list(df['db'].unique())
+        n_dbs = len(dbs)
+        methods = list(df['method'].unique())
+        n_methods = len(methods)
+
+        # Check db_order
+        if db_order is None:
+            db_order = dbs
+            # db_order = {db: i for i, db in enumerate(dbs)}
+        elif set(dbs) != set(db_order):
+            raise ValueError(f'Db order missmatch existing ones {dbs}')
+
+        # Check method order
+        if method_order is None:
+            method_order = methods
+            # method_order = {m: i for i, m in enumerate(method_order_list)}
+        elif set(methods) != set(method_order):
+            raise ValueError(f'Method order missmatch existing ones {methods}')
+
+        # Agregate accross folds by averaging
+        dfgb = df.groupby(['size', 'db', 'task', 'method', 'trial'])
+        df = dfgb.agg({'score': 'mean'})
+
+        # Agregate accross trials by averaging
+        dfgb = df.groupby(['size', 'db', 'task', 'method'])
+        df = dfgb.agg({'score': 'mean'})
+
+        # Reset index to addlevel of the multi index to the columns of the df
+        df = df.reset_index()
+
+        # Compute and add relative score
+        df = PlotHelperV4._add_relative_score(df, reference_method=reference_method)
+
+        # Add y position for plotting
+        def _add_y(row):
+            method_idx = method_order.index(row['method'])
+            db_idx = db_order.index(row['db'])
+            return PlotHelperV4._y(method_idx, db_idx, n_methods, n_dbs)
+
+        df['y'] = df.apply(_add_y, axis=1)
+
+        # Add a renamed column for databases for plotting
+        df['Database'] = df.apply(lambda row: PlotHelperV4.rename_str(rename, row['db']), axis=1)
+
+        # Print df with all its edits
+        print(df)
+
+        matplotlib.rcParams.update({
+            'font.size': 10,
+            'axes.titlesize': 15,
+            'axes.labelsize': 13,
+            'xtick.labelsize': 10,
+            'ytick.labelsize': 13,
+        })
 
         fig, axes = plt.subplots(nrows=1, ncols=n_sizes, figsize=(20, 6))
         plt.subplots_adjust(
@@ -378,33 +398,30 @@ class PlotHelperV4(object):
         )
 
         markers = ['o', '^', 'v', 's']
-        db_markers = {db: markers[i] for i, db in enumerate(db_order_list_renamed)}
+        renamed_db_order = [PlotHelperV4.rename_str(rename, db) for db in db_order]
+        db_markers = {db: markers[i] for i, db in enumerate(renamed_db_order)}
 
-        # Compute and add relative score
-        df = self._add_relative_score(df, reference_method=reference_method)
-        print(df)
-
-        for i, size in enumerate(existing_sizes):
+        for i, size in enumerate(sizes):
             ax = axes[i]
-            idx = df.index[df['n'] == size]
+            idx = df.index[df['size'] == size]
             df_gb = df.loc[idx]
 
             twinx = ax.twinx()
-            twinx.set_ylim(0, n_m)
+            twinx.set_ylim(0, n_methods)
             twinx.yaxis.set_visible(False)
 
-            ax.axvline(0, ymin=0, ymax=n_m, color='gray', zorder=0)
+            ax.axvline(0, ymin=0, ymax=n_methods, color='gray', zorder=0)
 
             # Boxplot
             sns.set_palette(sns.color_palette('gray'))
-            sns.boxplot(x='rel_score', y='rm', data=df_gb, orient='h',
-                        ax=ax, order=method_order_list, showfliers=False)
+            sns.boxplot(x='relative_score', y='method', data=df_gb, orient='h',
+                        ax=ax, order=method_order, showfliers=False)
 
             # Scatter plot
             sns.set_palette(sns.color_palette('colorblind'))
-            sns.scatterplot(x='rel_score', y='y', hue='Database',
+            sns.scatterplot(x='relative_score', y='y', hue='Database',
                             data=df_gb, ax=twinx,
-                            hue_order=db_order_list_renamed,
+                            hue_order=renamed_db_order,
                             style='Database',
                             markers=db_markers,#['o', '^', 'v', 's'],
                             s=75,
@@ -414,7 +431,7 @@ class PlotHelperV4(object):
                 ax.yaxis.set_visible(False)
                 twinx.get_legend().remove()
             ax.set_title(f'n={size}')
-            ax.set_xlabel(self.rename(ax.get_xlabel()))
+            ax.set_xlabel(PlotHelperV4.rename_str(rename, ax.get_xlabel()))
             ax.set_ylabel(None)
             ax.set_axisbelow(True)
             ax.grid(True, axis='x')
