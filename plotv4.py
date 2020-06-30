@@ -39,7 +39,7 @@ db_order = [
 
 ph = PlotHelperV4(root_folder='results_original/graham/results/', rename=rename)
 
-filepath = 'scores/scores_results_graham.csv'
+filepath = 'scores/scores.csv'
 # ph.dump(filepath)
 fig = ph.plot(filepath, method_order=method_order, db_order=db_order, rename=rename)#, reference_method='MIA')
 if fig:
