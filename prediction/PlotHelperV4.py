@@ -380,6 +380,14 @@ class PlotHelperV4(object):
         # Print df with all its edits
         print(df)
 
+        matplotlib.rcParams.update({
+            'font.size': 10,
+            'axes.titlesize': 15,
+            'axes.labelsize': 13,
+            'xtick.labelsize': 10,
+            'ytick.labelsize': 13,
+        })
+
         fig, axes = plt.subplots(nrows=1, ncols=n_sizes, figsize=(20, 6))
         plt.subplots_adjust(
             left=0.075,
