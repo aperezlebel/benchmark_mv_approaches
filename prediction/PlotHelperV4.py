@@ -3,6 +3,7 @@ import os
 import yaml
 import pandas as pd
 import numpy as np
+import re
 from sklearn.metrics import r2_score, roc_auc_score
 import matplotlib
 matplotlib.use('MacOSX')
@@ -201,11 +202,13 @@ class PlotHelperV4(object):
 
         if is_classif:
             scorer = roc_auc_score
+            scorer_name = 'roc_auc_score'
             df_path = f'{method_path}{size}_probas.csv'
             y_true_col = 'y_true'
             y_col = f'proba_{true_class}'
         else:
             scorer = r2_score
+            scorer_name = 'r2_score'
             df_path = f'{method_path}{size}_prediction.csv'
             y_true_col = 'y_true'
             y_col = 'y_pred'
@@ -229,14 +232,14 @@ class PlotHelperV4(object):
         if mean:
             scores = np.mean(list(scores.values()))
 
-        return scores
+        return scores, scorer_name
 
-    def absolute_scores(self, db, t, methods, size):
+    def absolute_scores(self, db, t, methods, size, mean=True):
         """Get absolute scores of given methods for (db, task, size).
 
         Size and methods must exist (not check performed).
         """
-        return {m: self.score(db, t, m, size, mean=True) for m in methods}
+        return {m: self.score(db, t, m, size, mean=mean) for m in methods}
 
     def availale_methods_by_size(self, db, t, size):
         """Get the methods available for a given size."""
@@ -275,6 +278,51 @@ class PlotHelperV4(object):
             return df
 
         return dfgb.apply(rel_score)
+
+    def dump(self):
+        """Scan results in result_folder and compute scores."""
+        existing_sizes = self.existing_sizes()
+        rows = []
+        for i, size in enumerate(existing_sizes):
+            for db in self.databases():
+                for t in self.tasks(db):
+                    methods = self.availale_methods_by_size(db, t, size)
+                    abs_scores = self.absolute_scores(db, t, methods, size,
+                                                      mean=False)
+                    for m, (scores, scorer) in abs_scores.items():
+                        for fold, s in scores.items():
+                            if s is None:
+                                print(f'Skipping {db}/{t}/{m}')
+                                continue
+                            if 'Regression' in m:
+                                tag = m.split('Regression')[0]
+                            elif 'Classification' in m:
+                                tag = m.split('Classification')[0]
+                            else:
+                                tag = 'Error while retrieving tag'
+                                print(tag)
+                            params = re.search('RS(.+?)_T(.+?)_', tag)
+                            T = params.group(2)
+                            short_m = self.short_method_name(m)
+                            renamed_m = self.rename(short_m)
+                            rows.append(
+                                (size, db, t, renamed_m, T, fold, s, scorer)
+                            )
+
+        cols = ['size', 'db', 'task', 'method', 'trial', 'fold', 'score', 'scorer']
+
+        df = pd.DataFrame(rows, columns=cols).astype({
+            'size': int,
+            'trial': int,
+            'fold': int,
+            })
+        df.sort_values(by=['size', 'db', 'task', 'method', 'trial', 'fold'],
+                       inplace=True, ignore_index=True)
+        print(df)
+
+        suffix = self.root_folder.replace('/', '_')
+        os.makedirs('scores/', exist_ok=True)
+        df.to_csv(f'scores/scores_{suffix}.csv')
 
     def plot(self, method_order=None, db_order=None, compute=True, reference_method=None):
         """Plot the full available results."""
