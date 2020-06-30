@@ -78,4 +78,4 @@ def plot_index_sizes(min_test_size, points=None):
 
 if __name__ == '__main__':
     # compute_index_sizes()
-    plot_index_sizes(min_test_size=0.1, points=[5000, 10000, 15000, 20000])
+    plot_index_sizes(min_test_size=0.1, points=[2500, 10000, 25000, 100000])
