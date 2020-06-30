@@ -390,8 +390,8 @@ class PlotHelperV4(object):
         )
 
         markers = ['o', '^', 'v', 's']
-        db_markers = {db: markers[i] for i, db in enumerate(db_order)}
-
+        renamed_db_order = [PlotHelperV4.rename_str(rename, db) for db in db_order]
+        db_markers = {db: markers[i] for i, db in enumerate(renamed_db_order)}
 
         for i, size in enumerate(sizes):
             ax = axes[i]
@@ -413,7 +413,7 @@ class PlotHelperV4(object):
             sns.set_palette(sns.color_palette('colorblind'))
             sns.scatterplot(x='relative_score', y='y', hue='Database',
                             data=df_gb, ax=twinx,
-                            hue_order=db_order,
+                            hue_order=renamed_db_order,
                             style='Database',
                             markers=db_markers,#['o', '^', 'v', 's'],
                             s=75,
@@ -423,7 +423,7 @@ class PlotHelperV4(object):
                 ax.yaxis.set_visible(False)
                 twinx.get_legend().remove()
             ax.set_title(f'n={size}')
-            ax.set_xlabel(rename.get(ax.get_xlabel(), ax.get_xlabel()))
+            ax.set_xlabel(PlotHelperV4.rename_str(rename, ax.get_xlabel()))
             ax.set_ylabel(None)
             ax.set_axisbelow(True)
             ax.grid(True, axis='x')
