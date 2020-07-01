@@ -381,6 +381,9 @@ class PlotHelperV4(object):
         # Add a renamed column for databases for plotting
         df['Database'] = df.apply(lambda row: PlotHelperV4.rename_str(rename, row['db']), axis=1)
 
+        # Add a renamed column for methods for plotting
+        # df['r_method'] = df.apply(lambda row: PlotHelperV4.rename_str(rename, row['method']), axis=1)
+
         # Print df with all its edits
         print(df)
 
@@ -495,6 +498,11 @@ class PlotHelperV4(object):
             if i > 0:  # if not the first axis
                 ax.yaxis.set_visible(False)
                 twinx.get_legend().remove()
+            else:
+                # Get yticks labels and rename them according to given dict
+                labels = [item.get_text() for item in ax.get_yticklabels()]
+                r_labels = [PlotHelperV4.rename_str(rename, l) for l in labels]
+                ax.set_yticklabels(r_labels)
 
             ax.set_xticks(xticks)
             twinx.set_xticks(xticks)
