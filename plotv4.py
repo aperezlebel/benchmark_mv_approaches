@@ -50,6 +50,7 @@ ph = PlotHelperV4(root_folder='results_original/graham/results/', rename=rename)
 
 filepath = 'scores/scores.csv'
 # ph.dump(filepath)
+# ph.mean_rank(filepath, method_order=method_order).to_csv('scores/ranks.csv')
 fig = ph.plot(filepath, method_order=method_order, db_order=db_order, rename=rename_on_plot)#, reference_method='MIA')
 if fig:
     plt.show()
