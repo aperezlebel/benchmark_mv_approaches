@@ -456,8 +456,12 @@ class PlotHelperV4(object):
 
             ax.axvline(0, ymin=0, ymax=n_methods, color='gray', zorder=0)
 
+            # Build the color palette for the boxplot
+            paired_colors = sns.color_palette('Paired').as_hex()
+            boxplot_palette = sns.color_palette(['#525252']+paired_colors)
+
             # Boxplot
-            sns.set_palette(sns.color_palette('gray'))
+            sns.set_palette(boxplot_palette)
             sns.boxplot(x='relative_score', y='method', data=df_valid, orient='h',
                         ax=ax, order=method_order, showfliers=False)
 
