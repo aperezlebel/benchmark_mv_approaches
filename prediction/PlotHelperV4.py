@@ -392,7 +392,7 @@ class PlotHelperV4(object):
             'ytick.labelsize': 13,
         })
 
-        fig, axes = plt.subplots(nrows=1, ncols=n_sizes, figsize=(20, 6))
+        fig, axes = plt.subplots(nrows=1, ncols=n_sizes, figsize=(17, 5.25))
         plt.subplots_adjust(
             left=0.075,
             right=0.95,
