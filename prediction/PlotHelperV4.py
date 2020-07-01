@@ -454,6 +454,10 @@ class PlotHelperV4(object):
             twinx.set_ylim(0, n_methods)
             twinx.yaxis.set_visible(False)
 
+            # Add gray layouts in the background every other rows
+            for k in range(0, n_methods, 2):
+                ax.axhspan(k-0.5, k+0.5, color='.93', zorder=0)
+
             ax.axvline(0, ymin=0, ymax=n_methods, color='gray', zorder=0)
 
             # Build the color palette for the boxplot
@@ -491,9 +495,9 @@ class PlotHelperV4(object):
             if i > 0:  # if not the first axis
                 ax.yaxis.set_visible(False)
                 twinx.get_legend().remove()
-                # print(axes[0].get_xticks())
-            ax.set_xticks(xticks)#axes[0].get_xticks())
-            twinx.set_xticks(xticks)#axes[0].get_xticks())
+
+            ax.set_xticks(xticks)
+            twinx.set_xticks(xticks)
             ax.set_xlim(left=xlim_min, right=xlim_max)
 
             ax.set_title(f'n={size}')
