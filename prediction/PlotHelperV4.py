@@ -309,11 +309,12 @@ class PlotHelperV4(object):
                             T = params.group(2)
                             short_m = self.short_method_name(m)
                             renamed_m = self.rename(short_m)
+                            selection = 'ANOVA' if '_pvals' in t else 'manual'
                             rows.append(
-                                (size, db, t, renamed_m, T, fold, s, scorer)
+                                (size, db, t, renamed_m, T, fold, s, scorer, selection)
                             )
 
-        cols = ['size', 'db', 'task', 'method', 'trial', 'fold', 'score', 'scorer']
+        cols = ['size', 'db', 'task', 'method', 'trial', 'fold', 'score', 'scorer', 'selection']
 
         df = pd.DataFrame(rows, columns=cols).astype({
             'size': int,
@@ -354,11 +355,13 @@ class PlotHelperV4(object):
 
         # Agregate accross folds by averaging
         dfgb = df.groupby(['size', 'db', 'task', 'method', 'trial'])
-        df = dfgb.agg({'score': 'mean'})
+        df = dfgb.agg({'score': 'mean', 'selection': 'first'})
 
         # Agregate accross trials by averaging
+        df = df.reset_index()
+        df['n_trials'] = 1  # Add a count column to keep track of # of trials
         dfgb = df.groupby(['size', 'db', 'task', 'method'])
-        df = dfgb.agg({'score': 'mean'})
+        df = dfgb.agg({'score': 'mean', 'n_trials': 'sum', 'selection': 'first'})
 
         # Reset index to addlevel of the multi index to the columns of the df
         df = df.reset_index()
@@ -403,8 +406,22 @@ class PlotHelperV4(object):
 
         for i, size in enumerate(sizes):
             ax = axes[i]
-            idx = df.index[df['size'] == size]
-            df_gb = df.loc[idx]
+
+            # Select the rows of interest
+            subdf = df[df['size'] == size]
+
+            # Split in valid and invalid data
+            idx_valid = subdf.index[(subdf['selection'] == 'manual') | (
+                (subdf['selection'] != 'manual') & (subdf['n_trials'] == 5))]
+            idx_invalid = subdf.index.difference(idx_valid)
+            df_valid = subdf.loc[idx_valid]
+            df_invalid = subdf.loc[idx_invalid]
+
+            # Update parameters for plotting invalids
+            dbs_having_invalids = list(df_invalid['Database'].unique())
+            n_dbs_invalid = len(dbs_having_invalids)
+            db_invalid_markers = {db: m for db, m in db_markers.items() if db in dbs_having_invalids}
+            renamed_db_order_invalid = [x for x in renamed_db_order if x in dbs_having_invalids]
 
             twinx = ax.twinx()
             twinx.set_ylim(0, n_methods)
@@ -414,18 +431,30 @@ class PlotHelperV4(object):
 
             # Boxplot
             sns.set_palette(sns.color_palette('gray'))
-            sns.boxplot(x='relative_score', y='method', data=df_gb, orient='h',
+            sns.boxplot(x='relative_score', y='method', data=df_valid, orient='h',
                         ax=ax, order=method_order, showfliers=False)
 
-            # Scatter plot
+            # Scatter plot for valid data points
             sns.set_palette(sns.color_palette('colorblind'))
             sns.scatterplot(x='relative_score', y='y', hue='Database',
-                            data=df_gb, ax=twinx,
+                            data=df_valid, ax=twinx,
                             hue_order=renamed_db_order,
                             style='Database',
-                            markers=db_markers,#['o', '^', 'v', 's'],
+                            markers=db_markers,
                             s=75,
                             )
+
+            # Scatter plot for invalid data points
+            sns.set_palette(sns.color_palette(n_dbs_invalid*['lightgray']))
+            g3 = sns.scatterplot(x='relative_score', y='y', hue='Database',
+                                 data=df_invalid, ax=twinx,
+                                 hue_order=renamed_db_order_invalid,
+                                 style='Database',
+                                 markers=db_invalid_markers,
+                                 s=75,
+                                 legend=False,
+                                 )
+            # g3.legend(title='title')
 
             if i > 0:  # if not the first axis
                 ax.yaxis.set_visible(False)
