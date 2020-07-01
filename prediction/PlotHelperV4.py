@@ -525,39 +525,41 @@ class PlotHelperV4(object):
 
         dfgb = df.groupby(['size', 'db', 'task', 'trial', 'fold'])
         df['rank'] = dfgb['score'].rank(method='dense', ascending=False)
-        # df['rank'] = df['rank'].astype(int)
         print(df)
 
+        # Agregate across foldss by averaging
         dfgb = df.groupby(['size', 'db', 'task', 'method', 'trial'])
-        df = dfgb.agg({'rank': 'mean'})
+        df = dfgb.agg({'rank': 'mean', 'selection': 'first'})
 
-        # Agregate accross trials by averaging
+        # Agregate across trials by averaging
         df = df.reset_index()
+        df['n_trials'] = 1  # Add a count column to keep track of # of trials
         dfgb = df.groupby(['size', 'db', 'task', 'method'])
-        df = dfgb.agg({'rank': 'mean'})
+        df = dfgb.agg({'rank': 'mean', 'selection': 'first', 'n_trials': 'sum'})
 
+        # We only take into account full results (n_trials == 5)
         df = df.reset_index()
+        idx_valid = df.index[(df['selection'] == 'manual') | (
+            (df['selection'] != 'manual') & (df['n_trials'] == 5))]
+        df = df.loc[idx_valid]
+
+        # Average across tasks
         dfgb = df.groupby(['size', 'db', 'method'])
         df = dfgb.agg({'rank': 'mean'})
 
-        # dfgb = df.groupby(['method'])
-        # df = dfgb.agg({'rank': 'mean'})
 
         # Reset index to addlevel of the multi index to the columns of the df
         df = df.reset_index()
-        # print(df)
 
         # Compute average by size
         dfgb = df.groupby(['size', 'method'])
         df_avg_by_size = dfgb.agg({'rank': 'mean'})
         df_avg_by_size = df_avg_by_size.reset_index()
         df_avg_by_size = pd.pivot_table(df_avg_by_size, values='rank', index=['method'], columns=['size'])
-        # print(df_avg_by_size)
 
         # Compute average on all data
         dfgb = df.groupby(['method'])
         df_avg = dfgb.agg({'rank': 'mean'})
-        # print(df_avg)
 
         # Create a pivot table of the rank accross methods
         df_pt = pd.pivot_table(df, values='rank', index=['method'], columns=['size', 'db'])
@@ -573,8 +575,6 @@ class PlotHelperV4(object):
         # Add global order column
         df_pt[('Global', 'AVG')] = df_avg
         df_pt[('Global', 'Rank')] = df_avg.rank().astype(int)
-
-        # print(df_pt)
 
         # Round mean ranks
         df_pt = df_pt.round(2)
