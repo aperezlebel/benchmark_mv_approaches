@@ -13,9 +13,18 @@ rename = {
     '_imputed_Iterative+mask': 'Iter+mask',
     '_imputed_KNN': 'KNN',
     '_imputed_KNN+mask': 'KNN+mask',
+}
+
+rename_on_plot = {
     'relative_score': 'Relative prediction score',
     'TB': 'Traumabase',
     'UKBB': 'UK BioBank',
+    'Mean+mask': 'Mean\n+mask',
+    'Med': 'Median',
+    'Med+mask': 'Median\n+mask',
+    'Iter': 'Iterative',
+    'Iter+mask': 'Iterative\n+mask',
+    'KNN+mask': 'KNN\n+mask',
 }
 
 method_order = [
@@ -41,6 +50,6 @@ ph = PlotHelperV4(root_folder='results_original/graham/results/', rename=rename)
 
 filepath = 'scores/scores.csv'
 # ph.dump(filepath)
-fig = ph.plot(filepath, method_order=method_order, db_order=db_order, rename=rename)#, reference_method='MIA')
+fig = ph.plot(filepath, method_order=method_order, db_order=db_order, rename=rename_on_plot)#, reference_method='MIA')
 if fig:
     plt.show()
