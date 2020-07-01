@@ -278,7 +278,7 @@ class PlotHelperV4(object):
                 df['reference'] = reference_method
                 df['referece_score'] = ref_score
 
-            df['relative_score'] = df['score'] - ref_score
+            df['relative_score'] = (df['score'] - ref_score)/df['score'].std()
 
             return df
 
