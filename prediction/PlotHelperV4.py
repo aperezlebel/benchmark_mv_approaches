@@ -9,6 +9,7 @@ import matplotlib
 matplotlib.use('MacOSX')
 import matplotlib.pyplot as plt
 import seaborn as sns
+from decimal import Decimal
 
 
 class PlotHelperV4(object):
@@ -404,6 +405,33 @@ class PlotHelperV4(object):
         renamed_db_order = [PlotHelperV4.rename_str(rename, db) for db in db_order]
         db_markers = {db: markers[i] for i, db in enumerate(renamed_db_order)}
 
+        # Determine the xticks
+        min_x = Decimal(str(df['relative_score'].min()))
+        max_x = Decimal(str(df['relative_score'].max()))
+        print(min_x, max_x)
+        min_delta = min(abs(min_x), abs(max_x))
+        min_delta_tuple = min_delta.as_tuple()
+        n_digits = len(min_delta_tuple.digits)
+        e = min_delta_tuple.exponent
+
+        e_unit = n_digits + e - 1
+        mult = Decimal(str(10**e_unit))
+        # Round to first significant digit
+        min_x = mult*np.floor(min_x/mult)
+        max_x = mult*np.ceil(max_x/mult)
+
+        max_delta = float(max(abs(min_x), abs(max_x)))
+        xlim_min = -max_delta#float(min_x)
+        xlim_max = max_delta#float(max_x)
+        # print(min_x, max_x)
+        # exit()
+
+
+        xticks = list(np.linspace(-max_delta, max_delta, 5))
+        del xticks[0]
+        del xticks[-1]
+        # xticks = [-0.02, 0, 0.02]
+
         for i, size in enumerate(sizes):
             ax = axes[i]
 
@@ -445,20 +473,26 @@ class PlotHelperV4(object):
                             )
 
             # Scatter plot for invalid data points
-            sns.set_palette(sns.color_palette(n_dbs_invalid*['lightgray']))
-            g3 = sns.scatterplot(x='relative_score', y='y', hue='Database',
-                                 data=df_invalid, ax=twinx,
-                                 hue_order=renamed_db_order_invalid,
-                                 style='Database',
-                                 markers=db_invalid_markers,
-                                 s=75,
-                                 legend=False,
-                                 )
+            if n_dbs_invalid > 0:
+                sns.set_palette(sns.color_palette(n_dbs_invalid*['lightgray']))
+                g3 = sns.scatterplot(x='relative_score', y='y', hue='Database',
+                                     data=df_invalid, ax=twinx,
+                                     hue_order=renamed_db_order_invalid,
+                                     style='Database',
+                                     markers=db_invalid_markers,
+                                     s=75,
+                                     legend=False,
+                                     )
             # g3.legend(title='title')
 
             if i > 0:  # if not the first axis
                 ax.yaxis.set_visible(False)
                 twinx.get_legend().remove()
+                # print(axes[0].get_xticks())
+            ax.set_xticks(xticks)#axes[0].get_xticks())
+            twinx.set_xticks(xticks)#axes[0].get_xticks())
+            ax.set_xlim(left=xlim_min, right=xlim_max)
+
             ax.set_title(f'n={size}')
             ax.set_xlabel(PlotHelperV4.rename_str(rename, ax.get_xlabel()))
             ax.set_ylabel(None)
