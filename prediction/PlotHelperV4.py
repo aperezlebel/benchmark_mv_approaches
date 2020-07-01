@@ -381,9 +381,6 @@ class PlotHelperV4(object):
         # Add a renamed column for databases for plotting
         df['Database'] = df.apply(lambda row: PlotHelperV4.rename_str(rename, row['db']), axis=1)
 
-        # Add a renamed column for methods for plotting
-        # df['r_method'] = df.apply(lambda row: PlotHelperV4.rename_str(rename, row['method']), axis=1)
-
         # Print df with all its edits
         print(df)
 
