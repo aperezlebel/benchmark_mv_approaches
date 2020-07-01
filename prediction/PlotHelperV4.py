@@ -9,6 +9,7 @@ import matplotlib
 matplotlib.use('MacOSX')
 import matplotlib.pyplot as plt
 import seaborn as sns
+from decimal import Decimal
 
 
 class PlotHelperV4(object):
@@ -277,7 +278,7 @@ class PlotHelperV4(object):
                 df['reference'] = reference_method
                 df['referece_score'] = ref_score
 
-            df['relative_score'] = df['score'] - ref_score
+            df['relative_score'] = (df['score'] - ref_score)/df['score'].std()
 
             return df
 
@@ -309,11 +310,12 @@ class PlotHelperV4(object):
                             T = params.group(2)
                             short_m = self.short_method_name(m)
                             renamed_m = self.rename(short_m)
+                            selection = 'ANOVA' if '_pvals' in t else 'manual'
                             rows.append(
-                                (size, db, t, renamed_m, T, fold, s, scorer)
+                                (size, db, t, renamed_m, T, fold, s, scorer, selection)
                             )
 
-        cols = ['size', 'db', 'task', 'method', 'trial', 'fold', 'score', 'scorer']
+        cols = ['size', 'db', 'task', 'method', 'trial', 'fold', 'score', 'scorer', 'selection']
 
         df = pd.DataFrame(rows, columns=cols).astype({
             'size': int,
@@ -329,7 +331,10 @@ class PlotHelperV4(object):
     @staticmethod
     def plot(filepath, db_order=None, method_order=None, reference_method=None, rename=dict()):
         """Plot the full available results."""
-        df = pd.read_csv(filepath)
+        if not isinstance(filepath, pd.DataFrame):
+            df = pd.read_csv(filepath, index_col=0)
+        else:
+            df = filepath
 
         sizes = list(df['size'].unique())
         n_sizes = len(sizes)
@@ -354,11 +359,13 @@ class PlotHelperV4(object):
 
         # Agregate accross folds by averaging
         dfgb = df.groupby(['size', 'db', 'task', 'method', 'trial'])
-        df = dfgb.agg({'score': 'mean'})
+        df = dfgb.agg({'score': 'mean', 'selection': 'first'})
 
         # Agregate accross trials by averaging
+        df = df.reset_index()
+        df['n_trials'] = 1  # Add a count column to keep track of # of trials
         dfgb = df.groupby(['size', 'db', 'task', 'method'])
-        df = dfgb.agg({'score': 'mean'})
+        df = dfgb.agg({'score': 'mean', 'n_trials': 'sum', 'selection': 'first'})
 
         # Reset index to addlevel of the multi index to the columns of the df
         df = df.reset_index()
@@ -388,7 +395,7 @@ class PlotHelperV4(object):
             'ytick.labelsize': 13,
         })
 
-        fig, axes = plt.subplots(nrows=1, ncols=n_sizes, figsize=(20, 6))
+        fig, axes = plt.subplots(nrows=1, ncols=n_sizes, figsize=(17, 5.25))
         plt.subplots_adjust(
             left=0.075,
             right=0.95,
@@ -401,35 +408,106 @@ class PlotHelperV4(object):
         renamed_db_order = [PlotHelperV4.rename_str(rename, db) for db in db_order]
         db_markers = {db: markers[i] for i, db in enumerate(renamed_db_order)}
 
+        # Compute the xticks
+        min_x = Decimal(str(df['relative_score'].min()))
+        max_x = Decimal(str(df['relative_score'].max()))
+
+        # We want to ceil/floor to the most significant digit
+        min_delta = min(abs(min_x), abs(max_x))
+        min_delta_tuple = min_delta.as_tuple()
+        n_digits = len(min_delta_tuple.digits)
+        e = min_delta_tuple.exponent
+
+        e_unit = n_digits + e - 1
+        mult = Decimal(str(10**e_unit))
+
+        # Round to first significant digit
+        min_x = mult*np.floor(min_x/mult)
+        max_x = mult*np.ceil(max_x/mult)
+
+        # Set limits
+        max_delta = float(max(abs(min_x), abs(max_x)))
+        xlim_min = -max_delta
+        xlim_max = max_delta
+
+        xticks = list(np.linspace(-max_delta, max_delta, 5))
+        del xticks[0]
+        del xticks[-1]
+
         for i, size in enumerate(sizes):
             ax = axes[i]
-            idx = df.index[df['size'] == size]
-            df_gb = df.loc[idx]
+
+            # Select the rows of interest
+            subdf = df[df['size'] == size]
+
+            # Split in valid and invalid data
+            idx_valid = subdf.index[(subdf['selection'] == 'manual') | (
+                (subdf['selection'] != 'manual') & (subdf['n_trials'] == 5))]
+            idx_invalid = subdf.index.difference(idx_valid)
+            df_valid = subdf.loc[idx_valid]
+            df_invalid = subdf.loc[idx_invalid]
+
+            # Update parameters for plotting invalids
+            dbs_having_invalids = list(df_invalid['Database'].unique())
+            n_dbs_invalid = len(dbs_having_invalids)
+            db_invalid_markers = {db: m for db, m in db_markers.items() if db in dbs_having_invalids}
+            renamed_db_order_invalid = [x for x in renamed_db_order if x in dbs_having_invalids]
 
             twinx = ax.twinx()
             twinx.set_ylim(0, n_methods)
             twinx.yaxis.set_visible(False)
 
+            # Add gray layouts in the background every other rows
+            for k in range(0, n_methods, 2):
+                ax.axhspan(k-0.5, k+0.5, color='.93', zorder=0)
+
             ax.axvline(0, ymin=0, ymax=n_methods, color='gray', zorder=0)
 
+            # Build the color palette for the boxplot
+            paired_colors = sns.color_palette('Paired').as_hex()
+            boxplot_palette = sns.color_palette(['#525252']+paired_colors)
+
             # Boxplot
-            sns.set_palette(sns.color_palette('gray'))
-            sns.boxplot(x='relative_score', y='method', data=df_gb, orient='h',
+            sns.set_palette(boxplot_palette)
+            sns.boxplot(x='relative_score', y='method', data=df_valid, orient='h',
                         ax=ax, order=method_order, showfliers=False)
 
-            # Scatter plot
+            # Scatter plot for valid data points
             sns.set_palette(sns.color_palette('colorblind'))
             sns.scatterplot(x='relative_score', y='y', hue='Database',
-                            data=df_gb, ax=twinx,
+                            data=df_valid, ax=twinx,
                             hue_order=renamed_db_order,
                             style='Database',
-                            markers=db_markers,#['o', '^', 'v', 's'],
+                            markers=db_markers,
                             s=75,
                             )
+
+            # Scatter plot for invalid data points
+            if n_dbs_invalid > 0:
+                sns.set_palette(sns.color_palette(n_dbs_invalid*['lightgray']))
+                g3 = sns.scatterplot(x='relative_score', y='y', hue='Database',
+                                     data=df_invalid, ax=twinx,
+                                     hue_order=renamed_db_order_invalid,
+                                     style='Database',
+                                     markers=db_invalid_markers,
+                                     s=75,
+                                     legend=False,
+                                     )
+            # g3.legend(title='title')
 
             if i > 0:  # if not the first axis
                 ax.yaxis.set_visible(False)
                 twinx.get_legend().remove()
+            else:
+                # Get yticks labels and rename them according to given dict
+                labels = [item.get_text() for item in ax.get_yticklabels()]
+                r_labels = [PlotHelperV4.rename_str(rename, l) for l in labels]
+                ax.set_yticklabels(r_labels)
+
+            ax.set_xticks(xticks)
+            twinx.set_xticks(xticks)
+            ax.set_xlim(left=xlim_min, right=xlim_max)
+
             ax.set_title(f'n={size}')
             ax.set_xlabel(PlotHelperV4.rename_str(rename, ax.get_xlabel()))
             ax.set_ylabel(None)
@@ -437,3 +515,75 @@ class PlotHelperV4(object):
             ax.grid(True, axis='x')
 
         return fig
+
+    @staticmethod
+    def mean_rank(filepath, method_order=None):
+        if not isinstance(filepath, pd.DataFrame):
+            df = pd.read_csv(filepath, index_col=0)
+        else:
+            df = filepath
+
+        dfgb = df.groupby(['size', 'db', 'task', 'trial', 'fold'])
+        df['rank'] = dfgb['score'].rank(method='dense', ascending=False)
+        # df['rank'] = df['rank'].astype(int)
+        print(df)
+
+        dfgb = df.groupby(['size', 'db', 'task', 'method', 'trial'])
+        df = dfgb.agg({'rank': 'mean'})
+
+        # Agregate accross trials by averaging
+        df = df.reset_index()
+        dfgb = df.groupby(['size', 'db', 'task', 'method'])
+        df = dfgb.agg({'rank': 'mean'})
+
+        df = df.reset_index()
+        dfgb = df.groupby(['size', 'db', 'method'])
+        df = dfgb.agg({'rank': 'mean'})
+
+        # dfgb = df.groupby(['method'])
+        # df = dfgb.agg({'rank': 'mean'})
+
+        # Reset index to addlevel of the multi index to the columns of the df
+        df = df.reset_index()
+        # print(df)
+
+        # Compute average by size
+        dfgb = df.groupby(['size', 'method'])
+        df_avg_by_size = dfgb.agg({'rank': 'mean'})
+        df_avg_by_size = df_avg_by_size.reset_index()
+        df_avg_by_size = pd.pivot_table(df_avg_by_size, values='rank', index=['method'], columns=['size'])
+        # print(df_avg_by_size)
+
+        # Compute average on all data
+        dfgb = df.groupby(['method'])
+        df_avg = dfgb.agg({'rank': 'mean'})
+        # print(df_avg)
+
+        # Create a pivot table of the rank accross methods
+        df_pt = pd.pivot_table(df, values='rank', index=['method'], columns=['size', 'db'])
+
+        df_pt.sort_values(by=['size', 'db'], axis=1, inplace=True)
+
+        # Add average by size columns
+        for size in df['size'].unique():
+            df_pt[(size, 'AVG')] = df_avg_by_size[size]
+
+        df_pt.sort_values(by=['size'], axis=1, inplace=True)
+
+        # Add global order column
+        df_pt[('Global', 'AVG')] = df_avg
+        df_pt[('Global', 'Rank')] = df_avg.rank().astype(int)
+
+        # print(df_pt)
+
+        # Round mean ranks
+        df_pt = df_pt.round(2)
+
+        # Reorder the method index
+        if method_order:
+            assert len(set(method_order)) == len(set(df['method'].unique()))
+            df_pt = df_pt.reindex(method_order)
+
+        print(df_pt)
+
+        return df_pt
