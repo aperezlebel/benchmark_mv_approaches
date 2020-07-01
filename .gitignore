@@ -20,4 +20,5 @@ logs*
 temp
 scores/*
 !scores/scores.csv
+!scores/ranks.csv
 selected
