@@ -405,10 +405,11 @@ class PlotHelperV4(object):
         renamed_db_order = [PlotHelperV4.rename_str(rename, db) for db in db_order]
         db_markers = {db: markers[i] for i, db in enumerate(renamed_db_order)}
 
-        # Determine the xticks
+        # Compute the xticks
         min_x = Decimal(str(df['relative_score'].min()))
         max_x = Decimal(str(df['relative_score'].max()))
-        print(min_x, max_x)
+
+        # We want to ceil/floor to the most significant digit
         min_delta = min(abs(min_x), abs(max_x))
         min_delta_tuple = min_delta.as_tuple()
         n_digits = len(min_delta_tuple.digits)
@@ -416,21 +417,19 @@ class PlotHelperV4(object):
 
         e_unit = n_digits + e - 1
         mult = Decimal(str(10**e_unit))
+
         # Round to first significant digit
         min_x = mult*np.floor(min_x/mult)
         max_x = mult*np.ceil(max_x/mult)
 
+        # Set limits
         max_delta = float(max(abs(min_x), abs(max_x)))
-        xlim_min = -max_delta#float(min_x)
-        xlim_max = max_delta#float(max_x)
-        # print(min_x, max_x)
-        # exit()
-
+        xlim_min = -max_delta
+        xlim_max = max_delta
 
         xticks = list(np.linspace(-max_delta, max_delta, 5))
         del xticks[0]
         del xticks[-1]
-        # xticks = [-0.02, 0, 0.02]
 
         for i, size in enumerate(sizes):
             ax = axes[i]
