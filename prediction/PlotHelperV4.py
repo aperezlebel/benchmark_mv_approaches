@@ -389,10 +389,11 @@ class PlotHelperV4(object):
 
         matplotlib.rcParams.update({
             'font.size': 10,
+            'legend.fontsize': 10,
             'axes.titlesize': 15,
             'axes.labelsize': 13,
             'xtick.labelsize': 10,
-            'ytick.labelsize': 13,
+            'ytick.labelsize': 17,
         })
 
         if figsize is None:
@@ -477,13 +478,15 @@ class PlotHelperV4(object):
 
             # Scatter plot for valid data points
             sns.set_palette(sns.color_palette('colorblind'))
-            sns.scatterplot(x='relative_score', y='y', hue='Database',
-                            data=df_valid, ax=twinx,
-                            hue_order=renamed_db_order,
-                            style='Database',
-                            markers=db_markers,
-                            s=75,
-                            )
+            g2 = sns.scatterplot(x='relative_score', y='y', hue='Database',
+                                 data=df_valid, ax=twinx,
+                                 hue_order=renamed_db_order,
+                                 style='Database',
+                                 markers=db_markers,
+                                 s=75,
+                                 )
+
+            g2.legend(loc='upper left', bbox_to_anchor=(4.22, 1.015), ncol=1)
 
             # Scatter plot for invalid data points
             if n_dbs_invalid > 0:
@@ -529,7 +532,7 @@ class PlotHelperV4(object):
         axes[-1].table(cellText=cellText, loc='right',
                        rowLabels=rowLabels,
                        colLabels=['Mean\nrank'],
-                       bbox=[1.3, 0, .2, .8],
+                       bbox=[1.3, 0, .2, .735],
                        colWidths=[0.2],
                        )
 
