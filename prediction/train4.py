@@ -90,8 +90,8 @@ def train(task, strategy, RS=None, **kwargs):
             start_ts = timer_start.last_fit_timestamp
             mid_ts = timer_mid.last_fit_timestamp
 
-            imputation_time = mid_ts - start_ts if start_ts else None
-            tuning_time = end_ts - mid_ts
+            imputation_time = round(mid_ts - start_ts, 6) if start_ts else None
+            tuning_time = round(end_ts - mid_ts, 6)
             dh.dump_times(imputation_time, tuning_time, fold=i, tag=str(n))
 
             # Predict
