@@ -393,7 +393,7 @@ class PlotHelperV4(object):
             'axes.titlesize': 15,
             'axes.labelsize': 13,
             'xtick.labelsize': 10,
-            'ytick.labelsize': 17,
+            'ytick.labelsize': 16,
         })
 
         if figsize is None:
