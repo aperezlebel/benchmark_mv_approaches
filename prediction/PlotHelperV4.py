@@ -238,6 +238,48 @@ class PlotHelperV4(object):
 
         return scores, scorer_name
 
+    def times(self, db, t, m, size):
+        """Compute time of a given db, task, method, size.
+
+        Parameters
+        ----------
+        db : str
+            Name of db folder.
+        t : str
+            Name of task folder.
+        m : str
+            Name of method folder.
+        size : str
+            Size of the train set to load.
+
+        Return
+        ------
+        imputation_times : dict
+            Dict of imputation time of each fold.
+        tuning_times : dict
+            Dict of tuning time of each fold.
+
+
+        """
+        print(f'Compute time of {db}/{t}/{m}/{size}')
+        df_path = f'{self.root_folder}/{db}/{t}/{m}/{size}_times.csv'
+        try:
+            df = pd.read_csv(df_path)
+        except pd.errors.EmptyDataError:
+            return None, None
+
+        imputation_times = dict()
+        tuning_times = dict()
+
+        for fold, df_gb in df.groupby('fold'):
+            assert len(df_gb['imputation']) == 1
+            assert len(df_gb['tuning']) == 1
+
+            imputation_times[fold] = float(df_gb['imputation'])
+            tuning_times[fold] = float(df_gb['tuning'])
+
+        return imputation_times, tuning_times
+
     def absolute_scores(self, db, t, methods, size, mean=True):
         """Get absolute scores of given methods for (db, task, size).
 
@@ -295,6 +337,7 @@ class PlotHelperV4(object):
                     abs_scores = self.absolute_scores(db, t, methods, size,
                                                       mean=False)
                     for m, (scores, scorer) in abs_scores.items():
+                        imp_times, tun_times = self.times(db, t, m, size)
                         for fold, s in scores.items():
                             if s is None:
                                 print(f'Skipping {db}/{t}/{m}')
@@ -311,11 +354,13 @@ class PlotHelperV4(object):
                             short_m = self.short_method_name(m)
                             renamed_m = self.rename(short_m)
                             selection = 'ANOVA' if '_pvals' in t else 'manual'
+                            imp_time = imp_times[fold]
+                            tun_time = tun_times[fold]
                             rows.append(
-                                (size, db, t, renamed_m, T, fold, s, scorer, selection)
+                                (size, db, t, renamed_m, T, fold, s, scorer, selection, imp_time, tun_time)
                             )
 
-        cols = ['size', 'db', 'task', 'method', 'trial', 'fold', 'score', 'scorer', 'selection']
+        cols = ['size', 'db', 'task', 'method', 'trial', 'fold', 'score', 'scorer', 'selection', 'imputation_time', 'tuning_time']
 
         df = pd.DataFrame(rows, columns=cols).astype({
             'size': int,
