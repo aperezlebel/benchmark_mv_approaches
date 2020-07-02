@@ -329,7 +329,7 @@ class PlotHelperV4(object):
         df.to_csv(filepath)
 
     @staticmethod
-    def plot(filepath, db_order=None, method_order=None, reference_method=None, rename=dict(), figsize=None):
+    def _plot(filepath, db_order=None, method_order=None, reference_method=None, rename=dict(), figsize=None):
         """Plot the full available results."""
         if not isinstance(filepath, pd.DataFrame):
             df = pd.read_csv(filepath, index_col=0)
@@ -501,8 +501,6 @@ class PlotHelperV4(object):
                                      )
             # g3.legend(title='title')
 
-            # if i < n_sizes - 1:
-
             if i > 0:  # if not the first axis
                 ax.yaxis.set_visible(False)
                 twinx.get_legend().remove()
@@ -522,23 +520,7 @@ class PlotHelperV4(object):
             ax.set_axisbelow(True)
             ax.grid(True, axis='x')
 
-        df_ranks = PlotHelperV4.mean_rank(filepath, method_order=method_order)
-
-        global_avg_ranks = df_ranks[('Global', 'AVG')]
-        cellText = np.transpose([list(global_avg_ranks.astype(str))])
-        rowLabels = list(global_avg_ranks.index)
-        rowLabels = [PlotHelperV4.rename_str(rename, s) for s in rowLabels]
-
-        axes[-1].table(cellText=cellText, loc='right',
-                       rowLabels=rowLabels,
-                       colLabels=['Mean\nrank'],
-                       bbox=[1.3, 0, .2, .735],
-                       colWidths=[0.2],
-                       )
-
-        plt.subplots_adjust(right=.88)
-
-        return fig
+        return fig, axes
 
     @staticmethod
     def mean_rank(filepath, method_order=None):
@@ -610,3 +592,25 @@ class PlotHelperV4(object):
         print(df_pt)
 
         return df_pt
+
+    @staticmethod
+    def plot_scores(filepath, db_order=None, method_order=None, reference_method=None, rename=dict()):
+        fig, axes = PlotHelperV4._plot(filepath, method_order=method_order, db_order=db_order, rename=rename, reference_method=reference_method, figsize=None)#(1, 5.25))
+
+        df_ranks = PlotHelperV4.mean_rank(filepath, method_order=method_order)
+
+        global_avg_ranks = df_ranks[('Global', 'AVG')]
+        cellText = np.transpose([list(global_avg_ranks.astype(str))])
+        rowLabels = list(global_avg_ranks.index)
+        rowLabels = [PlotHelperV4.rename_str(rename, s) for s in rowLabels]
+
+        axes[-1].table(cellText=cellText, loc='right',
+                       rowLabels=rowLabels,
+                       colLabels=['Mean\nrank'],
+                       bbox=[1.3, 0, .2, .735],
+                       colWidths=[0.2],
+                       )
+
+        plt.subplots_adjust(right=.88)
+
+        return fig
