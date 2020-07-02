@@ -154,7 +154,7 @@ class DumpHelper:
             if not os.path.exists(filepath):
                 return pd.DataFrame()
             # If exists
-            return pd.read_csv(filepath, index_col=0)
+            return pd.read_csv(filepath, index_col=0, dtype=str)
 
         else:
             raise ValueError(f'Extension {ext} not supported.')
