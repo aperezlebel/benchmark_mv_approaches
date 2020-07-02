@@ -329,7 +329,7 @@ class PlotHelperV4(object):
         df.to_csv(filepath)
 
     @staticmethod
-    def plot(filepath, db_order=None, method_order=None, reference_method=None, rename=dict()):
+    def plot(filepath, db_order=None, method_order=None, reference_method=None, rename=dict(), figsize=None):
         """Plot the full available results."""
         if not isinstance(filepath, pd.DataFrame):
             df = pd.read_csv(filepath, index_col=0)
@@ -395,7 +395,10 @@ class PlotHelperV4(object):
             'ytick.labelsize': 13,
         })
 
-        fig, axes = plt.subplots(nrows=1, ncols=n_sizes, figsize=(17, 5.25))
+        if figsize is None:
+            figsize = (17, 5.25)
+
+        fig, axes = plt.subplots(nrows=1, ncols=n_sizes, figsize=figsize)
         plt.subplots_adjust(
             left=0.075,
             right=0.95,
@@ -494,6 +497,8 @@ class PlotHelperV4(object):
                                      legend=False,
                                      )
             # g3.legend(title='title')
+
+            # if i < n_sizes - 1:
 
             if i > 0:  # if not the first axis
                 ax.yaxis.set_visible(False)
