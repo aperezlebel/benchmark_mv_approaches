@@ -329,7 +329,8 @@ class PlotHelperV4(object):
         df.to_csv(filepath)
 
     @staticmethod
-    def _plot(filepath, db_order=None, method_order=None, reference_method=None, rename=dict(), figsize=None):
+    def _plot(filepath, db_order=None, method_order=None, rename=dict(),
+              reference_method=None, figsize=None, legend_bbox=None):
         """Plot the full available results."""
         if not isinstance(filepath, pd.DataFrame):
             df = pd.read_csv(filepath, index_col=0)
@@ -486,7 +487,8 @@ class PlotHelperV4(object):
                                  s=75,
                                  )
 
-            g2.legend(loc='upper left', bbox_to_anchor=(4.22, 1.015), ncol=1)
+            if legend_bbox:
+                g2.legend(loc='upper left', bbox_to_anchor=legend_bbox, ncol=1)
 
             # Scatter plot for invalid data points
             if n_dbs_invalid > 0:
@@ -594,8 +596,13 @@ class PlotHelperV4(object):
         return df_pt
 
     @staticmethod
-    def plot_scores(filepath, db_order=None, method_order=None, reference_method=None, rename=dict()):
-        fig, axes = PlotHelperV4._plot(filepath, method_order=method_order, db_order=db_order, rename=rename, reference_method=reference_method, figsize=None)#(1, 5.25))
+    def plot_scores(filepath, db_order=None, method_order=None, rename=dict(),
+                    reference_method=None,):
+        fig, axes = PlotHelperV4._plot(filepath, method_order=method_order,
+                                       db_order=db_order, rename=rename,
+                                       reference_method=reference_method,
+                                       figsize=(17, 5.25),
+                                       legend_bbox=(4.22, 1.015))
 
         df_ranks = PlotHelperV4.mean_rank(filepath, method_order=method_order)
 
@@ -613,4 +620,13 @@ class PlotHelperV4(object):
 
         plt.subplots_adjust(right=.88)
 
+        return fig
+
+    @staticmethod
+    def plot_times(filepath, db_order=None, method_order=None, rename=dict(),
+                   reference_method=None,):
+        fig, _ = PlotHelperV4._plot(filepath, method_order=method_order,
+                                    db_order=db_order, rename=rename,
+                                    reference_method=reference_method,
+                                    figsize=None)
         return fig
