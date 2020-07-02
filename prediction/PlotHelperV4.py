@@ -389,6 +389,7 @@ class PlotHelperV4(object):
 
         matplotlib.rcParams.update({
             'font.size': 10,
+            'legend.fontsize': 10,
             'axes.titlesize': 15,
             'axes.labelsize': 13,
             'xtick.labelsize': 10,
