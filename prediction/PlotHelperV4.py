@@ -392,7 +392,7 @@ class PlotHelperV4(object):
             'axes.titlesize': 15,
             'axes.labelsize': 13,
             'xtick.labelsize': 10,
-            'ytick.labelsize': 13,
+            'ytick.labelsize': 17,
         })
 
         fig, axes = plt.subplots(nrows=1, ncols=n_sizes, figsize=(17, 5.25))
