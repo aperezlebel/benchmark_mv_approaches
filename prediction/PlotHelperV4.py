@@ -514,6 +514,22 @@ class PlotHelperV4(object):
             ax.set_axisbelow(True)
             ax.grid(True, axis='x')
 
+        df_ranks = PlotHelperV4.mean_rank(filepath, method_order=method_order)
+
+        global_avg_ranks = df_ranks[('Global', 'AVG')]
+        cellText = np.transpose([list(global_avg_ranks.astype(str))])
+        rowLabels = list(global_avg_ranks.index)
+        rowLabels = [PlotHelperV4.rename_str(rename, s) for s in rowLabels]
+
+        axes[-1].table(cellText=cellText, loc='right',
+                       rowLabels=rowLabels,
+                       colLabels=['Mean\nrank'],
+                       bbox=[1.3, 0, .2, .8],
+                       colWidths=[0.2],
+                       )
+
+        plt.subplots_adjust(right=.88)
+
         return fig
 
     @staticmethod
@@ -546,7 +562,6 @@ class PlotHelperV4(object):
         # Average across tasks
         dfgb = df.groupby(['size', 'db', 'method'])
         df = dfgb.agg({'rank': 'mean'})
-
 
         # Reset index to addlevel of the multi index to the columns of the df
         df = df.reset_index()
