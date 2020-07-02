@@ -4,9 +4,10 @@ from sklearn.pipeline import Pipeline
 from sklearn.model_selection import ShuffleSplit, cross_val_predict, \
     StratifiedShuffleSplit
 import numpy as np
+import time
 
 from .DumpHelper import DumpHelper
-from .FakeStep import FakeStep
+from .TimerStep import TimerStep
 
 
 logger = logging.getLogger(__name__)
@@ -37,19 +38,24 @@ def train(task, strategy, RS=None, **kwargs):
         RS = 42
 
     # Create pipeline
+    timer_start = TimerStep('start')
+    timer_mid = TimerStep('mid')
     if strategy.imputer is not None:
         logger.info('Creating pipeline with imputer.')
         steps = [
             # ('log1', FakeStep('imputer')),
+            ('timer_start', timer_start),
             ('imputer', strategy.imputer),
+            ('timer_mid', timer_mid),
             # ('log2', FakeStep('searchCV_estimator')),
-            ('searchCV_estimator', strategy.search)
+            ('searchCV_estimator', strategy.search),
         ]
     else:
         logger.info('Creating pipeline without imputer.')
         steps = [
             # ('log1', FakeStep('searchCV_estimator')),
-            ('searchCV_estimator', strategy.search)
+            ('timer_mid', timer_mid),
+            ('searchCV_estimator', strategy.search),
         ]
 
     estimator = Pipeline(steps)
@@ -79,6 +85,16 @@ def train(task, strategy, RS=None, **kwargs):
             estimator.fit(X_train, y_train)
             logger.info('Ended fitting the estimator')
 
+            # Store fit times
+            end_ts = time.time()
+            start_ts = timer_start.last_fit_timestamp
+            mid_ts = timer_mid.last_fit_timestamp
+
+            imputation_time = round(mid_ts - start_ts, 6) if start_ts else None
+            tuning_time = round(end_ts - mid_ts, 6)
+            dh.dump_times(imputation_time, tuning_time, fold=i, tag=str(n))
+
+            # Predict
             if strategy.is_classification() and strategy.roc:
                 probas = estimator.predict_proba(X_test)
                 logger.info('Started predict_proba')
