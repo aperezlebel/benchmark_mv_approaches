@@ -266,10 +266,13 @@ class DumpHelper:
     def dump_pvals(self, pvals):
         pvals.to_csv(self.task_folder+'pvals.csv', header=False)
 
-    def dump_times(self, imputation_time, tuning_time, fold=None, tag=None):
+    def dump_times(self, imputation_time, tuning_time, imputation_pt,
+                   tuning_pt, fold=None, tag=None):
         df = pd.DataFrame({
-            'imputation': [imputation_time],
-            'tuning': [tuning_time],
+            'imputation_WCT': [imputation_time],
+            'tuning_WCT': [tuning_time],
+            'imputation_PT': [imputation_pt],
+            'tuning_PT': [tuning_pt],
         })
 
         if tag is None:

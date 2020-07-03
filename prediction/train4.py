@@ -90,9 +90,17 @@ def train(task, strategy, RS=None, **kwargs):
             start_ts = timer_start.last_fit_timestamp
             mid_ts = timer_mid.last_fit_timestamp
 
+            end_pt = time.process_time()
+            start_pt = timer_start.last_fit_pt
+            mid_pt = timer_mid.last_fit_pt
+
             imputation_time = round(mid_ts - start_ts, 6) if start_ts else None
             tuning_time = round(end_ts - mid_ts, 6)
-            dh.dump_times(imputation_time, tuning_time, fold=i, tag=str(n))
+            imputation_pt = round(mid_pt - start_pt, 6) if start_pt else None
+            tuning_pt = round(end_pt - mid_pt, 6)
+            dh.dump_times(imputation_time, tuning_time,
+                          imputation_pt, tuning_pt,
+                          fold=i, tag=str(n))
 
             # Predict
             if strategy.is_classification() and strategy.roc:
