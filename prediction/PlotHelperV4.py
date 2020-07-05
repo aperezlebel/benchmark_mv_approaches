@@ -323,23 +323,24 @@ class PlotHelperV4(object):
         return n_m - m - (db+1)/(n_db+1)
 
     @staticmethod
-    def _add_relative_score(df, reference_method=None):
+    def _add_relative_value(df, value, reference_method=None):
+        assert value in df.columns
         dfgb = df.groupby(['size', 'db', 'task'])
 
-        def rel_score(df):
+        def rel_value(df):
             if reference_method is None:  # use mean
-                ref_score = df['score'].mean()
+                ref_value = df[value].mean()
             else:
                 methods = df['method']
-                ref_score = float(df.loc[methods == reference_method, 'score'])
+                ref_value = float(df.loc[methods == reference_method, value])
                 df['reference'] = reference_method
-                df['referece_score'] = ref_score
+                df[f'referece_{value}'] = ref_value
 
-            df['relative_score'] = (df['score'] - ref_score)/df['score'].std()
+            df[f'relative_{value}'] = (df[value] - ref_value)#/df[value].std()
 
             return df
 
-        return dfgb.apply(rel_score)
+        return dfgb.apply(rel_value)
 
     def dump(self, filepath):
         """Scan results in result_folder and compute scores."""
@@ -391,13 +392,15 @@ class PlotHelperV4(object):
         df.to_csv(filepath)
 
     @staticmethod
-    def _plot(filepath, db_order=None, method_order=None, rename=dict(),
+    def _plot(filepath, value, db_order=None, method_order=None, rename=dict(),
               reference_method=None, figsize=None, legend_bbox=None):
         """Plot the full available results."""
         if not isinstance(filepath, pd.DataFrame):
             df = pd.read_csv(filepath, index_col=0)
         else:
             df = filepath
+
+        assert value in df.columns
 
         sizes = list(df['size'].unique())
         n_sizes = len(sizes)
@@ -422,19 +425,19 @@ class PlotHelperV4(object):
 
         # Agregate accross folds by averaging
         dfgb = df.groupby(['size', 'db', 'task', 'method', 'trial'])
-        df = dfgb.agg({'score': 'mean', 'selection': 'first'})
+        df = dfgb.agg({value: 'mean', 'selection': 'first'})
 
         # Agregate accross trials by averaging
         df = df.reset_index()
         df['n_trials'] = 1  # Add a count column to keep track of # of trials
         dfgb = df.groupby(['size', 'db', 'task', 'method'])
-        df = dfgb.agg({'score': 'mean', 'n_trials': 'sum', 'selection': 'first'})
+        df = dfgb.agg({value: 'mean', 'n_trials': 'sum', 'selection': 'first'})
 
         # Reset index to addlevel of the multi index to the columns of the df
         df = df.reset_index()
 
-        # Compute and add relative score
-        df = PlotHelperV4._add_relative_score(df, reference_method=reference_method)
+        # Compute and add relative value
+        df = PlotHelperV4._add_relative_value(df, value, reference_method=reference_method)
 
         # Add y position for plotting
         def _add_y(row):
@@ -476,8 +479,8 @@ class PlotHelperV4(object):
         db_markers = {db: markers[i] for i, db in enumerate(renamed_db_order)}
 
         # Compute the xticks
-        min_x = Decimal(str(df['relative_score'].min()))
-        max_x = Decimal(str(df['relative_score'].max()))
+        min_x = Decimal(str(df[f'relative_{value}'].min()))
+        max_x = Decimal(str(df[f'relative_{value}'].max()))
 
         # We want to ceil/floor to the most significant digit
         min_delta = min(abs(min_x), abs(max_x))
@@ -536,12 +539,12 @@ class PlotHelperV4(object):
 
             # Boxplot
             sns.set_palette(boxplot_palette)
-            sns.boxplot(x='relative_score', y='method', data=df_valid, orient='h',
+            sns.boxplot(x=f'relative_{value}', y='method', data=df_valid, orient='h',
                         ax=ax, order=method_order, showfliers=False)
 
             # Scatter plot for valid data points
             sns.set_palette(sns.color_palette('colorblind'))
-            g2 = sns.scatterplot(x='relative_score', y='y', hue='Database',
+            g2 = sns.scatterplot(x=f'relative_{value}', y='y', hue='Database',
                                  data=df_valid, ax=twinx,
                                  hue_order=renamed_db_order,
                                  style='Database',
@@ -555,7 +558,7 @@ class PlotHelperV4(object):
             # Scatter plot for invalid data points
             if n_dbs_invalid > 0:
                 sns.set_palette(sns.color_palette(n_dbs_invalid*['lightgray']))
-                g3 = sns.scatterplot(x='relative_score', y='y', hue='Database',
+                g3 = sns.scatterplot(x=f'relative_{value}', y='y', hue='Database',
                                      data=df_invalid, ax=twinx,
                                      hue_order=renamed_db_order_invalid,
                                      style='Database',
@@ -574,9 +577,9 @@ class PlotHelperV4(object):
                 r_labels = [PlotHelperV4.rename_str(rename, l) for l in labels]
                 ax.set_yticklabels(r_labels)
 
-            ax.set_xticks(xticks)
-            twinx.set_xticks(xticks)
-            ax.set_xlim(left=xlim_min, right=xlim_max)
+            # ax.set_xticks(xticks)
+            # twinx.set_xticks(xticks)
+            # ax.set_xlim(left=xlim_min, right=xlim_max)
 
             ax.set_title(f'n={size}')
             ax.set_xlabel(PlotHelperV4.rename_str(rename, ax.get_xlabel()))
@@ -660,7 +663,7 @@ class PlotHelperV4(object):
     @staticmethod
     def plot_scores(filepath, db_order=None, method_order=None, rename=dict(),
                     reference_method=None,):
-        fig, axes = PlotHelperV4._plot(filepath, method_order=method_order,
+        fig, axes = PlotHelperV4._plot(filepath, 'score', method_order=method_order,
                                        db_order=db_order, rename=rename,
                                        reference_method=reference_method,
                                        figsize=(17, 5.25),
@@ -687,7 +690,10 @@ class PlotHelperV4(object):
     @staticmethod
     def plot_times(filepath, db_order=None, method_order=None, rename=dict(),
                    reference_method=None,):
-        fig, _ = PlotHelperV4._plot(filepath, method_order=method_order,
+        df = pd.read_csv(filepath, index_col=0)
+        df['total_WCT'] = df['imputation_WCT'].fillna(0) + df['tuning_WCT']
+        df['total_PT'] = df['imputation_PT'].fillna(0) + df['tuning_PT']
+        fig, _ = PlotHelperV4._plot(df, 'total_PT', method_order=method_order,
                                     db_order=db_order, rename=rename,
                                     reference_method=reference_method,
                                     figsize=None)
