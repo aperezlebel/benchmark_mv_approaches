@@ -268,17 +268,32 @@ class PlotHelperV4(object):
         except pd.errors.EmptyDataError:
             return None, None
 
-        imputation_times = dict()
-        tuning_times = dict()
+        cols = df.columns
+        imputation_wct = dict()
+        tuning_wct = dict()
+        imputation_pt = dict()
+        tuning_pt = dict()
 
         for fold, df_gb in df.groupby('fold'):
-            assert len(df_gb['imputation']) == 1
-            assert len(df_gb['tuning']) == 1
 
-            imputation_times[fold] = float(df_gb['imputation'])
-            tuning_times[fold] = float(df_gb['tuning'])
+            if 'imputation_PT' in cols and 'imputation_WCT' in cols:
+                imputation_wct[fold] = float(df_gb['imputation_WCT'])
+                tuning_wct[fold] = float(df_gb['tuning_WCT'])
+                imputation_pt[fold] = float(df_gb['imputation_PT'])
+                tuning_pt[fold] = float(df_gb['tuning_PT'])
 
-        return imputation_times, tuning_times
+            else:
+                assert len(df_gb['imputation']) == 1
+                assert len(df_gb['tuning']) == 1
+                imputation_wct[fold] = float(df_gb['imputation'])
+                tuning_wct[fold] = float(df_gb['tuning'])
+
+        return {
+            'imputation_WCT': imputation_wct,
+            'tuning_WCT': tuning_wct,
+            'imputation_PT': imputation_pt,
+            'tuning_PT': tuning_pt
+        }
 
     def absolute_scores(self, db, t, methods, size, mean=True):
         """Get absolute scores of given methods for (db, task, size).
@@ -337,7 +352,7 @@ class PlotHelperV4(object):
                     abs_scores = self.absolute_scores(db, t, methods, size,
                                                       mean=False)
                     for m, (scores, scorer) in abs_scores.items():
-                        imp_times, tun_times = self.times(db, t, m, size)
+                        times = self.times(db, t, m, size)
                         for fold, s in scores.items():
                             if s is None:
                                 print(f'Skipping {db}/{t}/{m}')
@@ -354,13 +369,15 @@ class PlotHelperV4(object):
                             short_m = self.short_method_name(m)
                             renamed_m = self.rename(short_m)
                             selection = 'ANOVA' if '_pvals' in t else 'manual'
-                            imp_time = imp_times[fold]
-                            tun_time = tun_times[fold]
+                            imp_wct = times['imputation_WCT'][fold]
+                            tun_wct = times['tuning_WCT'][fold]
+                            imp_pt = times['imputation_PT'].get(fold, None)
+                            tun_pt = times['tuning_PT'].get(fold, None)
                             rows.append(
-                                (size, db, t, renamed_m, T, fold, s, scorer, selection, imp_time, tun_time)
+                                (size, db, t, renamed_m, T, fold, s, scorer, selection, imp_wct, tun_wct, imp_pt, tun_pt)
                             )
 
-        cols = ['size', 'db', 'task', 'method', 'trial', 'fold', 'score', 'scorer', 'selection', 'imputation_time', 'tuning_time']
+        cols = ['size', 'db', 'task', 'method', 'trial', 'fold', 'score', 'scorer', 'selection', 'imputation_WCT', 'tuning_WCT', 'imputation_PT', 'tuning_PT']
 
         df = pd.DataFrame(rows, columns=cols).astype({
             'size': int,
