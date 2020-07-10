@@ -10,6 +10,7 @@ matplotlib.use('MacOSX')
 import matplotlib.pyplot as plt
 import seaborn as sns
 from decimal import Decimal
+import shutil
 
 
 class PlotHelperV4(object):
@@ -268,17 +269,32 @@ class PlotHelperV4(object):
         except pd.errors.EmptyDataError:
             return None, None
 
-        imputation_times = dict()
-        tuning_times = dict()
+        cols = df.columns
+        imputation_wct = dict()
+        tuning_wct = dict()
+        imputation_pt = dict()
+        tuning_pt = dict()
 
         for fold, df_gb in df.groupby('fold'):
-            assert len(df_gb['imputation']) == 1
-            assert len(df_gb['tuning']) == 1
 
-            imputation_times[fold] = float(df_gb['imputation'])
-            tuning_times[fold] = float(df_gb['tuning'])
+            if 'imputation_PT' in cols and 'imputation_WCT' in cols:
+                imputation_wct[fold] = float(df_gb['imputation_WCT'])
+                tuning_wct[fold] = float(df_gb['tuning_WCT'])
+                imputation_pt[fold] = float(df_gb['imputation_PT'])
+                tuning_pt[fold] = float(df_gb['tuning_PT'])
 
-        return imputation_times, tuning_times
+            else:
+                assert len(df_gb['imputation']) == 1
+                assert len(df_gb['tuning']) == 1
+                imputation_wct[fold] = float(df_gb['imputation'])
+                tuning_wct[fold] = float(df_gb['tuning'])
+
+        return {
+            'imputation_WCT': imputation_wct,
+            'tuning_WCT': tuning_wct,
+            'imputation_PT': imputation_pt,
+            'tuning_PT': tuning_pt
+        }
 
     def absolute_scores(self, db, t, methods, size, mean=True):
         """Get absolute scores of given methods for (db, task, size).
@@ -308,23 +324,54 @@ class PlotHelperV4(object):
         return n_m - m - (db+1)/(n_db+1)
 
     @staticmethod
-    def _add_relative_score(df, reference_method=None):
+    def _add_relative_value(df, value, how, reference_method=None):
+        assert value in df.columns
         dfgb = df.groupby(['size', 'db', 'task'])
 
-        def rel_score(df):
+        def rel_value(df):
             if reference_method is None:  # use mean
-                ref_score = df['score'].mean()
+                ref_value = df[value].mean()
             else:
                 methods = df['method']
-                ref_score = float(df.loc[methods == reference_method, 'score'])
+                ref_value = float(df.loc[methods == reference_method, value])
                 df['reference'] = reference_method
-                df['referece_score'] = ref_score
+                df[f'referece_{value}'] = ref_value
 
-            df['relative_score'] = (df['score'] - ref_score)/df['score'].std()
+            if how == 'mean':
+                normalization = df[value].mean()
+            elif how == 'std':
+                normalization = df[value].std()
+            elif how == 'no-norm':
+                normalization = 1
+            elif how == 'abs':
+                ref_value = 0
+                normalization = 1
+            elif how == 'log':
+                normalization = ref_value
+                ref_value = 0
+
+            df[f'relative_{value}'] = (df[value] - ref_value)/normalization
 
             return df
 
-        return dfgb.apply(rel_score)
+        return dfgb.apply(rel_value)
+
+    def _export(self, db, id):
+        sizes = self.existing_sizes()
+        dump_dir = f'sandbox/compare_{id}/{db}/'
+        if os.path.isdir(dump_dir):
+            shutil.rmtree(dump_dir)
+        os.makedirs(dump_dir, exist_ok=True)
+
+        for t in self.tasks(db):
+            for size in sizes:
+                methods = self.availale_methods_by_size(db, t, size)
+                for m in methods:
+                    subpath = f'{db}/{t}/{m}/{size}_prediction.csv'
+                    df_path = f'{self.root_folder}/{subpath}'
+                    print(df_path)
+                    r_subpath = subpath.replace('/', '_')
+                    shutil.copyfile(df_path, dump_dir+r_subpath)
 
     def dump(self, filepath):
         """Scan results in result_folder and compute scores."""
@@ -337,7 +384,7 @@ class PlotHelperV4(object):
                     abs_scores = self.absolute_scores(db, t, methods, size,
                                                       mean=False)
                     for m, (scores, scorer) in abs_scores.items():
-                        imp_times, tun_times = self.times(db, t, m, size)
+                        times = self.times(db, t, m, size)
                         for fold, s in scores.items():
                             if s is None:
                                 print(f'Skipping {db}/{t}/{m}')
@@ -354,13 +401,15 @@ class PlotHelperV4(object):
                             short_m = self.short_method_name(m)
                             renamed_m = self.rename(short_m)
                             selection = 'ANOVA' if '_pvals' in t else 'manual'
-                            imp_time = imp_times[fold]
-                            tun_time = tun_times[fold]
+                            imp_wct = times['imputation_WCT'][fold]
+                            tun_wct = times['tuning_WCT'][fold]
+                            imp_pt = times['imputation_PT'].get(fold, None)
+                            tun_pt = times['tuning_PT'].get(fold, None)
                             rows.append(
-                                (size, db, t, renamed_m, T, fold, s, scorer, selection, imp_time, tun_time)
+                                (size, db, t, renamed_m, T, fold, s, scorer, selection, imp_wct, tun_wct, imp_pt, tun_pt)
                             )
 
-        cols = ['size', 'db', 'task', 'method', 'trial', 'fold', 'score', 'scorer', 'selection', 'imputation_time', 'tuning_time']
+        cols = ['size', 'db', 'task', 'method', 'trial', 'fold', 'score', 'scorer', 'selection', 'imputation_WCT', 'tuning_WCT', 'imputation_PT', 'tuning_PT']
 
         df = pd.DataFrame(rows, columns=cols).astype({
             'size': int,
@@ -374,13 +423,33 @@ class PlotHelperV4(object):
         df.to_csv(filepath)
 
     @staticmethod
-    def _plot(filepath, db_order=None, method_order=None, rename=dict(),
-              reference_method=None, figsize=None, legend_bbox=None):
+    def aggregate(df, value):
+        # Agregate accross folds by averaging
+        dfgb = df.groupby(['size', 'db', 'task', 'method', 'trial'])
+        df = dfgb.agg({value: 'mean', 'selection': 'first'})
+
+        # Agregate accross trials by averaging
+        df = df.reset_index()
+        df['n_trials'] = 1  # Add a count column to keep track of # of trials
+        dfgb = df.groupby(['size', 'db', 'task', 'method'])
+        df = dfgb.agg({value: 'mean', 'n_trials': 'sum', 'selection': 'first'})
+
+        # Reset index to addlevel of the multi index to the columns of the df
+        df = df.reset_index()
+
+        return df
+
+    @staticmethod
+    def _plot(filepath, value, how, xticks_dict=None, db_order=None,
+              method_order=None, rename=dict(), reference_method=None,
+              figsize=None, legend_bbox=None):
         """Plot the full available results."""
         if not isinstance(filepath, pd.DataFrame):
             df = pd.read_csv(filepath, index_col=0)
         else:
             df = filepath
+
+        assert value in df.columns
 
         sizes = list(df['size'].unique())
         n_sizes = len(sizes)
@@ -403,21 +472,11 @@ class PlotHelperV4(object):
         elif set(methods) != set(method_order):
             raise ValueError(f'Method order missmatch existing ones {methods}')
 
-        # Agregate accross folds by averaging
-        dfgb = df.groupby(['size', 'db', 'task', 'method', 'trial'])
-        df = dfgb.agg({'score': 'mean', 'selection': 'first'})
+        df = PlotHelperV4.aggregate(df, value)
 
-        # Agregate accross trials by averaging
-        df = df.reset_index()
-        df['n_trials'] = 1  # Add a count column to keep track of # of trials
-        dfgb = df.groupby(['size', 'db', 'task', 'method'])
-        df = dfgb.agg({'score': 'mean', 'n_trials': 'sum', 'selection': 'first'})
-
-        # Reset index to addlevel of the multi index to the columns of the df
-        df = df.reset_index()
-
-        # Compute and add relative score
-        df = PlotHelperV4._add_relative_score(df, reference_method=reference_method)
+        # Compute and add relative value
+        df = PlotHelperV4._add_relative_value(df, value, how,
+                                              reference_method=reference_method)
 
         # Add y position for plotting
         def _add_y(row):
@@ -440,6 +499,7 @@ class PlotHelperV4(object):
             'axes.labelsize': 13,
             'xtick.labelsize': 10,
             'ytick.labelsize': 16,
+            'text.usetex': True,
         })
 
         if figsize is None:
@@ -459,30 +519,50 @@ class PlotHelperV4(object):
         db_markers = {db: markers[i] for i, db in enumerate(renamed_db_order)}
 
         # Compute the xticks
-        min_x = Decimal(str(df['relative_score'].min()))
-        max_x = Decimal(str(df['relative_score'].max()))
+        if xticks_dict is None:  # Automatic xticks
+            xticks = list(np.linspace(-max_delta, max_delta, 5))
+            del xticks[0]
+            del xticks[-1]
+            xtick_labels = None
+
+            min_x = Decimal(str(df[f'relative_{value}'].min()))
+            max_x = Decimal(str(df[f'relative_{value}'].max()))
+
+        else:  # Manual xticks
+            assert isinstance(xticks_dict, dict)
+            xticks = list(xticks_dict.keys())
+            xtick_labels = list(xticks_dict.values())
+
+            min_x = Decimal(min(xticks))
+            max_x = Decimal(max(xticks))
 
         # We want to ceil/floor to the most significant digit
-        min_delta = min(abs(min_x), abs(max_x))
-        min_delta_tuple = min_delta.as_tuple()
-        n_digits = len(min_delta_tuple.digits)
-        e = min_delta_tuple.exponent
+        def get_lim(min_x, max_x, log=False):
+            if log:
+                xlim_min = Decimal('.9')*min_x
+                xlim_max = Decimal('1.1')*max_x
 
-        e_unit = n_digits + e - 1
-        mult = Decimal(str(10**e_unit))
+            else:
+                min_delta = min(abs(min_x), abs(max_x))
+                min_delta_tuple = min_delta.as_tuple()
+                n_digits = len(min_delta_tuple.digits)
+                e = min_delta_tuple.exponent
 
-        # Round to first significant digit
-        min_x = mult*np.floor(min_x/mult)
-        max_x = mult*np.ceil(max_x/mult)
+                e_unit = n_digits + e - 1
+                mult = Decimal(str(10**e_unit))
 
-        # Set limits
-        max_delta = float(max(abs(min_x), abs(max_x)))
-        xlim_min = -max_delta
-        xlim_max = max_delta
+                # Round to first significant digit
+                min_x = mult*np.floor(min_x/mult)
+                max_x = mult*np.ceil(max_x/mult)
 
-        xticks = list(np.linspace(-max_delta, max_delta, 5))
-        del xticks[0]
-        del xticks[-1]
+                # Set limits
+                max_delta = float(max(abs(min_x), abs(max_x)))
+                xlim_min = -max_delta
+                xlim_max = max_delta
+
+            return float(xlim_min), float(xlim_max)
+
+        xlim_min, xlim_max = get_lim(min_x, max_x, log=(how == 'log'))
 
         for i, size in enumerate(sizes):
             ax = axes[i]
@@ -511,7 +591,8 @@ class PlotHelperV4(object):
             for k in range(0, n_methods, 2):
                 ax.axhspan(k-0.5, k+0.5, color='.93', zorder=0)
 
-            ax.axvline(0, ymin=0, ymax=n_methods, color='gray', zorder=0)
+            mid = 1 if how == 'log' else 0
+            ax.axvline(mid, ymin=0, ymax=n_methods, color='gray', zorder=0)
 
             # Build the color palette for the boxplot
             paired_colors = sns.color_palette('Paired').as_hex()
@@ -519,12 +600,12 @@ class PlotHelperV4(object):
 
             # Boxplot
             sns.set_palette(boxplot_palette)
-            sns.boxplot(x='relative_score', y='method', data=df_valid, orient='h',
+            sns.boxplot(x=f'relative_{value}', y='method', data=df_valid, orient='h',
                         ax=ax, order=method_order, showfliers=False)
 
             # Scatter plot for valid data points
             sns.set_palette(sns.color_palette('colorblind'))
-            g2 = sns.scatterplot(x='relative_score', y='y', hue='Database',
+            g2 = sns.scatterplot(x=f'relative_{value}', y='y', hue='Database',
                                  data=df_valid, ax=twinx,
                                  hue_order=renamed_db_order,
                                  style='Database',
@@ -538,7 +619,7 @@ class PlotHelperV4(object):
             # Scatter plot for invalid data points
             if n_dbs_invalid > 0:
                 sns.set_palette(sns.color_palette(n_dbs_invalid*['lightgray']))
-                g3 = sns.scatterplot(x='relative_score', y='y', hue='Database',
+                g3 = sns.scatterplot(x=f'relative_{value}', y='y', hue='Database',
                                      data=df_invalid, ax=twinx,
                                      hue_order=renamed_db_order_invalid,
                                      style='Database',
@@ -557,9 +638,25 @@ class PlotHelperV4(object):
                 r_labels = [PlotHelperV4.rename_str(rename, l) for l in labels]
                 ax.set_yticklabels(r_labels)
 
-            ax.set_xticks(xticks)
-            twinx.set_xticks(xticks)
-            ax.set_xlim(left=xlim_min, right=xlim_max)
+            if how == 'log':
+                ax.set_xscale('log')
+                twinx.set_xscale('log')
+
+            if xtick_labels is not None:
+                ax.set_xticks(xticks, minor=False)
+                ax.set_xticklabels(xtick_labels, minor=False)
+                ax.xaxis.set_minor_locator(matplotlib.ticker.NullLocator())
+
+                twinx.set_xticks(xticks, minor=False)
+                twinx.set_xticklabels(xtick_labels, minor=False)
+                twinx.xaxis.set_minor_locator(matplotlib.ticker.NullLocator())
+
+            else:
+                ax.set_xticks(xticks)
+                twinx.set_xticks(xticks)
+
+            # ax.set_xlim(left=xlim_min, right=xlim_max)
+            # twinx.set_xlim(left=xlim_min, right=xlim_max)
 
             ax.set_title(f'n={size}')
             ax.set_xlabel(PlotHelperV4.rename_str(rename, ax.get_xlabel()))
@@ -643,7 +740,8 @@ class PlotHelperV4(object):
     @staticmethod
     def plot_scores(filepath, db_order=None, method_order=None, rename=dict(),
                     reference_method=None,):
-        fig, axes = PlotHelperV4._plot(filepath, method_order=method_order,
+        fig, axes = PlotHelperV4._plot(filepath, 'score', how='no-norm',
+                                       method_order=method_order,
                                        db_order=db_order, rename=rename,
                                        reference_method=reference_method,
                                        figsize=(17, 5.25),
@@ -668,9 +766,20 @@ class PlotHelperV4(object):
         return fig
 
     @staticmethod
-    def plot_times(filepath, db_order=None, method_order=None, rename=dict(),
-                   reference_method=None,):
-        fig, _ = PlotHelperV4._plot(filepath, method_order=method_order,
+    def plot_times(filepath, which, xticks_dict=None, db_order=None,
+                   method_order=None, rename=dict(), reference_method=None):
+        df = pd.read_csv(filepath, index_col=0)
+        if which == 'PT':
+            df['total_PT'] = df['imputation_PT'].fillna(0) + df['tuning_PT']
+            value = 'total_PT'
+        elif which == 'WCT':
+            df['total_WCT'] = df['imputation_WCT'].fillna(0) + df['tuning_WCT']
+            value = 'total_WCT'
+        else:
+            raise ValueError(f'Unknown argument {which}')
+        fig, _ = PlotHelperV4._plot(df, value, how='log',
+                                    xticks_dict=xticks_dict,
+                                    method_order=method_order,
                                     db_order=db_order, rename=rename,
                                     reference_method=reference_method,
                                     figsize=None)

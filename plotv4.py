@@ -1,6 +1,7 @@
 """Plot the results of --train4."""
 from prediction.PlotHelperV4 import PlotHelperV4
 import matplotlib.pyplot as plt
+import pandas as pd
 
 
 rename = {
@@ -17,6 +18,8 @@ rename = {
 
 rename_on_plot = {
     'relative_score': 'Relative prediction score',
+    'relative_total_PT': 'Relative process time',
+    'relative_total_WCT': 'Relative wall-clock time',
     'TB': 'Traumabase',
     'UKBB': 'UK BioBank',
     'Mean+mask': 'Mean\n+mask',
@@ -46,16 +49,36 @@ db_order = [
     'UKBB',
 ]
 
-ph = PlotHelperV4(root_folder='results_original/graham/results/', rename=rename)
+ph = PlotHelperV4(root_folder='results_original/graham_v3/results/', rename=rename)
+# ph = PlotHelperV4(root_folder='/Volumes/LACIE/Alexandre/Stage/BACKUP/results_original/graham_v3/results/', rename=rename)
+
+# ph._export('TB', 3)
+# exit()
 
 filepath = 'scores/scores.csv'
+# df = pd.read_csv(filepath)
+# df['total_PT'] = df['imputation_PT'].fillna(0) + df['tuning_PT']
+# df = PlotHelperV4.aggregate(df, 'total_PT')
+# df = ph._add_relative_value(df, 'total_PT', how='log')
+# print(df)
+# df.to_csv('sandbox/dump_aggregated_scores.csv')
+# exit()
 # ph.dump(filepath)
+# exit()
 # ph.mean_rank(filepath, method_order=method_order).to_csv('scores/ranks.csv')
-fig = ph.plot_scores(filepath, method_order=method_order, db_order=db_order, rename=rename_on_plot)#, reference_method='MIA')
+# fig = ph.plot_scores(filepath, method_order=method_order, db_order=db_order, rename=rename_on_plot)#, reference_method='MIA')
+# if fig:
+#     plt.show()
+
+xticks = {
+    # 0.5: '$\\frac{1}{2}\\times$',
+    2/3: '$\\frac{2}{3}\\times$',
+    # 0.75: '$\\frac{3}{4}\\times$',
+    1: '$1\\times$',
+    # 4/3: '$\\frac{4}{3}\\times$',
+    3/2: '$\\frac{3}{2}\\times$',
+    # 2: '$2\\times$'
+}
+fig = ph.plot_times(filepath, 'PT', xticks_dict=xticks, method_order=method_order, db_order=db_order, rename=rename_on_plot)
 if fig:
     plt.show()
-
-fig = ph.plot_times(filepath, method_order=method_order, db_order=db_order, rename=rename_on_plot)
-if fig:
-    plt.show()
-
