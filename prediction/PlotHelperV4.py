@@ -440,8 +440,9 @@ class PlotHelperV4(object):
         return df
 
     @staticmethod
-    def _plot(filepath, value, how, db_order=None, method_order=None, rename=dict(),
-              reference_method=None, figsize=None, legend_bbox=None):
+    def _plot(filepath, value, how, xticks_dict=None, db_order=None,
+              method_order=None, rename=dict(), reference_method=None,
+              figsize=None, legend_bbox=None):
         """Plot the full available results."""
         if not isinstance(filepath, pd.DataFrame):
             df = pd.read_csv(filepath, index_col=0)
@@ -498,6 +499,7 @@ class PlotHelperV4(object):
             'axes.labelsize': 13,
             'xtick.labelsize': 10,
             'ytick.labelsize': 16,
+            'text.usetex': True,
         })
 
         if figsize is None:
@@ -538,9 +540,15 @@ class PlotHelperV4(object):
         xlim_min = -max_delta
         xlim_max = max_delta
 
-        xticks = list(np.linspace(-max_delta, max_delta, 5))
-        del xticks[0]
-        del xticks[-1]
+        if xticks_dict is None:
+            xticks = list(np.linspace(-max_delta, max_delta, 5))
+            del xticks[0]
+            del xticks[-1]
+            xtick_labels = None
+        else:
+            assert isinstance(xticks_dict, dict)
+            xticks = list(xticks_dict.keys())
+            xtick_labels = list(xticks_dict.values())
 
         for i, size in enumerate(sizes):
             ax = axes[i]
@@ -620,6 +628,10 @@ class PlotHelperV4(object):
                 ax.set_xscale('log')
                 twinx.set_xscale('log')
 
+            if xtick_labels is not None:
+                ax.set_xticks(xticks, minor=True)
+                ax.set_xticklabels(xtick_labels, minor=True)
+                ax.xaxis.set_major_locator(matplotlib.ticker.NullLocator())
             # ax.set_xticks(xticks)
             # twinx.set_xticks(xticks)
             # ax.set_xlim(left=xlim_min, right=xlim_max)
@@ -732,8 +744,8 @@ class PlotHelperV4(object):
         return fig
 
     @staticmethod
-    def plot_times(filepath, which, db_order=None, method_order=None, rename=dict(),
-                   reference_method=None,):
+    def plot_times(filepath, which, xticks_dict=None, db_order=None,
+                   method_order=None, rename=dict(), reference_method=None):
         df = pd.read_csv(filepath, index_col=0)
         if which == 'PT':
             df['total_PT'] = df['imputation_PT'].fillna(0) + df['tuning_PT']
@@ -744,6 +756,7 @@ class PlotHelperV4(object):
         else:
             raise ValueError(f'Unknown argument {which}')
         fig, _ = PlotHelperV4._plot(df, value, how='log',
+                                    xticks_dict=xticks_dict,
                                     method_order=method_order,
                                     db_order=db_order, rename=rename,
                                     reference_method=reference_method,
