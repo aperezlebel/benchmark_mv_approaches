@@ -55,7 +55,7 @@ def missing_pt_imputation(df):
 
 
 def missing_scores(df, expected_methods):
-    df = PlotHelperV4.aggregate(df, 'score')
+    df = PlotHelperV4.aggregate(df, 'tuning_PT')
 
     for id, subdf in df.groupby(by=['size', 'db', 'task']):
         methods = list(subdf['method'])
@@ -71,6 +71,9 @@ def missing_scores(df, expected_methods):
                 n_t = n_t.iloc[0]
                 if ('_pvals' in task and n_t != 5) or ('_pvals' not in task and n_t != 1):
                     print(f'{size}/{db}/{task}: {m} missing trial: {n_t}/5')
+
+                if pd.isnull(subdf.loc[subdf['method'] == m, 'tuning_PT'].iloc[0]):
+                    print(subdf)
 
 
 if __name__ == '__main__':
