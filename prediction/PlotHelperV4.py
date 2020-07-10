@@ -10,6 +10,7 @@ matplotlib.use('MacOSX')
 import matplotlib.pyplot as plt
 import seaborn as sns
 from decimal import Decimal
+import shutil
 
 
 class PlotHelperV4(object):
@@ -323,7 +324,7 @@ class PlotHelperV4(object):
         return n_m - m - (db+1)/(n_db+1)
 
     @staticmethod
-    def _add_relative_value(df, value, reference_method=None):
+    def _add_relative_value(df, value, how, reference_method=None):
         assert value in df.columns
         dfgb = df.groupby(['size', 'db', 'task'])
 
@@ -336,11 +337,41 @@ class PlotHelperV4(object):
                 df['reference'] = reference_method
                 df[f'referece_{value}'] = ref_value
 
-            df[f'relative_{value}'] = (df[value] - ref_value)#/df[value].std()
+            if how == 'mean':
+                normalization = df[value].mean()
+            elif how == 'std':
+                normalization = df[value].std()
+            elif how == 'no-norm':
+                normalization = 1
+            elif how == 'abs':
+                ref_value = 0
+                normalization = 1
+            elif how == 'log':
+                normalization = ref_value
+                ref_value = 0
+
+            df[f'relative_{value}'] = (df[value] - ref_value)/normalization
 
             return df
 
         return dfgb.apply(rel_value)
+
+    def _export(self, db, id):
+        sizes = self.existing_sizes()
+        dump_dir = f'sandbox/compare_{id}/{db}/'
+        if os.path.isdir(dump_dir):
+            shutil.rmtree(dump_dir)
+        os.makedirs(dump_dir, exist_ok=True)
+
+        for t in self.tasks(db):
+            for size in sizes:
+                methods = self.availale_methods_by_size(db, t, size)
+                for m in methods:
+                    subpath = f'{db}/{t}/{m}/{size}_prediction.csv'
+                    df_path = f'{self.root_folder}/{subpath}'
+                    print(df_path)
+                    r_subpath = subpath.replace('/', '_')
+                    shutil.copyfile(df_path, dump_dir+r_subpath)
 
     def dump(self, filepath):
         """Scan results in result_folder and compute scores."""
@@ -392,7 +423,24 @@ class PlotHelperV4(object):
         df.to_csv(filepath)
 
     @staticmethod
-    def _plot(filepath, value, db_order=None, method_order=None, rename=dict(),
+    def aggregate(df, value):
+        # Agregate accross folds by averaging
+        dfgb = df.groupby(['size', 'db', 'task', 'method', 'trial'])
+        df = dfgb.agg({value: 'mean', 'selection': 'first'})
+
+        # Agregate accross trials by averaging
+        df = df.reset_index()
+        df['n_trials'] = 1  # Add a count column to keep track of # of trials
+        dfgb = df.groupby(['size', 'db', 'task', 'method'])
+        df = dfgb.agg({value: 'mean', 'n_trials': 'sum', 'selection': 'first'})
+
+        # Reset index to addlevel of the multi index to the columns of the df
+        df = df.reset_index()
+
+        return df
+
+    @staticmethod
+    def _plot(filepath, value, how, db_order=None, method_order=None, rename=dict(),
               reference_method=None, figsize=None, legend_bbox=None):
         """Plot the full available results."""
         if not isinstance(filepath, pd.DataFrame):
@@ -423,21 +471,11 @@ class PlotHelperV4(object):
         elif set(methods) != set(method_order):
             raise ValueError(f'Method order missmatch existing ones {methods}')
 
-        # Agregate accross folds by averaging
-        dfgb = df.groupby(['size', 'db', 'task', 'method', 'trial'])
-        df = dfgb.agg({value: 'mean', 'selection': 'first'})
-
-        # Agregate accross trials by averaging
-        df = df.reset_index()
-        df['n_trials'] = 1  # Add a count column to keep track of # of trials
-        dfgb = df.groupby(['size', 'db', 'task', 'method'])
-        df = dfgb.agg({value: 'mean', 'n_trials': 'sum', 'selection': 'first'})
-
-        # Reset index to addlevel of the multi index to the columns of the df
-        df = df.reset_index()
+        df = PlotHelperV4.aggregate(df, value)
 
         # Compute and add relative value
-        df = PlotHelperV4._add_relative_value(df, value, reference_method=reference_method)
+        df = PlotHelperV4._add_relative_value(df, value, how,
+                                              reference_method=reference_method)
 
         # Add y position for plotting
         def _add_y(row):
@@ -531,7 +569,8 @@ class PlotHelperV4(object):
             for k in range(0, n_methods, 2):
                 ax.axhspan(k-0.5, k+0.5, color='.93', zorder=0)
 
-            ax.axvline(0, ymin=0, ymax=n_methods, color='gray', zorder=0)
+            mid = 1 if how == 'log' else 0
+            ax.axvline(mid, ymin=0, ymax=n_methods, color='gray', zorder=0)
 
             # Build the color palette for the boxplot
             paired_colors = sns.color_palette('Paired').as_hex()
@@ -576,6 +615,10 @@ class PlotHelperV4(object):
                 labels = [item.get_text() for item in ax.get_yticklabels()]
                 r_labels = [PlotHelperV4.rename_str(rename, l) for l in labels]
                 ax.set_yticklabels(r_labels)
+
+            if how == 'log':
+                ax.set_xscale('log')
+                twinx.set_xscale('log')
 
             # ax.set_xticks(xticks)
             # twinx.set_xticks(xticks)
@@ -663,7 +706,8 @@ class PlotHelperV4(object):
     @staticmethod
     def plot_scores(filepath, db_order=None, method_order=None, rename=dict(),
                     reference_method=None,):
-        fig, axes = PlotHelperV4._plot(filepath, 'score', method_order=method_order,
+        fig, axes = PlotHelperV4._plot(filepath, 'score', how='no-norm',
+                                       method_order=method_order,
                                        db_order=db_order, rename=rename,
                                        reference_method=reference_method,
                                        figsize=(17, 5.25),
@@ -688,12 +732,19 @@ class PlotHelperV4(object):
         return fig
 
     @staticmethod
-    def plot_times(filepath, db_order=None, method_order=None, rename=dict(),
+    def plot_times(filepath, which, db_order=None, method_order=None, rename=dict(),
                    reference_method=None,):
         df = pd.read_csv(filepath, index_col=0)
-        df['total_WCT'] = df['imputation_WCT'].fillna(0) + df['tuning_WCT']
-        df['total_PT'] = df['imputation_PT'].fillna(0) + df['tuning_PT']
-        fig, _ = PlotHelperV4._plot(df, 'total_PT', method_order=method_order,
+        if which == 'PT':
+            df['total_PT'] = df['imputation_PT'].fillna(0) + df['tuning_PT']
+            value = 'total_PT'
+        elif which == 'WCT':
+            df['total_WCT'] = df['imputation_WCT'].fillna(0) + df['tuning_WCT']
+            value = 'total_WCT'
+        else:
+            raise ValueError(f'Unknown argument {which}')
+        fig, _ = PlotHelperV4._plot(df, value, how='log',
+                                    method_order=method_order,
                                     db_order=db_order, rename=rename,
                                     reference_method=reference_method,
                                     figsize=None)

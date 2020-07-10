@@ -55,7 +55,7 @@ fig = ph.plot_scores(filepath, method_order=method_order, db_order=db_order, ren
 if fig:
     plt.show()
 
-fig = ph.plot_times(filepath, method_order=method_order, db_order=db_order, rename=rename_on_plot)
+fig = ph.plot_times(filepath, 'PT', method_order=method_order, db_order=db_order, rename=rename_on_plot)
 if fig:
     plt.show()
 
