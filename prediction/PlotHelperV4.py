@@ -222,8 +222,12 @@ class PlotHelperV4(object):
             df = pd.read_csv(df_path)
         except pd.errors.EmptyDataError:
             if mean:
-                return None
+                return None, None
             return dict()
+        except FileNotFoundError:
+            if mean:
+                return None, None
+            return dict(), None
 
         scores = dict()
 
