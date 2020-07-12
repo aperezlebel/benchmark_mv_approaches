@@ -542,12 +542,12 @@ class PlotHelperV4(object):
 
         # Compute the xticks
         def xticks_params(values, xticks_dict=None):
-            min_x = Decimal(str(values.min()))
-            max_x = Decimal(str(values.max()))
+            true_min_x = Decimal(str(values.min()))
+            true_max_x = Decimal(str(values.max()))
 
             if xticks_dict is None:  # Automatic xticks
 
-                min_x, max_x = round_extrema(min_x, max_x)
+                min_x, max_x = round_extrema(true_min_x, true_max_x)
                 max_delta = float(max(abs(min_x), abs(max_x)))
 
                 xticks = list(np.linspace(-max_delta, max_delta, 5))
@@ -563,19 +563,29 @@ class PlotHelperV4(object):
                 # min_x = Decimal(min(xticks))
                 # max_x = Decimal(max(xticks))
 
+                min_x = true_min_x
+                max_x = true_max_x
+
                 max_delta = float(max(abs(min_x), abs(max_x)))
 
             # Set limits
             if how == 'log':
-                xlim_min = .9*float(min_x)
-                xlim_max = 1.1*float(max_x)
+                xlim_min = .9*float(true_min_x)
+                xlim_max = 1.1*float(true_max_x)
 
             else:
-                xlim_min = -max_delta
-                xlim_max = max_delta
+                # Symetric constraint on xlims: use max absolute value
+                # xlim_min = -max_delta
+                # xlim_max = max_delta
+
+                # Asymetric constraint: add margin to max and min
+                margin = max_delta*0.05
+                xlim_min = float(true_min_x) - margin
+                xlim_max = float(true_max_x) + margin
 
             return xlim_min, xlim_max, xticks, xtick_labels
 
+        # Uncomment this line to use same xlims constraint for all subplots
         # xlim_min, xlim_max, xticks, xtick_labels = xticks_params(df[f'relative_{value}'], xticks_dict=xticks_dict)
 
         for i, size in enumerate(sizes):
@@ -656,6 +666,7 @@ class PlotHelperV4(object):
                 ax.set_xscale('log')
                 twinx.set_xscale('log')
 
+            # Comment this line to use same xlims constraint for all subplots
             xlim_min, xlim_max, xticks, xtick_labels = xticks_params(subdf[f'relative_{value}'], xticks_dict=xticks_dict)
 
             if xtick_labels is not None:
