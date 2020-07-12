@@ -522,51 +522,61 @@ class PlotHelperV4(object):
         renamed_db_order = [PlotHelperV4.rename_str(rename, db) for db in db_order]
         db_markers = {db: markers[i] for i, db in enumerate(renamed_db_order)}
 
+        def round_extrema(min_x, max_x):
+            if how == 'log':
+                return min_x, max_x
+
+            min_delta = min(abs(min_x), abs(max_x))
+            min_delta_tuple = min_delta.as_tuple()
+            n_digits = len(min_delta_tuple.digits)
+            e = min_delta_tuple.exponent
+
+            e_unit = n_digits + e - 1
+            mult = Decimal(str(10**e_unit))
+
+            # Round to first significant digit
+            min_x = mult*np.floor(min_x/mult)
+            max_x = mult*np.ceil(max_x/mult)
+
+            return min_x, max_x
+
         # Compute the xticks
-        if xticks_dict is None:  # Automatic xticks
-            xticks = list(np.linspace(-max_delta, max_delta, 5))
-            del xticks[0]
-            del xticks[-1]
-            xtick_labels = None
+        def xticks_params(values, xticks_dict=None):
+            min_x = Decimal(str(values.min()))
+            max_x = Decimal(str(values.max()))
 
-            min_x = Decimal(str(df[f'relative_{value}'].min()))
-            max_x = Decimal(str(df[f'relative_{value}'].max()))
+            if xticks_dict is None:  # Automatic xticks
 
-        else:  # Manual xticks
-            assert isinstance(xticks_dict, dict)
-            xticks = list(xticks_dict.keys())
-            xtick_labels = list(xticks_dict.values())
+                min_x, max_x = round_extrema(min_x, max_x)
+                max_delta = float(max(abs(min_x), abs(max_x)))
 
-            min_x = Decimal(min(xticks))
-            max_x = Decimal(max(xticks))
+                xticks = list(np.linspace(-max_delta, max_delta, 5))
+                del xticks[0]
+                del xticks[-1]
+                xtick_labels = None
 
-        # We want to ceil/floor to the most significant digit
-        def get_lim(min_x, max_x, log=False):
-            if log:
-                xlim_min = Decimal('.9')*min_x
-                xlim_max = Decimal('1.1')*max_x
+            else:  # Manual xticks
+                assert isinstance(xticks_dict, dict)
+                xticks = list(xticks_dict.keys())
+                xtick_labels = list(xticks_dict.values())
+
+                # min_x = Decimal(min(xticks))
+                # max_x = Decimal(max(xticks))
+
+                max_delta = float(max(abs(min_x), abs(max_x)))
+
+            # Set limits
+            if how == 'log':
+                xlim_min = .9*float(min_x)
+                xlim_max = 1.1*float(max_x)
 
             else:
-                min_delta = min(abs(min_x), abs(max_x))
-                min_delta_tuple = min_delta.as_tuple()
-                n_digits = len(min_delta_tuple.digits)
-                e = min_delta_tuple.exponent
-
-                e_unit = n_digits + e - 1
-                mult = Decimal(str(10**e_unit))
-
-                # Round to first significant digit
-                min_x = mult*np.floor(min_x/mult)
-                max_x = mult*np.ceil(max_x/mult)
-
-                # Set limits
-                max_delta = float(max(abs(min_x), abs(max_x)))
                 xlim_min = -max_delta
                 xlim_max = max_delta
 
-            return float(xlim_min), float(xlim_max)
+            return xlim_min, xlim_max, xticks, xtick_labels
 
-        xlim_min, xlim_max = get_lim(min_x, max_x, log=(how == 'log'))
+        # xlim_min, xlim_max, xticks, xtick_labels = xticks_params(df[f'relative_{value}'], xticks_dict=xticks_dict)
 
         for i, size in enumerate(sizes):
             ax = axes[i]
@@ -646,6 +656,8 @@ class PlotHelperV4(object):
                 ax.set_xscale('log')
                 twinx.set_xscale('log')
 
+            xlim_min, xlim_max, xticks, xtick_labels = xticks_params(subdf[f'relative_{value}'], xticks_dict=xticks_dict)
+
             if xtick_labels is not None:
                 ax.set_xticks(xticks, minor=False)
                 ax.set_xticklabels(xtick_labels, minor=False)
@@ -659,7 +671,7 @@ class PlotHelperV4(object):
                 ax.set_xticks(xticks)
                 twinx.set_xticks(xticks)
 
-            # ax.set_xlim(left=xlim_min, right=xlim_max)
+            ax.set_xlim(left=xlim_min, right=xlim_max)
             # twinx.set_xlim(left=xlim_min, right=xlim_max)
 
             ax.set_title(f'n={size}')
