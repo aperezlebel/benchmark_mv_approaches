@@ -447,17 +447,23 @@ class PlotHelperV4(object):
 
         df.to_csv(filepath)
 
+    def get_task_description(self, filepath):
+        df = pd.read_csv(filepath)
+
+        dfgb = df.groupby([''])
+
     @staticmethod
     def aggregate(df, value):
         # Agregate accross folds by averaging
+        df['n_folds'] = 1
         dfgb = df.groupby(['size', 'db', 'task', 'method', 'trial'])
-        df = dfgb.agg({value: 'mean', 'selection': 'first'})
+        df = dfgb.agg({value: 'mean', 'n_folds': 'sum', 'selection': 'first'})
 
         # Agregate accross trials by averaging
         df = df.reset_index()
         df['n_trials'] = 1  # Add a count column to keep track of # of trials
         dfgb = df.groupby(['size', 'db', 'task', 'method'])
-        df = dfgb.agg({value: 'mean', 'n_trials': 'sum', 'selection': 'first'})
+        df = dfgb.agg({value: 'mean', 'n_trials': 'sum', 'n_folds': 'sum', 'selection': 'first'})
 
         # Reset index to addlevel of the multi index to the columns of the df
         df = df.reset_index()
@@ -618,8 +624,9 @@ class PlotHelperV4(object):
             subdf = df[df['size'] == size]
 
             # Split in valid and invalid data
-            idx_valid = subdf.index[(subdf['selection'] == 'manual') | (
-                (subdf['selection'] != 'manual') & (subdf['n_trials'] == 5))]
+            # idx_valid = subdf.index[(subdf['selection'] == 'manual') | (
+            #     (subdf['selection'] != 'manual') & (subdf['n_trials'] == 5))]
+            idx_valid = subdf.index[subdf['n_folds'] == 25]
             idx_invalid = subdf.index.difference(idx_valid)
             df_valid = subdf.loc[idx_valid]
             df_invalid = subdf.loc[idx_invalid]
