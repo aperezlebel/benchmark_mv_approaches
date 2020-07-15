@@ -389,6 +389,26 @@ class PlotHelperV4(object):
                                                       mean=False)
                     for m, (scores, scorer) in abs_scores.items():
                         times = self.times(db, t, m, size)
+
+                        method_path = f'{self.root_folder}/{db}/{t}/{m}/'
+
+                        # Load strat info
+                        strat_infos_path = method_path+'strat_infos.yml'
+                        if not os.path.exists(strat_infos_path):
+                            raise ValueError(f'Path {strat_infos_path} doesn\'t exist.')
+                        with open(strat_infos_path, 'r') as file:
+                            strat_infos = yaml.safe_load(file)
+                        is_classif = strat_infos['classification']
+                        task_type = 'Classification' if is_classif else 'Regression'
+
+                        # Load task info
+                        task_infos_path = method_path+'task_infos.yml'
+                        if not os.path.exists(task_infos_path):
+                            raise ValueError(f'Path {task_infos_path} doesn\'t exist.')
+                        with open(task_infos_path, 'r') as file:
+                            task_infos = yaml.safe_load(file)
+                        X_shape = task_infos['X.shape']
+
                         for fold, s in scores.items():
                             if s is None:
                                 print(f'Skipping {db}/{t}/{m}')
@@ -409,11 +429,12 @@ class PlotHelperV4(object):
                             tun_wct = times['tuning_WCT'][fold]
                             imp_pt = times['imputation_PT'].get(fold, None)
                             tun_pt = times['tuning_PT'].get(fold, None)
+
                             rows.append(
-                                (size, db, t, renamed_m, T, fold, s, scorer, selection, imp_wct, tun_wct, imp_pt, tun_pt)
+                                (size, db, t, renamed_m, T, fold, s, scorer, selection, X_shape, task_type, imp_wct, tun_wct, imp_pt, tun_pt)
                             )
 
-        cols = ['size', 'db', 'task', 'method', 'trial', 'fold', 'score', 'scorer', 'selection', 'imputation_WCT', 'tuning_WCT', 'imputation_PT', 'tuning_PT']
+        cols = ['size', 'db', 'task', 'method', 'trial', 'fold', 'score', 'scorer', 'selection', 'X_shape', 'Type', 'imputation_WCT', 'tuning_WCT', 'imputation_PT', 'tuning_PT']
 
         df = pd.DataFrame(rows, columns=cols).astype({
             'size': int,
