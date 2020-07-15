@@ -69,7 +69,7 @@ def missing_scores(df, expected_methods):
                 n_t = subdf.loc[subdf['method'] == m, 'n_trials']
                 assert len(n_t) == 1
                 n_t = n_t.iloc[0]
-                if ('_pvals' in task and n_t != 5) or ('_pvals' not in task and n_t != 1):
+                if n_t != 5:
                     print(f'{size}/{db}/{task}: {m} missing trial: {n_t}/5')
 
                 if pd.isnull(subdf.loc[subdf['method'] == m, 'tuning_PT'].iloc[0]):
