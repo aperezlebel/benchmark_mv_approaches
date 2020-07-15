@@ -434,7 +434,7 @@ class PlotHelperV4(object):
                                 (size, db, t, renamed_m, T, fold, s, scorer, selection, X_shape, task_type, imp_wct, tun_wct, imp_pt, tun_pt)
                             )
 
-        cols = ['size', 'db', 'task', 'method', 'trial', 'fold', 'score', 'scorer', 'selection', 'X_shape', 'Type', 'imputation_WCT', 'tuning_WCT', 'imputation_PT', 'tuning_PT']
+        cols = ['size', 'db', 'task', 'method', 'trial', 'fold', 'score', 'scorer', 'selection', 'X_shape', 'type', 'imputation_WCT', 'tuning_WCT', 'imputation_PT', 'tuning_PT']
 
         df = pd.DataFrame(rows, columns=cols).astype({
             'size': int,
@@ -450,20 +450,72 @@ class PlotHelperV4(object):
     def get_task_description(self, filepath):
         df = pd.read_csv(filepath)
 
-        dfgb = df.groupby([''])
+        df = self.aggregate(df, 'score')
+
+        print(df)
+
+        dfgb = df.groupby(['db', 'task'])
+        df = dfgb.agg({
+            'score': 'mean',
+            # 'n_trials': 'sum',
+            # 'n_folds': 'sum',
+            'scorer': PlotHelperV4.assert_equal,  # first and assert equal
+            'selection': PlotHelperV4.assert_equal,
+            'X_shape': PlotHelperV4.assert_equal,
+            'type': PlotHelperV4.assert_equal,
+            # 'imputation_WCT': 'mean',
+            # 'tuning_WCT': 'mean',
+            # 'imputation_PT': 'mean',
+            # 'tuning_PT': 'mean',
+        })
+
+        df = df.reset_index()
+        return df
+
+    @staticmethod
+    def assert_equal(s):
+        """Check if all value of the series are equal and return the value."""
+        if not (s[0] == s).all():
+            raise ValueError(
+                f'Values differ but supposed to be constant. Col: {s.name}.'
+            )
+        return s[0]
 
     @staticmethod
     def aggregate(df, value):
         # Agregate accross folds by averaging
         df['n_folds'] = 1
         dfgb = df.groupby(['size', 'db', 'task', 'method', 'trial'])
-        df = dfgb.agg({value: 'mean', 'n_folds': 'sum', 'selection': 'first'})
+        df = dfgb.agg({
+            value: 'mean',
+            'n_folds': 'sum',
+            'scorer': PlotHelperV4.assert_equal,  # first and assert equal
+            'selection': PlotHelperV4.assert_equal,
+            'X_shape': PlotHelperV4.assert_equal,
+            'type': PlotHelperV4.assert_equal,
+            'imputation_WCT': 'mean',
+            'tuning_WCT': 'mean',
+            'imputation_PT': 'mean',
+            'tuning_PT': 'mean',
+        })
 
         # Agregate accross trials by averaging
         df = df.reset_index()
         df['n_trials'] = 1  # Add a count column to keep track of # of trials
         dfgb = df.groupby(['size', 'db', 'task', 'method'])
-        df = dfgb.agg({value: 'mean', 'n_trials': 'sum', 'n_folds': 'sum', 'selection': 'first'})
+        df = dfgb.agg({
+            value: 'mean',
+            'n_trials': 'sum',
+            'n_folds': 'sum',
+            'scorer': PlotHelperV4.assert_equal,  # first and assert equal
+            'selection': PlotHelperV4.assert_equal,
+            'X_shape': 'first',  #PlotHelperV4.assert_equal,
+            'type': PlotHelperV4.assert_equal,
+            'imputation_WCT': 'mean',
+            'tuning_WCT': 'mean',
+            'imputation_PT': 'mean',
+            'tuning_PT': 'mean',
+        })
 
         # Reset index to addlevel of the multi index to the columns of the df
         df = df.reset_index()
