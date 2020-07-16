@@ -4,6 +4,7 @@ import yaml
 import pandas as pd
 import numpy as np
 import re
+import os
 from sklearn.metrics import r2_score, roc_auc_score
 import matplotlib
 matplotlib.use('MacOSX')
@@ -408,7 +409,12 @@ class PlotHelperV4(object):
                         with open(task_infos_path, 'r') as file:
                             task_infos = yaml.safe_load(file)
                         X_shape = task_infos['X.shape']
-                        n, p = X_shape[0], X_shape[1]
+                        # Convert representation of tuple (str) to tuple
+                        X_shape = X_shape.replace('(', '')
+                        X_shape = X_shape.replace(')', '')
+                        X_shape = X_shape.replace(' ', '')
+                        n, p = X_shape.split(',')
+                        print(n, p)
 
                         for fold, s in scores.items():
                             if s is None:
@@ -485,6 +491,52 @@ class PlotHelperV4(object):
         df['score'] = df['score'].round(2)
         df['total_PT'] = df['total_PT'].astype(int)
         df['total_WCT'] = df['total_WCT'].astype(int)
+
+        df = df.drop(['imputation_WCT', 'tuning_WCT', 'total_WCT'], axis=1)
+
+        # Rename values in columns
+        df['selection'] = df['selection'].replace({
+            'ANOVA': 'A',
+            'manual': 'M',
+        })
+        df['scorer'] = df['scorer'].replace({
+            'roc_auc_score': 'AUC',
+            'r2_score': 'R2',
+        })
+
+        # Rename columns
+        rename_dict = {
+            'db': 'Database',
+            'imputation_PT': 'Imputation time',
+            'tuning_PT': 'Tuning time',
+            'total_PT': 'Total time',
+            'n': 'n',
+            'p': 'p',
+        }
+
+        # Capitalize
+        for f in df.columns:
+            if f not in rename_dict:
+                rename_dict[f] = f.capitalize()
+
+        df = df.rename(rename_dict, axis=1)
+
+        # Create multi index
+        df = df.set_index(['Database', 'Task'])
+
+        # Add descriptions
+        # df['Description'] = np.nan
+
+        # Read desciptions from file
+        description_filepath = 'scores/descriptions.csv'
+        if os.path.exists(description_filepath):
+            desc = pd.read_csv(description_filepath, index_col=[0, 1])
+            df = pd.concat([df, desc], axis=1)
+        else:
+            print(df.index)
+            desc = pd.DataFrame('Write task description here.', index=df.index, columns=['Description'])
+            desc.to_csv(description_filepath)
+        # df.loc[('TB', 'death_pvals')] = """Predict the death of patients using
 
         return df
 
