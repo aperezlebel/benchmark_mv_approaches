@@ -465,13 +465,27 @@ class PlotHelperV4(object):
             'n': PlotHelperV4.assert_equal,
             'p': PlotHelperV4.assert_equal,
             'type': PlotHelperV4.assert_equal,
-            # 'imputation_WCT': 'mean',
-            # 'tuning_WCT': 'mean',
-            # 'imputation_PT': 'mean',
-            # 'tuning_PT': 'mean',
+            'imputation_WCT': 'mean',
+            'tuning_WCT': 'mean',
+            'imputation_PT': 'mean',
+            'tuning_PT': 'mean',
         })
 
         df = df.reset_index()
+
+        # Sum times
+        df['total_PT'] = df['imputation_PT'].fillna(0) + df['tuning_PT']
+        df['total_WCT'] = df['imputation_WCT'].fillna(0) + df['tuning_WCT']
+
+        # Round scores
+        df['imputation_PT'] = df['imputation_PT'].astype(int)
+        df['imputation_WCT'] = df['imputation_WCT'].astype(int)
+        df['tuning_PT'] = df['tuning_PT'].astype(int)
+        df['tuning_WCT'] = df['tuning_WCT'].astype(int)
+        df['score'] = df['score'].round(2)
+        df['total_PT'] = df['total_PT'].astype(int)
+        df['total_WCT'] = df['total_WCT'].astype(int)
+
         return df
 
     @staticmethod
