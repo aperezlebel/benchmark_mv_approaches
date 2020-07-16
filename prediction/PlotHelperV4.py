@@ -502,13 +502,17 @@ class PlotHelperV4(object):
             'roc_auc_score': 'AUC',
             'r2_score': 'R2',
         })
+        df['type'] = df['type'].replace({
+            'Classification': 'C',
+            'Regression': 'R',
+        })
 
         # Rename columns
         rename_dict = {
             'db': 'Database',
-            'imputation_PT': 'Imputation time',
-            'tuning_PT': 'Tuning time',
-            'total_PT': 'Total time',
+            'imputation_PT': 'Imputation time (s)',
+            'tuning_PT': 'Tuning time (s)',
+            'total_PT': 'Total time (s)',
             'n': 'n',
             'p': 'p',
         }
@@ -532,8 +536,10 @@ class PlotHelperV4(object):
             desc = pd.read_csv(description_filepath, index_col=[0, 1])
             df = pd.concat([df, desc], axis=1)
         else:
-            print(df.index)
-            desc = pd.DataFrame('Write task description here.', index=df.index, columns=['Description'])
+            desc = pd.DataFrame(
+                {'Target': 'Explain target here.', 'Description': 'Write task description here.'},
+                index=df.index, columns=['Target', 'Description']
+            )
             desc.to_csv(description_filepath)
         # df.loc[('TB', 'death_pvals')] = """Predict the death of patients using
 
@@ -578,7 +584,7 @@ class PlotHelperV4(object):
             'scorer': PlotHelperV4.assert_equal,  # first and assert equal
             'selection': PlotHelperV4.assert_equal,
             'n': PlotHelperV4.assert_equal,
-            'p': 'first',  #PlotHelperV4.assert_equal,
+            'p': 'mean',  #PlotHelperV4.assert_equal,
             'type': PlotHelperV4.assert_equal,
             'imputation_WCT': 'mean',
             'tuning_WCT': 'mean',

@@ -58,6 +58,8 @@ ph = PlotHelperV4(root_folder='results_original/graham_v4/results/', rename=rena
 filepath = 'scores/scores.csv'
 df = ph.get_task_description(filepath)
 df.to_csv('scores/task_description.csv')
+with pd.option_context("max_colwidth", None):
+    df.to_latex('scores/task_description.tex')
 print(df)
 exit()
 
