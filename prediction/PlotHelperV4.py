@@ -408,6 +408,7 @@ class PlotHelperV4(object):
                         with open(task_infos_path, 'r') as file:
                             task_infos = yaml.safe_load(file)
                         X_shape = task_infos['X.shape']
+                        n, p = X_shape[0], X_shape[1]
 
                         for fold, s in scores.items():
                             if s is None:
@@ -431,10 +432,10 @@ class PlotHelperV4(object):
                             tun_pt = times['tuning_PT'].get(fold, None)
 
                             rows.append(
-                                (size, db, t, renamed_m, T, fold, s, scorer, selection, X_shape, task_type, imp_wct, tun_wct, imp_pt, tun_pt)
+                                (size, db, t, renamed_m, T, fold, s, scorer, selection, n, p, task_type, imp_wct, tun_wct, imp_pt, tun_pt)
                             )
 
-        cols = ['size', 'db', 'task', 'method', 'trial', 'fold', 'score', 'scorer', 'selection', 'X_shape', 'type', 'imputation_WCT', 'tuning_WCT', 'imputation_PT', 'tuning_PT']
+        cols = ['size', 'db', 'task', 'method', 'trial', 'fold', 'score', 'scorer', 'selection', 'n', 'p', 'type', 'imputation_WCT', 'tuning_WCT', 'imputation_PT', 'tuning_PT']
 
         df = pd.DataFrame(rows, columns=cols).astype({
             'size': int,
@@ -461,7 +462,8 @@ class PlotHelperV4(object):
             # 'n_folds': 'sum',
             'scorer': PlotHelperV4.assert_equal,  # first and assert equal
             'selection': PlotHelperV4.assert_equal,
-            'X_shape': PlotHelperV4.assert_equal,
+            'n': PlotHelperV4.assert_equal,
+            'p': PlotHelperV4.assert_equal,
             'type': PlotHelperV4.assert_equal,
             # 'imputation_WCT': 'mean',
             # 'tuning_WCT': 'mean',
@@ -491,7 +493,8 @@ class PlotHelperV4(object):
             'n_folds': 'sum',
             'scorer': PlotHelperV4.assert_equal,  # first and assert equal
             'selection': PlotHelperV4.assert_equal,
-            'X_shape': PlotHelperV4.assert_equal,
+            'n': PlotHelperV4.assert_equal,
+            'p': PlotHelperV4.assert_equal,
             'type': PlotHelperV4.assert_equal,
             'imputation_WCT': 'mean',
             'tuning_WCT': 'mean',
@@ -509,7 +512,8 @@ class PlotHelperV4(object):
             'n_folds': 'sum',
             'scorer': PlotHelperV4.assert_equal,  # first and assert equal
             'selection': PlotHelperV4.assert_equal,
-            'X_shape': 'first',  #PlotHelperV4.assert_equal,
+            'n': PlotHelperV4.assert_equal,
+            'p': 'first',  #PlotHelperV4.assert_equal,
             'type': PlotHelperV4.assert_equal,
             'imputation_WCT': 'mean',
             'tuning_WCT': 'mean',
