@@ -414,7 +414,6 @@ class PlotHelperV4(object):
                         X_shape = X_shape.replace(')', '')
                         X_shape = X_shape.replace(' ', '')
                         n, p = X_shape.split(',')
-                        print(n, p)
 
                         for fold, s in scores.items():
                             if s is None:
