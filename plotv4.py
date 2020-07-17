@@ -59,7 +59,7 @@ filepath = 'scores/scores.csv'
 df = ph.get_task_description(filepath)
 df.to_csv('scores/task_description.csv')
 with pd.option_context("max_colwidth", None):
-    df.to_latex('scores/task_description.tex')
+    df.to_latex('scores/task_description.tex', bold_rows=True)
 print(df)
 exit()
 
