@@ -18,7 +18,7 @@ rename = {
 
 rename_on_plot = {
     'relative_score': 'Relative prediction score',
-    'relative_total_PT': 'Relative process time',
+    'relative_total_PT': 'Relative total training time',
     'relative_total_WCT': 'Relative wall-clock time',
     'TB': 'Traumabase',
     'UKBB': 'UK BioBank',
@@ -44,18 +44,25 @@ method_order = [
 
 db_order = [
     'TB',
+    'UKBB',
     'MIMIC',
     'NHIS',
-    'UKBB',
 ]
 
-ph = PlotHelperV4(root_folder='results_original/graham_v3/results/', rename=rename)
+ph = PlotHelperV4(root_folder='results_original/graham_v4/results/', rename=rename)
 # ph = PlotHelperV4(root_folder='/Volumes/LACIE/Alexandre/Stage/BACKUP/results_original/graham_v3/results/', rename=rename)
 
 # ph._export('TB', 3)
 # exit()
 
 filepath = 'scores/scores.csv'
+df = ph.get_task_description(filepath)
+df.to_csv('scores/task_description.csv')
+with pd.option_context("max_colwidth", None):
+    df.to_latex('scores/task_description.tex', bold_rows=True)
+print(df)
+exit()
+
 # df = pd.read_csv(filepath)
 # df['total_PT'] = df['imputation_PT'].fillna(0) + df['tuning_PT']
 # df = PlotHelperV4.aggregate(df, 'total_PT')
@@ -66,9 +73,9 @@ filepath = 'scores/scores.csv'
 # ph.dump(filepath)
 # exit()
 # ph.mean_rank(filepath, method_order=method_order).to_csv('scores/ranks.csv')
-# fig = ph.plot_scores(filepath, method_order=method_order, db_order=db_order, rename=rename_on_plot)#, reference_method='MIA')
-# if fig:
-#     plt.show()
+fig = ph.plot_scores(filepath, method_order=method_order, db_order=db_order, rename=rename_on_plot)#, reference_method='MIA')
+if fig:
+    plt.show()
 
 xticks = {
     # 0.5: '$\\frac{1}{2}\\times$',

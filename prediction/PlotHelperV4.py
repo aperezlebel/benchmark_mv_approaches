@@ -4,6 +4,7 @@ import yaml
 import pandas as pd
 import numpy as np
 import re
+import os
 from sklearn.metrics import r2_score, roc_auc_score
 import matplotlib
 matplotlib.use('MacOSX')
@@ -389,6 +390,31 @@ class PlotHelperV4(object):
                                                       mean=False)
                     for m, (scores, scorer) in abs_scores.items():
                         times = self.times(db, t, m, size)
+
+                        method_path = f'{self.root_folder}/{db}/{t}/{m}/'
+
+                        # Load strat info
+                        strat_infos_path = method_path+'strat_infos.yml'
+                        if not os.path.exists(strat_infos_path):
+                            raise ValueError(f'Path {strat_infos_path} doesn\'t exist.')
+                        with open(strat_infos_path, 'r') as file:
+                            strat_infos = yaml.safe_load(file)
+                        is_classif = strat_infos['classification']
+                        task_type = 'Classification' if is_classif else 'Regression'
+
+                        # Load task info
+                        task_infos_path = method_path+'task_infos.yml'
+                        if not os.path.exists(task_infos_path):
+                            raise ValueError(f'Path {task_infos_path} doesn\'t exist.')
+                        with open(task_infos_path, 'r') as file:
+                            task_infos = yaml.safe_load(file)
+                        X_shape = task_infos['X.shape']
+                        # Convert representation of tuple (str) to tuple
+                        X_shape = X_shape.replace('(', '')
+                        X_shape = X_shape.replace(')', '')
+                        X_shape = X_shape.replace(' ', '')
+                        n, p = X_shape.split(',')
+
                         for fold, s in scores.items():
                             if s is None:
                                 print(f'Skipping {db}/{t}/{m}')
@@ -409,11 +435,12 @@ class PlotHelperV4(object):
                             tun_wct = times['tuning_WCT'][fold]
                             imp_pt = times['imputation_PT'].get(fold, None)
                             tun_pt = times['tuning_PT'].get(fold, None)
+
                             rows.append(
-                                (size, db, t, renamed_m, T, fold, s, scorer, selection, imp_wct, tun_wct, imp_pt, tun_pt)
+                                (size, db, t, renamed_m, T, fold, s, scorer, selection, n, p, task_type, imp_wct, tun_wct, imp_pt, tun_pt)
                             )
 
-        cols = ['size', 'db', 'task', 'method', 'trial', 'fold', 'score', 'scorer', 'selection', 'imputation_WCT', 'tuning_WCT', 'imputation_PT', 'tuning_PT']
+        cols = ['size', 'db', 'task', 'method', 'trial', 'fold', 'score', 'scorer', 'selection', 'n', 'p', 'type', 'imputation_WCT', 'tuning_WCT', 'imputation_PT', 'tuning_PT']
 
         df = pd.DataFrame(rows, columns=cols).astype({
             'size': int,
@@ -426,17 +453,144 @@ class PlotHelperV4(object):
 
         df.to_csv(filepath)
 
+    def get_task_description(self, filepath):
+        df = pd.read_csv(filepath)
+
+        df = self.aggregate(df, 'score')
+
+        print(df)
+
+        dfgb = df.groupby(['db', 'task'])
+        df = dfgb.agg({
+            'score': 'mean',
+            # 'n_trials': 'sum',
+            # 'n_folds': 'sum',
+            'scorer': PlotHelperV4.assert_equal,  # first and assert equal
+            'selection': PlotHelperV4.assert_equal,
+            'n': PlotHelperV4.assert_equal,
+            'p': PlotHelperV4.assert_equal,
+            'type': PlotHelperV4.assert_equal,
+            'imputation_WCT': 'mean',
+            'tuning_WCT': 'mean',
+            'imputation_PT': 'mean',
+            'tuning_PT': 'mean',
+        })
+
+        df = df.reset_index()
+
+        # Sum times
+        df['total_PT'] = df['imputation_PT'].fillna(0) + df['tuning_PT']
+        df['total_WCT'] = df['imputation_WCT'].fillna(0) + df['tuning_WCT']
+
+        # Round scores
+        df['imputation_PT'] = df['imputation_PT'].astype(int)
+        df['imputation_WCT'] = df['imputation_WCT'].astype(int)
+        df['tuning_PT'] = df['tuning_PT'].astype(int)
+        df['tuning_WCT'] = df['tuning_WCT'].astype(int)
+        df['score'] = df['score'].round(2)
+        df['total_PT'] = df['total_PT'].astype(int)
+        df['total_WCT'] = df['total_WCT'].astype(int)
+
+        df = df.drop(['imputation_WCT', 'tuning_WCT', 'total_WCT'], axis=1)
+
+        # Rename values in columns
+        df['selection'] = df['selection'].replace({
+            'ANOVA': 'A',
+            'manual': 'M',
+        })
+        df['scorer'] = df['scorer'].replace({
+            'roc_auc_score': 'AUC',
+            'r2_score': 'R2',
+        })
+        df['type'] = df['type'].replace({
+            'Classification': 'C',
+            'Regression': 'R',
+        })
+
+        # Rename columns
+        rename_dict = {
+            'db': 'Database',
+            'imputation_PT': 'Imputation time (s)',
+            'tuning_PT': 'Tuning time (s)',
+            'total_PT': 'Total time (s)',
+            'n': 'n',
+            'p': 'p',
+        }
+
+        # Capitalize
+        for f in df.columns:
+            if f not in rename_dict:
+                rename_dict[f] = f.capitalize()
+
+        df = df.rename(rename_dict, axis=1)
+
+        # Create multi index
+        df = df.set_index(['Database', 'Task'])
+
+        # Add descriptions
+        # df['Description'] = np.nan
+
+        # Read desciptions from file
+        description_filepath = 'scores/descriptions.csv'
+        if os.path.exists(description_filepath):
+            desc = pd.read_csv(description_filepath, index_col=[0, 1])
+            df = pd.concat([df, desc], axis=1)
+        else:
+            desc = pd.DataFrame(
+                {'Target': 'Explain target here.', 'Description': 'Write task description here.'},
+                index=df.index, columns=['Target', 'Description']
+            )
+            desc.to_csv(description_filepath)
+        # df.loc[('TB', 'death_pvals')] = """Predict the death of patients using
+
+        return df
+
+    @staticmethod
+    def assert_equal(s):
+        """Check if all value of the series are equal and return the value."""
+        if not (s[0] == s).all():
+            raise ValueError(
+                f'Values differ but supposed to be constant. Col: {s.name}.'
+            )
+        return s[0]
+
     @staticmethod
     def aggregate(df, value):
         # Agregate accross folds by averaging
+        df['n_folds'] = 1
         dfgb = df.groupby(['size', 'db', 'task', 'method', 'trial'])
-        df = dfgb.agg({value: 'mean', 'selection': 'first'})
+        df = dfgb.agg({
+            value: 'mean',
+            'n_folds': 'sum',
+            'scorer': PlotHelperV4.assert_equal,  # first and assert equal
+            'selection': PlotHelperV4.assert_equal,
+            'n': PlotHelperV4.assert_equal,
+            'p': PlotHelperV4.assert_equal,
+            'type': PlotHelperV4.assert_equal,
+            'imputation_WCT': 'mean',
+            'tuning_WCT': 'mean',
+            'imputation_PT': 'mean',
+            'tuning_PT': 'mean',
+        })
 
         # Agregate accross trials by averaging
         df = df.reset_index()
         df['n_trials'] = 1  # Add a count column to keep track of # of trials
         dfgb = df.groupby(['size', 'db', 'task', 'method'])
-        df = dfgb.agg({value: 'mean', 'n_trials': 'sum', 'selection': 'first'})
+        df = dfgb.agg({
+            value: 'mean',
+            'n_trials': 'sum',
+            'n_folds': 'sum',
+            'scorer': PlotHelperV4.assert_equal,  # first and assert equal
+            'selection': PlotHelperV4.assert_equal,
+            'n': PlotHelperV4.assert_equal,
+            'p': 'mean',  #PlotHelperV4.assert_equal,
+            'type': PlotHelperV4.assert_equal,
+            'imputation_WCT': 'mean',
+            'tuning_WCT': 'mean',
+            'imputation_PT': 'mean',
+            'tuning_PT': 'mean',
+        })
 
         # Reset index to addlevel of the multi index to the columns of the df
         df = df.reset_index()
@@ -597,8 +751,9 @@ class PlotHelperV4(object):
             subdf = df[df['size'] == size]
 
             # Split in valid and invalid data
-            idx_valid = subdf.index[(subdf['selection'] == 'manual') | (
-                (subdf['selection'] != 'manual') & (subdf['n_trials'] == 5))]
+            # idx_valid = subdf.index[(subdf['selection'] == 'manual') | (
+            #     (subdf['selection'] != 'manual') & (subdf['n_trials'] == 5))]
+            idx_valid = subdf.index[subdf['n_folds'] == 25]
             idx_invalid = subdf.index.difference(idx_valid)
             df_valid = subdf.loc[idx_valid]
             df_invalid = subdf.loc[idx_invalid]
