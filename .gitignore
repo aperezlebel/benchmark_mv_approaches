@@ -20,5 +20,6 @@ logs*
 temp
 scores/*
 !scores/scores.csv
+!scores/task_description.tex
 !scores/ranks.csv
 selected
