@@ -1,10 +1,10 @@
 """Gather tasks metas from all databases and create the task accessor."""
-from .task_v2 import Task
+from .task import Task
 
-from .TB_v2 import task_metas as TB_task_metas
-from .UKBB_v2 import task_metas as UKBB_task_metas
-from .MIMIC_v2 import task_metas as MIMIC_task_metas
-from .NHIS_v2 import task_metas as NHIS_task_metas
+from .TB import task_metas as TB_task_metas
+from .UKBB import task_metas as UKBB_task_metas
+from .MIMIC import task_metas as MIMIC_task_metas
+from .NHIS import task_metas as NHIS_task_metas
 
 
 class _TaskAccessor(object):

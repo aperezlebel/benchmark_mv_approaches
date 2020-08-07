@@ -1,8 +1,8 @@
-"""Prediction tasks v2 for NHIS."""
+"""Prediction tasks for NHIS."""
 import os
 import pandas as pd
 
-from .task_v2 import TaskMeta
+from .task import TaskMeta
 from .transform import Transform
 
 

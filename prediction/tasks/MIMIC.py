@@ -1,9 +1,9 @@
-"""Prediction tasks v2 for MIMIC."""
+"""Prediction tasks for MIMIC."""
 import os
 import pandas as pd
 from dask import dataframe as dd
 
-from .task_v2 import TaskMeta
+from .task import TaskMeta
 from .transform import Transform
 from database import dbs
 
