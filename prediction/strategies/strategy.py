@@ -7,8 +7,6 @@ from typing import Any, Callable
 from sklearn.base import BaseEstimator, RegressorMixin, ClassifierMixin
 from sklearn.pipeline import Pipeline
 
-from ..FakeStep import FakeStep
-
 
 logger = logging.getLogger(__name__)
 logger.addHandler(logging.StreamHandler())  # Print also in console.
@@ -42,7 +40,6 @@ class Strategy():
 
         search_params['cv'] = self.inner_cv
         estimator = Pipeline([
-            # ('log1', FakeStep('searchHP')),
             ('model', estimator)
         ])
         param_space = {f'model__{k}': v for k, v in param_space.items()}

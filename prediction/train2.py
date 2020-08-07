@@ -12,7 +12,6 @@ from sklearn.pipeline import Pipeline
 from joblib import parallel_backend
 
 from .DumpHelper import DumpHelper
-from .FakeStep import FakeStep
 
 
 logger = logging.getLogger(__name__)
