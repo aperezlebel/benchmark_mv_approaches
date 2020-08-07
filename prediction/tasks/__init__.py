@@ -8,7 +8,7 @@ from .NHIS import task_metas as NHIS_task_metas
 
 
 class _TaskAccessor(object):
-    """Gather tasks from all databses and give an accessor to them."""
+    """Gather tasks from all databases and give an accessor to them."""
 
     def __init__(self):
         """Init."""
