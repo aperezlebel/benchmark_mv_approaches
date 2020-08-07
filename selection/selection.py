@@ -38,7 +38,7 @@ encoding = 'ISO-8859-1'
 
 
 def run(argv=None):
-    """Train the choosen model(s) on the choosen task(s)."""
+    """Run the feature selection using ANOVA on the chosen task."""
     args = parser.parse_args(argv)
 
     print('Retrieving task')
