@@ -35,7 +35,7 @@ def train(task, strategy, RS=None, **kwargs):
     assert 'T' in kwargs
     T = kwargs['T']  # Trial number (ANOVA), only used for dumping names here
 
-    X, y = task.X, task.y
+    X, y = task.X, task.y  # Expensive data retrieval is hidden here
 
     logger.info(f'Started task "{task.meta.tag}" '
                 f'using "{strategy.name}" strategy on "{task.meta.db}".')
