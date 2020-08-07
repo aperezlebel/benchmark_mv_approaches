@@ -64,7 +64,7 @@ def train(task, strategy, RS=None, **kwargs):
     for n in strategy.train_set_steps:
         n_tot = X.shape[0]
         if n_tot - n < strategy.min_test_set*n_tot:
-            # Size of the train set too small, skipping
+            # Size of the test set too small, skipping
             continue
 
         if strategy.is_classification():
