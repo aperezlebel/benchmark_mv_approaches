@@ -116,9 +116,17 @@ def run(argv=None):
     print(f'X loaded with shape {X.shape}')
 
     os.makedirs(temp_dir, exist_ok=True)
+
+    # Little trick here, to iterate efficiently over the features, data is
+    # transposed so that features are now in the place of rows.
+    # This is useful because it is less memory expensive to iterate over
+    # rows than features (rows are loaded on the fly from the file).
+    # Particularly usefull with big datasets that doesn't fit in memory.
     X_t = X.transpose()
     X_t.to_csv(temp_df_transposed_path, quoting=csv.QUOTE_ALL)
 
+    # Here we create an iterator over the rows (features, since its transposed)
+    # Data is loaded row by row (since chunksize=1) when the iterator is called
     X_t = pd.read_csv(temp_df_transposed_path, iterator=True, chunksize=1,
                       index_col=0)
 
