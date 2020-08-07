@@ -87,15 +87,12 @@ def train(task, strategy, RS=None, **kwargs):
     if strategy.imputer is not None:
         logger.info('Creating pipeline with imputer.')
         steps = [
-            ('log1', FakeStep('imputer')),
             ('imputer', strategy.imputer),
-            ('log2', FakeStep('searchCV_estimator')),
             ('searchCV_estimator', strategy.search)
         ]
     else:
         logger.info('Creating pipeline without imputer.')
         steps = [
-            ('log1', FakeStep('searchCV_estimator')),
             ('searchCV_estimator', strategy.search)
         ]
 
