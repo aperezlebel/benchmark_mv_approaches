@@ -7,9 +7,9 @@ from prediction.tasks import tasks
 class test_TB(TestCase):
     """Test TraumaBase tasks."""
 
-    def test_shock_hemo(self):
+    def test_hemo(self):
         """Test shock hemo task."""
-        task = tasks['TB/shock_hemo']
+        task = tasks['TB/hemo']
         meta = task.meta
 
         assert task.is_classif()
