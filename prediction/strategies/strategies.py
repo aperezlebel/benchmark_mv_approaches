@@ -11,7 +11,7 @@ from sklearn.ensemble import HistGradientBoostingClassifier, \
     HistGradientBoostingRegressor, RandomForestClassifier
 from sklearn.experimental import enable_iterative_imputer
 from sklearn.impute import SimpleImputer, IterativeImputer, KNNImputer
-from sklearn.linear_model import RidgeCV, BayesianRidge
+from sklearn.linear_model import RidgeCV, BayesianRidge, Ridge, LogisticRegression
 from scipy.stats import uniform
 from sklearn.utils.fixes import loguniform
 
@@ -113,6 +113,34 @@ strategies.append(Strategy(
     n_splits=n_splits,
 ))
 
+strategies.append(Strategy(
+    name='Classification_Logit',
+    estimator=LogisticRegression(random_state=RS),
+    inner_cv=StratifiedShuffleSplit(n_splits=n_inner_splits, train_size=0.8, random_state=RS),
+    search=GridSearchCV,
+    param_space=param_space,
+    search_params={
+        'scoring': 'roc_auc_ovr_weighted',
+        'verbose': 1000,
+        'n_jobs': n_jobs,
+        'return_train_score': True,
+    },
+    outer_cv=KFold(n_splits=n_outer_splits, shuffle=True, random_state=RS),
+    compute_importance=compute_importance,
+    importance_params={
+        'n_jobs': n_jobs,
+        'n_repeats': n_repeats,
+    },
+    learning_curve=learning_curve,
+    learning_curve_params={
+        'scoring': 'roc_auc_ovr_weighted',
+        'train_sizes': np.linspace(0.1, 1, n_learning_trains)
+    },
+    roc=roc,
+    train_set_steps=train_set_steps,
+    min_test_set=min_test_set,
+    n_splits=n_splits,
+))
 
 strategies.append(Strategy(
     name='Classification_RFC',
