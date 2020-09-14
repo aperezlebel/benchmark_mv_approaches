@@ -11,7 +11,7 @@ from sklearn.ensemble import HistGradientBoostingClassifier, \
     HistGradientBoostingRegressor, RandomForestClassifier
 from sklearn.experimental import enable_iterative_imputer
 from sklearn.impute import SimpleImputer, IterativeImputer, KNNImputer
-from sklearn.linear_model import RidgeCV, BayesianRidge, Ridge, LogisticRegression
+from sklearn.linear_model import RidgeCV, BayesianRidge, LogisticRegressionCV
 from scipy.stats import uniform
 from sklearn.utils.fixes import loguniform
 
@@ -115,16 +115,10 @@ strategies.append(Strategy(
 
 strategies.append(Strategy(
     name='Classification_Logit',
-    estimator=LogisticRegression(random_state=RS),
-    inner_cv=StratifiedShuffleSplit(n_splits=n_inner_splits, train_size=0.8, random_state=RS),
-    search=GridSearchCV,
-    param_space=param_space,
-    search_params={
-        'scoring': 'roc_auc_ovr_weighted',
-        'verbose': 1000,
-        'n_jobs': n_jobs,
-        'return_train_score': True,
-    },
+    estimator=LogisticRegressionCV(random_state=RS, cv=StratifiedShuffleSplit(n_splits=n_inner_splits, train_size=0.8, random_state=RS),),
+    inner_cv=None,
+    search=None,
+    param_space=None,
     outer_cv=KFold(n_splits=n_outer_splits, shuffle=True, random_state=RS),
     compute_importance=compute_importance,
     importance_params={
@@ -232,17 +226,11 @@ strategies.append(Strategy(
 
 strategies.append(Strategy(
     name='Regression_Ridge',
-    estimator=Ridge(random_state=RS),
-    inner_cv=ShuffleSplit(n_splits=n_inner_splits, train_size=0.8, random_state=RS),
-    search=GridSearchCV,
-    param_space=param_space,
-    search_params={
-        'scoring': ['r2', 'neg_mean_absolute_error'],
-        'refit': 'r2',
-        'verbose': 1000,
-        'n_jobs': n_jobs,
-        'return_train_score': True,
-    },
+    estimator=RidgeCV(cv=ShuffleSplit(n_splits=n_inner_splits, train_size=0.8, random_state=RS)),
+    inner_cv=None,
+    search=None,
+    param_space=None,
+    search_params=None,
     outer_cv=KFold(n_splits=n_outer_splits, shuffle=True, random_state=RS),
     compute_importance=compute_importance,
     importance_params={
