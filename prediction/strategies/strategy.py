@@ -35,15 +35,19 @@ class Strategy():
         self.min_test_set = min_test_set
         self.n_splits = n_splits
 
-        if not all(p in estimator.get_params().keys() for p in self.param_space.keys()):
-            self.param_space = dict()
+        if search is None:
+            self.search = self.estimator
 
-        search_params['cv'] = self.inner_cv
-        estimator = Pipeline([
-            ('model', estimator)
-        ])
-        param_space = {f'model__{k}': v for k, v in self.param_space.items()}
-        self.search = search(estimator, param_space, **search_params)
+        else:
+            if not all(p in estimator.get_params().keys() for p in self.param_space.keys()):
+                self.param_space = dict()
+
+            search_params['cv'] = self.inner_cv
+            estimator = Pipeline([
+                ('model', estimator)
+            ])
+            param_space = {f'model__{k}': v for k, v in self.param_space.items()}
+            self.search = search(estimator, param_space, **search_params)
 
     @property
     def name(self):
