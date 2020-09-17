@@ -968,3 +968,46 @@ class PlotHelperV4(object):
                                     reference_method=reference_method,
                                     figsize=None)
         return fig
+
+    @staticmethod
+    def plot_MIA_v_linear(filepath, db_order, rename=dict()):
+        df = pd.read_csv(filepath, index_col=0)
+
+        # Select methods of interest
+        df = df.loc[df['method'].isin(['MIA', 'Linear+Iter', 'Linear+Iter+mask'])]
+
+        # Compute the difference of scores between MIA and Linear model
+        dfgb = df.groupby(['method'])
+
+        MIA = dfgb.get_group('MIA').set_index(['size', 'db', 'task', 'trial', 'fold'])
+        Linear = dfgb.get_group('Linear+Iter').set_index(['size', 'db', 'task', 'trial', 'fold'])
+        Linear_mask = dfgb.get_group('Linear+Iter+mask').set_index(['size', 'db', 'task', 'trial', 'fold'])
+
+        # Diff between MIA and Linear+Iterative
+        diff1 = MIA.copy()
+        diff1['method'] = 'Linear\n - MIA'
+
+        # Diff between MIA and Linear+Iterative+mask
+        diff2 = MIA.copy()
+        diff2['method'] = 'Linear+mask\n - MIA'
+
+        scores_diff1 = Linear['score'] - MIA['score']
+        scores_normalized1 = scores_diff1.divide(MIA['score'])
+
+        scores_diff2 = Linear_mask['score'] - MIA['score']
+        scores_normalized2 = scores_diff2.divide(MIA['score'])
+
+        diff1['score'] = scores_diff1
+        diff1.reset_index(inplace=True)
+
+        diff2['score'] = scores_diff2
+        diff2.reset_index(inplace=True)
+
+        diff = pd.concat([diff1, diff2], axis=0)
+
+        fig, axes = PlotHelperV4._plot(diff, 'score', how='abs',
+                                       rename=rename,
+                                       db_order=db_order,
+                                       )
+
+        return fig
