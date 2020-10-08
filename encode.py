@@ -1,11 +1,8 @@
 """Functions to encode a data frame (OrdinalEncode, OneHotEncode)..."""
 
-import yaml
-from time import time
 import pandas as pd
 import numpy as np
 from sklearn.preprocessing import OrdinalEncoder, OneHotEncoder
-from datetime import datetime
 
 from database.constants import NOT_MISSING, BINARY, CONTINUE_I, MV_PLACEHOLDER
 from df_utils import fill_df
@@ -75,17 +72,6 @@ def ordinal_encode(df, mv, keys=None, order=None):
 
         df_encoded = pd.DataFrame(data_encoded,
                                   index=df.index, columns=df.columns)
-
-        # print(enc.categories_)
-        # order_list = []
-        # for i, feature_name in enumerate(df.columns):
-        #     order_list.append(list(enc.categories_[i]))
-        #     print(f'{feature_name}\n\t{enc.categories_[i]}')
-
-        # document = yaml.dump(order_list, allow_unicode=True)
-        # print(document)
-        # with open(f'order_{time()}.yml', 'w') as file:
-        #     file.write(document)
 
         return df_encoded, mv
 
