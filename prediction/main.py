@@ -4,7 +4,7 @@ import argparse
 
 from .strategies import strategies
 from .tasks import tasks
-from .train4 import train
+from .train import train
 
 
 logger = logging.getLogger(__name__)
