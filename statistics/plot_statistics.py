@@ -1,6 +1,5 @@
 """Plot statistis about missing values from given indicators."""
 import matplotlib
-matplotlib.use('MacOSX')
 import seaborn as sns
 import matplotlib.pyplot as plt
 import pandas as pd
@@ -537,6 +536,55 @@ def plot_rm_features(indicators, plot=False, show=True, ax=None):
         ax.set(ylabel='', xlabel=f'Number of values (Total {n_values})')
         ax.set_xlim(right=n_values)
         sns.despine(left=True, bottom=True, ax=ax)
+
+
+def figure1(indicators, plot=True, db_name=None, table=None):
+    fig1, axes1 = plt.subplots(3, 1, figsize=(12, 6))
+    fig1.tight_layout(pad=2)#, h_pad=7)
+    if all((db_name, table)):
+        fig1.suptitle(f'Overview of missing values in {db_name} (table "{table}")',
+                      fontsize='xx-large')
+
+    matplotlib.rcParams.update({'font.size': 13})
+
+    plot_global(indicators, plot=plot, ax=axes1[0])
+    plot_features(indicators, plot=plot, ax=axes1[1])
+    plot_rows(indicators, plot=plot, ax=axes1[2])
+
+
+def figure2(indicators, plot=True, db_name=None, table=None):
+    matplotlib.rcParams.update({
+        'font.size': 14,
+        'axes.titlesize': 14,
+        'axes.labelsize': 13,
+        'xtick.labelsize': 13,
+        'ytick.labelsize': 13,
+    })
+    fig2, _ = plot_feature_wise(indicators, plot=plot)
+    if all((db_name, table)):
+        fig2.suptitle(f'Proportion of missing values in each feature'
+                      f'\nof {db_name} (table "{table}")',
+                      fontsize='x-large')
+
+
+def figure3(indicators, plot=True, db_name=None, table=None):
+    matplotlib.rcParams.update({
+        # 'font.size': 14,
+        'axes.titlesize': 14,
+        'axes.labelsize': 13,
+        'xtick.labelsize': 13,
+        'ytick.labelsize': 13,
+    })
+
+    fig3, axes3 = plt.subplots(2, 1, figsize=(10, 8))
+    fig3.tight_layout(pad=5, h_pad=7, rect=(0.05, 0, 1, .92))
+    if all((db_name, table)):
+        fig3.suptitle(f'Effect of removing features containing missing values'
+                      f'\non {db_name} (table "{table}")',
+                      fontsize='x-large')
+
+    plot_rm_rows(indicators, plot=plot, ax=axes3[0])
+    plot_rm_features(indicators, plot=plot, ax=axes3[1])
 
 
 def describe_missing_values(df_mv, plot=False, db_name=None, table=None):

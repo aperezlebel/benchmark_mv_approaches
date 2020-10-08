@@ -5,7 +5,9 @@ import pandas as pd
 import numpy as np
 
 from prediction.tasks import tasks
-from plot_statistics import plot_global
+from .plot_statistics import figure1, figure2, figure3
+
+import matplotlib.pyplot as plt
 
 
 def get_indicators_mv(df_mv):
@@ -266,7 +268,14 @@ def run(argv=None):
     plot = not args.hide
 
     task = tasks[task_tag]
+
     mv = task.mv
     indicators = get_indicators_mv(mv)
     print(indicators)
-    plot_global(indicators, plot=plot)
+
+    db_name = task.meta.db
+    df_name = task.meta.df_name
+    figure1(indicators, plot=plot, db_name=db_name, table=df_name)
+    figure2(indicators, plot=plot, db_name=db_name, table=df_name)
+    figure3(indicators, plot=plot, db_name=db_name, table=df_name)
+    plt.show()
