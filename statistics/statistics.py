@@ -1,11 +1,10 @@
 """Compute statistics about missing values on a databse."""
-
 import argparse
 import pandas as pd
 import numpy as np
 
 from prediction.tasks import tasks
-from .plot_statistics import figure1, figure2, figure3
+from .plot_statistics import figure1, figure2, figure2bis, figure3
 
 import matplotlib.pyplot as plt
 
@@ -258,24 +257,39 @@ def run(argv=None):
     """Show some statistics on the given df."""
     parser = argparse.ArgumentParser(description='Stats on missing values.')
     parser.add_argument('program')
-    parser.add_argument('--tag', dest='task_tag', default=None, nargs='?',
-                        help='The task tag')
+    parser.add_argument('tag', default=None, nargs='?', help='The task tag')
     parser.add_argument('--hide', dest='hide', default=False, const=True,
                         nargs='?', help='Whether to plot the stats or print')
+    parser.add_argument('--fig1', dest='fig1', default=False, const=True,
+                        nargs='?', help='Whether to plot the figure1')
+    parser.add_argument('--fig2', dest='fig2', default=False, const=True,
+                        nargs='?', help='Whether to plot the figure2')
+    parser.add_argument('--fig3', dest='fig3', default=False, const=True,
+                        nargs='?', help='Whether to plot the figure3')
     args = parser.parse_args(argv)
 
-    task_tag = args.task_tag
+    task_tag = args.tag
     plot = not args.hide
 
     task = tasks[task_tag]
 
     mv = task.mv
     indicators = get_indicators_mv(mv)
-    print(indicators)
 
     db_name = task.meta.db
-    df_name = task.meta.df_name
-    figure1(indicators, plot=plot, db_name=db_name, table=df_name)
-    figure2(indicators, plot=plot, db_name=db_name, table=df_name)
-    figure3(indicators, plot=plot, db_name=db_name, table=df_name)
+    df_name = task_tag
+    fig1, fig2, fig3 = args.fig1, args.fig2, args.fig3
+
+    if not any((fig1, fig2, fig3)):
+        fig1, fig2, fig3 = True, True, True
+
+    # Plot all the indicators
+    if fig1:
+        figure1(indicators, plot=plot, db_name=db_name, table=df_name)
+    if fig2:
+        figure2(indicators, plot=plot, db_name=db_name, table=df_name)
+        figure2bis(indicators, plot=plot, db_name=db_name, table=df_name)
+    if fig3:
+        figure3(indicators, plot=plot, db_name=db_name, table=df_name)
+
     plt.show()

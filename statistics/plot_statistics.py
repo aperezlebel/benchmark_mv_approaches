@@ -3,6 +3,7 @@ import matplotlib
 import seaborn as sns
 import matplotlib.pyplot as plt
 import pandas as pd
+import numpy as np
 
 
 # Plot functions: each indicator has a differebt way of beaing plotted
@@ -173,17 +174,13 @@ def plot_feature_wise(indicators, plot=False, show=True, ax=None, nf_max=40):
         n_mv_fw['feature_shortened'] = n_mv_fw['id'].astype(str) + ': ' + n_mv_fw.index
 
         # Truncate
-        # n_mv_fw['feature'] = n_mv_fw['feature'].str.slice(0,20)
-        # i = 0
         if n_mv_fw.shape[0] <= nf_max:
             def truncate(string):
                 if len(string) <= 20:
                     return string
                 return string[:27]+'...'
 
-        #     print(n_mv_fw)
             n_mv_fw['feature_shortened'] = n_mv_fw['feature_shortened'].apply(truncate)
-        #     print(n_mv_fw)
 
         # Add the total number of values for each feature
         n_mv_fw['N V'] = n_rows
@@ -220,16 +217,7 @@ def plot_feature_wise(indicators, plot=False, show=True, ax=None, nf_max=40):
         if n_mv_fw_l.shape[0] > nf_max:
             ax.tick_params(axis='y', which='both', left=False, labelleft=False)
             fig.tight_layout(rect=(0, 0, 1, .92))
-            # for patch in ax.patches:
-            #     new_value = 1
-            #     current_width = patch.get_width()
-            #     diff = current_width - new_value
 
-            #     # we change the bar width
-            #     patch.set_width(new_value)
-
-            #     # we recenter the bar
-            #     patch.set_x(patch.get_x() + diff * .5)
         else:
             fig.tight_layout(rect=(0., 0, 1, .92))
 
@@ -239,8 +227,6 @@ def plot_feature_wise(indicators, plot=False, show=True, ax=None, nf_max=40):
 def plot_feature_wise_v2(indicators, plot=False, show=True, ax=None, nf_max=40):
     """Plot the statistics feature-wise."""
     n_mv_fw = indicators['feature-wise']
-
-    n_rows = indicators['global'].at[0, 'n_rows']
 
     if show:
         with pd.option_context('display.max_rows', None):
@@ -259,11 +245,7 @@ def plot_feature_wise_v2(indicators, plot=False, show=True, ax=None, nf_max=40):
 
         n_mv_fw['id'] = np.arange(n_mv_fw.shape[0])
 
-        # Add the total number of values for each feature
-        # n_mv_fw['N V'] = n_rows
-
         # Get rid of the features with no missing values
-        # n_mv_fw_l = n_mv_fw[(n_mv_fw['N MV1'] != 0) | (n_mv_fw['N MV2'] != 0)]
         n_mv_fw_l = n_mv_fw
 
         if ax is None:
@@ -271,24 +253,7 @@ def plot_feature_wise_v2(indicators, plot=False, show=True, ax=None, nf_max=40):
         else:
             fig = plt.gcf()
 
-        # sns.set_color_codes('pastel')
-        # sns.scatterplot(y='N V', x='id', data=n_mv_fw_l, ax=ax, marker='.',
-        #                 color='lightgray', label=f'Not missing', edgecolor=None)
-
-        # sns.set_color_codes("dark")
-        # sns.scatterplot(y='N MV2', x='id', data=n_mv_fw_l, ax=ax, marker='.',
-        #                 color="b", label=f'Missing - Not available', edgecolor=None)
-
         sns.set_color_codes('muted')
-        # sns.lineplot(y='N MV', x='id', data=n_mv_fw_l, ax=ax,
-        #                 color='b', label=f'Missing')
-        # sns.scatterplot(y='N MV', x='id', data=n_mv_fw_l, ax=ax, marker='.',
-        #                 color='b', label=f'Missing', edgecolor=None)
-                        # color='b', label=f'Missing - Not applicable', edgecolor=None)
-
-        # plt.fill_between(n_mv_fw_l['id'].values, n_mv_fw_l['N MV'].values)
-
-        # plt.stackplot(n_mv_fw_l['id'].values, n_mv_fw_l['N V'].values, n_mv_fw_l['N MV'].values, color='lightgray', labels=('Missing', 'Not missing'))
         plt.stackplot(n_mv_fw_l['id'].values, n_mv_fw_l['N V'].values, color='lightgray', labels=['Not missing'])
         plt.stackplot(n_mv_fw_l['id'].values, n_mv_fw_l['N MV'].values, color='b', labels=['Missing'])
 
@@ -300,18 +265,7 @@ def plot_feature_wise_v2(indicators, plot=False, show=True, ax=None, nf_max=40):
 
         # Remove y labels if more than 40
         if n_mv_fw.shape[0] > nf_max:
-            # ax.tick_params(axis='x', which='both', bottom=False, labelbottom=False)
             fig.tight_layout(rect=(0, 0, 1, .92))
-            # for patch in ax.patches:
-            #     new_value = 1
-            #     current_width = patch.get_width()
-            #     diff = current_width - new_value
-
-            #     # we change the bar width
-            #     patch.set_width(new_value)
-
-            #     # we recenter the bar
-            #     patch.set_x(patch.get_x() + diff * .5)
         else:
             fig.tight_layout(rect=(0., 0, 1, .92))
 
@@ -566,6 +520,20 @@ def figure2(indicators, plot=True, db_name=None, table=None):
                       f'\nof {db_name} (table "{table}")',
                       fontsize='x-large')
 
+def figure2bis(indicators, plot=True, db_name=None, table=None):
+    matplotlib.rcParams.update({
+        'font.size': 14,
+        'axes.titlesize': 14,
+        'axes.labelsize': 13,
+        'xtick.labelsize': 13,
+        'ytick.labelsize': 13,
+    })
+    fig2, _ = plot_feature_wise_v2(indicators, plot=plot)
+    if all((db_name, table)):
+        fig2.suptitle(f'Proportion of missing values in each feature'
+                      f'\nof {db_name} (table "{table}")',
+                      fontsize='x-large')
+
 
 def figure3(indicators, plot=True, db_name=None, table=None):
     matplotlib.rcParams.update({
@@ -586,56 +554,3 @@ def figure3(indicators, plot=True, db_name=None, table=None):
     plot_rm_rows(indicators, plot=plot, ax=axes3[0])
     plot_rm_features(indicators, plot=plot, ax=axes3[1])
 
-
-def describe_missing_values(df_mv, plot=False, db_name=None, table=None):
-    """Plot all the indicators."""
-    # Get all the indicators
-    # indicators = get_indicators_mv(df_mv)
-
-    # # Figure 1
-    # fig1, axes1 = plt.subplots(3, 1, figsize=(12, 6))
-    # fig1.tight_layout(pad=2)#, h_pad=7)
-    # if all((db_name, table)):
-    #     fig1.suptitle(f'Overview of missing values in {db_name} (table "{table}")',
-    #                   fontsize='xx-large')
-
-    # matplotlib.rcParams.update({'font.size': 13})
-
-    # plot_global(indicators, plot=plot, ax=axes1[0])
-    # plot_features(indicators, plot=plot, ax=axes1[1])
-    # plot_rows(indicators, plot=plot, ax=axes1[2])
-
-    # Figure 2
-    matplotlib.rcParams.update({
-        'font.size': 14,
-        'axes.titlesize': 14,
-        'axes.labelsize': 13,
-        'xtick.labelsize': 13,
-        'ytick.labelsize': 13,
-    })
-    fig2, _ = plot_feature_wise(indicators, plot=plot)
-    if all((db_name, table)):
-        fig2.suptitle(f'Proportion of missing values in each feature'
-                      f'\nof {db_name} (table "{table}")',
-                      fontsize='x-large')
-
-    # # Figure 3
-    # matplotlib.rcParams.update({
-    #     # 'font.size': 14,
-    #     'axes.titlesize': 14,
-    #     'axes.labelsize': 13,
-    #     'xtick.labelsize': 13,
-    #     'ytick.labelsize': 13,
-    # })
-
-    # fig3, axes3 = plt.subplots(2, 1, figsize=(10, 8))
-    # fig3.tight_layout(pad=5, h_pad=7, rect=(0.05, 0, 1, .92))
-    # if all((db_name, table)):
-    #     fig3.suptitle(f'Effect of removing features containing missing values'
-    #                   f'\non {db_name} (table "{table}")',
-    #                   fontsize='x-large')
-
-    # plot_rm_rows(indicators, plot=plot, ax=axes3[0])
-    # plot_rm_features(indicators, plot=plot, ax=axes3[1])
-
-    plt.show()
