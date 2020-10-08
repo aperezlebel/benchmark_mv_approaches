@@ -73,8 +73,10 @@ def train(task, strategy, RS=None, **kwargs):
 
     estimator = Pipeline(steps)
 
+    logger.info('Before size loop')
     # Size of the train set
     for n in strategy.train_set_steps:
+        logger.info(f'Size {n}')
         n_tot = X.shape[0]
         if n_tot - n < strategy.min_test_set*n_tot:
             # Size of the test set too small, skipping

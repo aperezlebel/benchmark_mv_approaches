@@ -35,15 +35,19 @@ class Strategy():
         self.min_test_set = min_test_set
         self.n_splits = n_splits
 
-        if not all(p in estimator.get_params().keys() for p in param_space.keys()):
-            raise ValueError('Given parmameters must be params of estimator.')
+        if search is None:
+            self.search = self.estimator
 
-        search_params['cv'] = self.inner_cv
-        estimator = Pipeline([
-            ('model', estimator)
-        ])
-        param_space = {f'model__{k}': v for k, v in param_space.items()}
-        self.search = search(estimator, param_space, **search_params)
+        else:
+            if not all(p in estimator.get_params().keys() for p in self.param_space.keys()):
+                self.param_space = dict()
+
+            search_params['cv'] = self.inner_cv
+            estimator = Pipeline([
+                ('model', estimator)
+            ])
+            param_space = {f'model__{k}': v for k, v in self.param_space.items()}
+            self.search = search(estimator, param_space, **search_params)
 
     @property
     def name(self):
@@ -80,21 +84,27 @@ class Strategy():
 
     def get_infos(self):
         # Remove redondant params in the dump
-        estimator_params = {
-            k: v for k, v in self.estimator.__dict__.items() if k not in self.param_space
-        }
+        if self.param_space:
+            estimator_params = {
+                k: v for k, v in self.estimator.__dict__.items() if k not in self.param_space
+            }
+        else:
+            estimator_params = None
         # Remove redondant params in the dump
         search_params = {
             k: v for k, v in self.search.__dict__.items() if k not in ['estimator', 'cv']
         }
         imputer_params = None if self.imputer is None else self.imputer.__dict__
 
+        # Retrieving params
+        inner_cv = None if self.inner_cv is None else self.inner_cv.__dict__
+
         return {
             'name': self.name,
             'estimator': self.estimator_class(),
             'estimator_params': estimator_params,
             'inner_cv': self.inner_cv_class(),
-            'inner_cv_params': self.inner_cv.__dict__,
+            'inner_cv_params': inner_cv,
             'outer_cv': self.outer_cv_class(),
             'outer_cv_params': self.outer_cv.__dict__,
             'search': self.search_class(),

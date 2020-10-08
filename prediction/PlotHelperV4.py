@@ -454,6 +454,7 @@ class PlotHelperV4(object):
         df.to_csv(filepath)
 
     def get_task_description(self, filepath):
+        """Build and dump a csv that will explain each task once completed."""
         df = pd.read_csv(filepath)
 
         df = self.aggregate(df, 'score')
@@ -527,9 +528,6 @@ class PlotHelperV4(object):
         # Create multi index
         df = df.set_index(['Database', 'Task'])
 
-        # Add descriptions
-        # df['Description'] = np.nan
-
         # Read desciptions from file
         description_filepath = 'scores/descriptions.csv'
         if os.path.exists(description_filepath):
@@ -541,13 +539,15 @@ class PlotHelperV4(object):
                 index=df.index, columns=['Target', 'Description']
             )
             desc.to_csv(description_filepath)
-        # df.loc[('TB', 'death_pvals')] = """Predict the death of patients using
 
         return df
 
     @staticmethod
     def assert_equal(s):
         """Check if all value of the series are equal and return the value."""
+        if not s.empty:
+            return 0
+
         if not (s[0] == s).all():
             raise ValueError(
                 f'Values differ but supposed to be constant. Col: {s.name}.'
@@ -598,9 +598,9 @@ class PlotHelperV4(object):
         return df
 
     @staticmethod
-    def _plot(filepath, value, how, xticks_dict=None, db_order=None,
+    def _plot(filepath, value, how, xticks_dict=None, xlims=None, db_order=None,
               method_order=None, rename=dict(), reference_method=None,
-              figsize=None, legend_bbox=None):
+              figsize=None, legend_bbox=None, xlabel=None):
         """Plot the full available results."""
         if not isinstance(filepath, pd.DataFrame):
             df = pd.read_csv(filepath, index_col=0)
@@ -614,21 +614,23 @@ class PlotHelperV4(object):
         dbs = list(df['db'].unique())
         n_dbs = len(dbs)
         methods = list(df['method'].unique())
-        n_methods = len(methods)
 
         # Check db_order
         if db_order is None:
             db_order = dbs
-            # db_order = {db: i for i, db in enumerate(dbs)}
         elif set(dbs) != set(db_order):
             raise ValueError(f'Db order missmatch existing ones {dbs}')
 
         # Check method order
         if method_order is None:
             method_order = methods
-            # method_order = {m: i for i, m in enumerate(method_order_list)}
-        elif set(methods) != set(method_order):
+        elif set(method_order).issubset(set(methods)):
+            df = df[df['method'].isin(method_order)]
+        else:
             raise ValueError(f'Method order missmatch existing ones {methods}')
+
+        methods = list(df['method'].unique())
+        n_methods = len(methods)
 
         df = PlotHelperV4.aggregate(df, value)
 
@@ -700,6 +702,9 @@ class PlotHelperV4(object):
         def xticks_params(values, xticks_dict=None):
             true_min_x = Decimal(str(values.min()))
             true_max_x = Decimal(str(values.max()))
+
+            if xlims is not None:
+                true_min_x, true_max_x = xlims
 
             if xticks_dict is None:  # Automatic xticks
 
@@ -843,7 +848,9 @@ class PlotHelperV4(object):
             # twinx.set_xlim(left=xlim_min, right=xlim_max)
 
             ax.set_title(f'n={size}')
-            ax.set_xlabel(PlotHelperV4.rename_str(rename, ax.get_xlabel()))
+            if xlabel is None:
+                xlabel = ax.get_xlabel()
+            ax.set_xlabel(PlotHelperV4.rename_str(rename, xlabel))
             ax.set_ylabel(None)
             ax.set_axisbelow(True)
             ax.grid(True, axis='x')
@@ -856,6 +863,16 @@ class PlotHelperV4(object):
             df = pd.read_csv(filepath, index_col=0)
         else:
             df = filepath
+
+        # Check method order
+        methods = list(df['method'].unique())
+        if method_order is None:
+            method_order = methods
+        elif set(method_order).issubset(set(methods)):
+            # Keep only the rows having methods in method_order
+            df = df[df['method'].isin(method_order)]
+        else:
+            raise ValueError(f'Method order missmatch existing ones {methods}')
 
         dfgb = df.groupby(['size', 'db', 'task', 'trial', 'fold'])
         df['rank'] = dfgb['score'].rank(method='dense', ascending=False)
@@ -950,7 +967,7 @@ class PlotHelperV4(object):
         return fig
 
     @staticmethod
-    def plot_times(filepath, which, xticks_dict=None, db_order=None,
+    def plot_times(filepath, which, xticks_dict=None, xlims=None, db_order=None,
                    method_order=None, rename=dict(), reference_method=None):
         df = pd.read_csv(filepath, index_col=0)
         if which == 'PT':
@@ -963,8 +980,107 @@ class PlotHelperV4(object):
             raise ValueError(f'Unknown argument {which}')
         fig, _ = PlotHelperV4._plot(df, value, how='log',
                                     xticks_dict=xticks_dict,
+                                    xlims=xlims,
                                     method_order=method_order,
                                     db_order=db_order, rename=rename,
                                     reference_method=reference_method,
                                     figsize=None)
+        return fig
+
+    # @staticmethod
+    # def plot_MIA_linear_diff(filepath, db_order, rename=dict()):
+    #     df = pd.read_csv(filepath, index_col=0)
+
+    #     # Select methods of interest
+    #     # df = df.loc[df['method'].isin(['MIA', 'Linear+Iter', 'Linear+Iter+mask'])]
+
+    #     # Compute the difference of scores between MIA and Linear model
+    #     dfgb = df.groupby(['method'])
+
+    #     MIA = dfgb.get_group('MIA').set_index(['size', 'db', 'task', 'trial', 'fold'])
+    #     Linear = dfgb.get_group('Linear+Iter').set_index(['size', 'db', 'task', 'trial', 'fold'])
+    #     Linear_mask = dfgb.get_group('Linear+Iter+mask').set_index(['size', 'db', 'task', 'trial', 'fold'])
+
+    #     # Diff between MIA and Linear+Iterative
+    #     diff1 = MIA.copy()
+    #     diff1['method'] = 'Linear\n - MIA'
+
+    #     # Diff between MIA and Linear+Iterative+mask
+    #     diff2 = MIA.copy()
+    #     diff2['method'] = 'Linear+mask\n - MIA'
+
+    #     scores_diff1 = Linear['score'] - MIA['score']
+    #     scores_normalized1 = scores_diff1.divide(MIA['score'])
+
+    #     scores_diff2 = Linear_mask['score'] - MIA['score']
+    #     scores_normalized2 = scores_diff2.divide(MIA['score'])
+
+    #     diff1['score'] = scores_diff1
+    #     diff1.reset_index(inplace=True)
+
+    #     diff2['score'] = scores_diff2
+    #     diff2.reset_index(inplace=True)
+
+    #     diff = pd.concat([diff1, diff2], axis=0)
+
+    #     diff.to_csv('sandbox/diff2.csv')
+
+    #     fig, axes = PlotHelperV4._plot(diff, 'score', how='abs',
+    #                                    rename=rename,
+    #                                    db_order=db_order,
+    #                                    xlabel='absolute_score',
+    #                                    xticks_dict={
+    #                                        0: '0',
+    #                                        -0.1: '-0.1',
+    #                                    },
+    #                                    xlims=(-0.11, 0.04)
+    #                                    )
+
+    #     return fig
+
+    @staticmethod
+    def plot_MIA_linear(filepath, db_order, method_order, rename=dict()):
+        df = pd.read_csv(filepath, index_col=0)
+        # Select methods of interest
+        df = df.loc[df['method'].isin(method_order)]
+
+        fig, axes = PlotHelperV4._plot(df, 'score', how='no-norm',
+                                       rename=rename,
+                                       db_order=db_order,
+                                       method_order=method_order,
+
+                                       #    xlabel='absolute_score',
+                                       #    xticks_dict={
+                                       #        0: '0',
+                                       #        1: '1',
+                                       #    },
+                                       #    xlims=(0, 1.1)
+                                       xticks_dict={
+                                           #    -0.05: '-0.05',
+                                           0: '0',
+                                           0.05: '0.05',
+                                           .1: '0.1',
+                                       },
+                                       xlims=(-0.04, 0.14),
+                                       #    figsize=(17, 3.25),
+                                       figsize=(17, 5.25),
+                                       legend_bbox=(4.22, 1.015),
+                                       )
+
+        df_ranks = PlotHelperV4.mean_rank(filepath, method_order=method_order)
+
+        global_avg_ranks = df_ranks[('Global', 'AVG')]
+        cellText = np.transpose([list(global_avg_ranks.astype(str))])
+        rowLabels = list(global_avg_ranks.index)
+        rowLabels = [PlotHelperV4.rename_str(rename, s) for s in rowLabels]
+
+        axes[-1].table(cellText=cellText, loc='right',
+                       rowLabels=rowLabels,
+                       colLabels=['Mean\nrank'],
+                       bbox=[1.37, 0, .2, .735],
+                       colWidths=[0.2],
+                       )
+
+        plt.subplots_adjust(right=.88, left=.09)
+
         return fig
