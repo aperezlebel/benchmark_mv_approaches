@@ -1,7 +1,6 @@
 """Plot the results of --train4."""
 from prediction.PlotHelper import PlotHelper
 import matplotlib.pyplot as plt
-import pandas as pd
 
 
 rename = {
