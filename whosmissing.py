@@ -17,6 +17,8 @@ methods =[
     'Iter+mask',
     'KNN',
     'KNN+mask',
+    'Linear+Iter',
+    'Linear+Iter+mask',
 ]
 
 translate_methods = {
