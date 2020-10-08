@@ -1,5 +1,5 @@
 """Plot the results of --train4."""
-from prediction.PlotHelperV4 import PlotHelper
+from prediction.PlotHelper import PlotHelper
 import matplotlib.pyplot as plt
 import pandas as pd
 
