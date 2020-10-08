@@ -4,9 +4,7 @@ import argparse
 
 from .strategies import strategies
 from .tasks import tasks
-from .train2 import train as train2
-from .train3 import train as train3
-from .train4 import train as train4
+from .train4 import train
 
 
 logger = logging.getLogger(__name__)
@@ -17,12 +15,6 @@ parser = argparse.ArgumentParser(description='Prediction program.')
 parser.add_argument('program')
 parser.add_argument('task_name', nargs='?', default=None)
 parser.add_argument('strategy_name', nargs='?', default=None)
-parser.add_argument('--train3', dest='train', const=train3, default=train2,
-                    nargs='?',
-                    help='Whether to use train2 or train3 for prediction.')
-parser.add_argument('--train4', dest='train', const=train4, default=train2,
-                    nargs='?',
-                    help='Whether to use train2 or train4 for prediction.')
 parser.add_argument('--RS', dest='RS', default=None, nargs='?',
                     help='The random state to use.')
 parser.add_argument('--T', dest='T', default=0, nargs='?',
@@ -59,4 +51,4 @@ def run(argv=None):
     if RS:
         RS = int(RS)
 
-    _ = args.train(task, strategy, RS=RS, T=T)
+    train(task, strategy, RS=RS, T=T)
