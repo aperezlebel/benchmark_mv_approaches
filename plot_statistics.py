@@ -1,14 +1,9 @@
-"""Plot statistis about missing values."""
-import argparse
+"""Plot statistis about missing values from given indicators."""
 import matplotlib
 matplotlib.use('MacOSX')
 import seaborn as sns
 import matplotlib.pyplot as plt
 import pandas as pd
-
-from prediction.tasks import tasks
-from database import dbs
-from statistics import get_indicators_mv
 
 
 # Plot functions: each indicator has a differebt way of beaing plotted
@@ -547,7 +542,7 @@ def plot_rm_features(indicators, plot=False, show=True, ax=None):
 def describe_missing_values(df_mv, plot=False, db_name=None, table=None):
     """Plot all the indicators."""
     # Get all the indicators
-    indicators = get_indicators_mv(df_mv)
+    # indicators = get_indicators_mv(df_mv)
 
     # # Figure 1
     # fig1, axes1 = plt.subplots(3, 1, figsize=(12, 6))
@@ -596,37 +591,3 @@ def describe_missing_values(df_mv, plot=False, db_name=None, table=None):
     # plot_rm_features(indicators, plot=plot, ax=axes3[1])
 
     plt.show()
-
-def run(argv=None):
-    """Show some statistics on the given df."""
-    parser = argparse.ArgumentParser(description='Stats on missing values.')
-    parser.add_argument('program')
-    parser.add_argument('--tag', dest='task_tag', default=None, nargs='?',
-                        help='The task tag')
-    parser.add_argument('--name', dest='db_df_name', default=None, nargs='?',
-                        help='The db and df name')
-    parser.add_argument('--hide', dest='hide', default=False, const=True,
-                        nargs='?', help='Whether to plot the stats or print')
-    args = parser.parse_args(argv)
-
-    task_tag = args.task_tag
-    db_df_name = args.db_df_name
-    plot = not args.hide
-
-    if task_tag is not None:
-        task = tasks[task_tag]
-        db_name, tag = task.meta.db, task.meta.tag
-        db = dbs[db_name]
-        db.load(task.meta, light=True)
-        mv = db.missing_values[tag]
-
-    elif db_df_name is not None:
-        db_name, tag = db_df_name.split('/')
-        db = dbs[db_name]
-        db.load(tag, light=True)
-        mv = db.missing_values[tag]
-
-    else:
-        raise ValueError('Incomplete arguments')
-
-    describe_missing_values(mv, plot=plot, db_name=db.nickname, table=tag)

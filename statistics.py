@@ -4,12 +4,12 @@ import argparse
 import pandas as pd
 import numpy as np
 
-from missing_values import get_missing_values
 from prediction.tasks import tasks
-from database import dbs
+from plot_statistics import plot_global
 
 
 def get_indicators_mv(df_mv):
+    """Compute indicators about missing values. Used for plotting figures."""
     # 1: Statistics on the full database
     n_rows, n_cols = df_mv.shape
     n_values = n_rows*n_cols
@@ -258,30 +258,15 @@ def run(argv=None):
     parser.add_argument('program')
     parser.add_argument('--tag', dest='task_tag', default=None, nargs='?',
                         help='The task tag')
-    parser.add_argument('--name', dest='db_df_name', default=None, nargs='?',
-                        help='The db and df name')
     parser.add_argument('--hide', dest='hide', default=False, const=True,
                         nargs='?', help='Whether to plot the stats or print')
     args = parser.parse_args(argv)
 
     task_tag = args.task_tag
-    db_df_name = args.db_df_name
     plot = not args.hide
 
-    if task_tag is not None:
-        task = tasks[task_tag]
-        db_name, tag = task.meta.db, task.meta.tag
-        db = dbs[db_name]
-        db.load(task.meta, light=True)
-        mv = db.missing_values[tag]
-
-    elif db_df_name is not None:
-        db_name, tag = db_df_name.split('/')
-        db = dbs[db_name]
-        db.load(tag, light=True)
-        mv = db.missing_values[tag]
-
-    else:
-        raise ValueError('Incomplete arguments')
-
-    raise NotImplementedError('Not yet implemented.')
+    task = tasks[task_tag]
+    mv = task.mv
+    indicators = get_indicators_mv(mv)
+    print(indicators)
+    plot_global(indicators, plot=plot)
