@@ -1,3 +1,4 @@
+"""Implement the TimerStep class."""
 import logging
 import time
 
@@ -6,6 +7,7 @@ logger.addHandler(logging.StreamHandler())  # Print also in console.
 
 
 class TimerStep:
+    """Record timestamps as part of a scikit-learn Pipeline step."""
     def __init__(self, name):
         self.name = name
         self.fit_timestamps = []
