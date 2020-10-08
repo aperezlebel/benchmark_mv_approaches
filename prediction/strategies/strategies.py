@@ -136,49 +136,6 @@ strategies.append(Strategy(
     n_splits=n_splits,
 ))
 
-strategies.append(Strategy(
-    name='Classification_RFC',
-    estimator=RandomForestClassifier(n_jobs=1, random_state=RS),
-    inner_cv=StratifiedShuffleSplit(n_splits=n_inner_splits, train_size=0.8, random_state=RS),
-    search=GridSearchCV,
-    param_space={
-        'n_estimators': [50, 100],
-        'max_depth': [3, 6, 9]
-    },
-    search_params={
-        'scoring': 'roc_auc_ovr_weighted',
-        'verbose': 1000,
-        'n_jobs': n_jobs,
-        'return_train_score': True,
-    },
-    # search=RandomizedSearchCV,
-    # param_space={
-    #     'learning_rate': uniform(1e-5, 1),
-    #     'max_iter': range(10, 500)
-    # },
-    # search_params={
-    #     'scoring': 'recall',
-    #     'verbose': 1000,
-    #     'n_jobs': n_jobs,
-    #     'return_train_score': True,
-    #     'n_iter': n_iter
-    # },
-    outer_cv=KFold(n_splits=n_outer_splits, shuffle=True, random_state=RS),
-    compute_importance=compute_importance,
-    importance_params={
-        'n_jobs': n_jobs,
-        'n_repeats': n_repeats,
-    },
-    learning_curve=learning_curve,
-    learning_curve_params={
-        'scoring': 'roc_auc_ovr_weighted',
-        'train_sizes': np.linspace(0.1, 1, n_learning_trains)
-    },
-    roc=roc,
-    train_set_steps=train_set_steps,
-    min_test_set=min_test_set,
-    n_splits=n_splits,
-))
 
 # A strategy to run a regression
 strategies.append(Strategy(
@@ -260,13 +217,6 @@ imputers = {
     'Iterative+mask': IterativeImputer(add_indicator=True,
                                        max_iter=iterative_imputer_max_iter,
                                        random_state=RS),
-    'IterativeL': IterativeImputer(estimator=BayesianRidge(lambda_init=5),
-                                   max_iter=iterative_imputer_max_iter,
-                                   random_state=RS),
-    'IterativeL+mask': IterativeImputer(estimator=BayesianRidge(lambda_init=5),
-                                        add_indicator=True,
-                                        max_iter=iterative_imputer_max_iter,
-                                        random_state=RS),
     'KNN': KNNImputer(),
     'KNN+mask': KNNImputer(add_indicator=True),
 
