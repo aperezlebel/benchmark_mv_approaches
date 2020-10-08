@@ -1,5 +1,5 @@
 """Plot the results of --train4."""
-from prediction.PlotHelperV4 import PlotHelperV4
+from prediction.PlotHelperV4 import PlotHelper
 import matplotlib.pyplot as plt
 import pandas as pd
 
@@ -84,8 +84,8 @@ db_order = [
     'NHIS',
 ]
 
-ph = PlotHelperV4(root_folder='results_original/graham_v5/results/', rename=rename)
-# ph = PlotHelperV4(root_folder='/Volumes/LACIE/Alexandre/Stage/BACKUP/results_original/graham_v3/results/', rename=rename)
+ph = PlotHelper(root_folder='results_original/graham_v5/results/', rename=rename)
+# ph = PlotHelper(root_folder='/Volumes/LACIE/Alexandre/Stage/BACKUP/results_original/graham_v3/results/', rename=rename)
 
 # ph._export('TB', 3)
 # exit()
@@ -111,13 +111,13 @@ xticks = {
     10: '$10\\times$',
     # 2: '$2\\times$'
 }
-# fig = ph.plot_times(filepath, 'PT', xticks_dict=xticks, xlims=(0.005, 15), method_order=linear_method_order, db_order=db_order, rename=rename_on_plot)
+fig = ph.plot_times(filepath, 'PT', xticks_dict=xticks, xlims=(0.005, 15), method_order=linear_method_order, db_order=db_order, rename=rename_on_plot)
 
 # fig = ph.plot_MIA_linear_diff(filepath, db_order=db_order, rename=rename_on_plot)
 
 # plt.tight_layout()
 plt.show()
-exit()
+# exit()
 
 
 # df = ph.get_task_description(filepath)
@@ -131,7 +131,7 @@ exit()
 
 # df = pd.read_csv(filepath)
 # df['total_PT'] = df['imputation_PT'].fillna(0) + df['tuning_PT']
-# df = PlotHelperV4.aggregate(df, 'total_PT')
+# df = PlotHelper.aggregate(df, 'total_PT')
 # df = ph._add_relative_value(df, 'total_PT', how='log')
 # print(df)
 # df.to_csv('sandbox/dump_aggregated_scores.csv')

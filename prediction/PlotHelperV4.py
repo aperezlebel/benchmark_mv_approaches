@@ -14,7 +14,7 @@ from decimal import Decimal
 import shutil
 
 
-class PlotHelperV4(object):
+class PlotHelper(object):
     """Plot the train4 results."""
 
     def __init__(self, root_folder, rename, reference_method=None):
@@ -466,11 +466,11 @@ class PlotHelperV4(object):
             'score': 'mean',
             # 'n_trials': 'sum',
             # 'n_folds': 'sum',
-            'scorer': PlotHelperV4.assert_equal,  # first and assert equal
-            'selection': PlotHelperV4.assert_equal,
-            'n': PlotHelperV4.assert_equal,
-            'p': PlotHelperV4.assert_equal,
-            'type': PlotHelperV4.assert_equal,
+            'scorer': PlotHelper.assert_equal,  # first and assert equal
+            'selection': PlotHelper.assert_equal,
+            'n': PlotHelper.assert_equal,
+            'p': PlotHelper.assert_equal,
+            'type': PlotHelper.assert_equal,
             'imputation_WCT': 'mean',
             'tuning_WCT': 'mean',
             'imputation_PT': 'mean',
@@ -562,11 +562,11 @@ class PlotHelperV4(object):
         df = dfgb.agg({
             value: 'mean',
             'n_folds': 'sum',
-            'scorer': PlotHelperV4.assert_equal,  # first and assert equal
-            'selection': PlotHelperV4.assert_equal,
-            'n': PlotHelperV4.assert_equal,
-            'p': PlotHelperV4.assert_equal,
-            'type': PlotHelperV4.assert_equal,
+            'scorer': PlotHelper.assert_equal,  # first and assert equal
+            'selection': PlotHelper.assert_equal,
+            'n': PlotHelper.assert_equal,
+            'p': PlotHelper.assert_equal,
+            'type': PlotHelper.assert_equal,
             'imputation_WCT': 'mean',
             'tuning_WCT': 'mean',
             'imputation_PT': 'mean',
@@ -581,11 +581,11 @@ class PlotHelperV4(object):
             value: 'mean',
             'n_trials': 'sum',
             'n_folds': 'sum',
-            'scorer': PlotHelperV4.assert_equal,  # first and assert equal
-            'selection': PlotHelperV4.assert_equal,
-            'n': PlotHelperV4.assert_equal,
-            'p': 'mean',  #PlotHelperV4.assert_equal,
-            'type': PlotHelperV4.assert_equal,
+            'scorer': PlotHelper.assert_equal,  # first and assert equal
+            'selection': PlotHelper.assert_equal,
+            'n': PlotHelper.assert_equal,
+            'p': 'mean',  #PlotHelper.assert_equal,
+            'type': PlotHelper.assert_equal,
             'imputation_WCT': 'mean',
             'tuning_WCT': 'mean',
             'imputation_PT': 'mean',
@@ -632,22 +632,22 @@ class PlotHelperV4(object):
         methods = list(df['method'].unique())
         n_methods = len(methods)
 
-        df = PlotHelperV4.aggregate(df, value)
+        df = PlotHelper.aggregate(df, value)
 
         # Compute and add relative value
-        df = PlotHelperV4._add_relative_value(df, value, how,
+        df = PlotHelper._add_relative_value(df, value, how,
                                               reference_method=reference_method)
 
         # Add y position for plotting
         def _add_y(row):
             method_idx = method_order.index(row['method'])
             db_idx = db_order.index(row['db'])
-            return PlotHelperV4._y(method_idx, db_idx, n_methods, n_dbs)
+            return PlotHelper._y(method_idx, db_idx, n_methods, n_dbs)
 
         df['y'] = df.apply(_add_y, axis=1)
 
         # Add a renamed column for databases for plotting
-        df['Database'] = df.apply(lambda row: PlotHelperV4.rename_str(rename, row['db']), axis=1)
+        df['Database'] = df.apply(lambda row: PlotHelper.rename_str(rename, row['db']), axis=1)
 
         # Print df with all its edits
         print(df)
@@ -677,7 +677,7 @@ class PlotHelperV4(object):
         )
 
         markers = ['o', '^', 'v', 's']
-        renamed_db_order = [PlotHelperV4.rename_str(rename, db) for db in db_order]
+        renamed_db_order = [PlotHelper.rename_str(rename, db) for db in db_order]
         db_markers = {db: markers[i] for i, db in enumerate(renamed_db_order)}
 
         def round_extrema(min_x, max_x):
@@ -821,7 +821,7 @@ class PlotHelperV4(object):
             else:
                 # Get yticks labels and rename them according to given dict
                 labels = [item.get_text() for item in ax.get_yticklabels()]
-                r_labels = [PlotHelperV4.rename_str(rename, l) for l in labels]
+                r_labels = [PlotHelper.rename_str(rename, l) for l in labels]
                 ax.set_yticklabels(r_labels)
 
             if how == 'log':
@@ -850,7 +850,7 @@ class PlotHelperV4(object):
             ax.set_title(f'n={size}')
             if xlabel is None:
                 xlabel = ax.get_xlabel()
-            ax.set_xlabel(PlotHelperV4.rename_str(rename, xlabel))
+            ax.set_xlabel(PlotHelper.rename_str(rename, xlabel))
             ax.set_ylabel(None)
             ax.set_axisbelow(True)
             ax.grid(True, axis='x')
@@ -941,19 +941,19 @@ class PlotHelperV4(object):
     @staticmethod
     def plot_scores(filepath, db_order=None, method_order=None, rename=dict(),
                     reference_method=None,):
-        fig, axes = PlotHelperV4._plot(filepath, 'score', how='no-norm',
+        fig, axes = PlotHelper._plot(filepath, 'score', how='no-norm',
                                        method_order=method_order,
                                        db_order=db_order, rename=rename,
                                        reference_method=reference_method,
                                        figsize=(17, 5.25),
                                        legend_bbox=(4.22, 1.015))
 
-        df_ranks = PlotHelperV4.mean_rank(filepath, method_order=method_order)
+        df_ranks = PlotHelper.mean_rank(filepath, method_order=method_order)
 
         global_avg_ranks = df_ranks[('Global', 'AVG')]
         cellText = np.transpose([list(global_avg_ranks.astype(str))])
         rowLabels = list(global_avg_ranks.index)
-        rowLabels = [PlotHelperV4.rename_str(rename, s) for s in rowLabels]
+        rowLabels = [PlotHelper.rename_str(rename, s) for s in rowLabels]
 
         axes[-1].table(cellText=cellText, loc='right',
                        rowLabels=rowLabels,
@@ -978,7 +978,7 @@ class PlotHelperV4(object):
             value = 'total_WCT'
         else:
             raise ValueError(f'Unknown argument {which}')
-        fig, _ = PlotHelperV4._plot(df, value, how='log',
+        fig, _ = PlotHelper._plot(df, value, how='log',
                                     xticks_dict=xticks_dict,
                                     xlims=xlims,
                                     method_order=method_order,
@@ -1025,7 +1025,7 @@ class PlotHelperV4(object):
 
     #     diff.to_csv('sandbox/diff2.csv')
 
-    #     fig, axes = PlotHelperV4._plot(diff, 'score', how='abs',
+    #     fig, axes = PlotHelper._plot(diff, 'score', how='abs',
     #                                    rename=rename,
     #                                    db_order=db_order,
     #                                    xlabel='absolute_score',
@@ -1044,7 +1044,7 @@ class PlotHelperV4(object):
         # Select methods of interest
         df = df.loc[df['method'].isin(method_order)]
 
-        fig, axes = PlotHelperV4._plot(df, 'score', how='no-norm',
+        fig, axes = PlotHelper._plot(df, 'score', how='no-norm',
                                        rename=rename,
                                        db_order=db_order,
                                        method_order=method_order,
@@ -1067,12 +1067,12 @@ class PlotHelperV4(object):
                                        legend_bbox=(4.22, 1.015),
                                        )
 
-        df_ranks = PlotHelperV4.mean_rank(filepath, method_order=method_order)
+        df_ranks = PlotHelper.mean_rank(filepath, method_order=method_order)
 
         global_avg_ranks = df_ranks[('Global', 'AVG')]
         cellText = np.transpose([list(global_avg_ranks.astype(str))])
         rowLabels = list(global_avg_ranks.index)
-        rowLabels = [PlotHelperV4.rename_str(rename, s) for s in rowLabels]
+        rowLabels = [PlotHelper.rename_str(rename, s) for s in rowLabels]
 
         axes[-1].table(cellText=cellText, loc='right',
                        rowLabels=rowLabels,
