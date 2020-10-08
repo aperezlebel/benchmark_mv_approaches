@@ -121,6 +121,12 @@ class Task(object):
 
         return self._y[self._f_y[0]]
 
+    @property
+    def mv(self):
+        """Return the missing values table."""
+        db = dbs[self.meta.db]
+        return get_missing_values(self.X, db.heuristic)
+
     def is_classif(self):
         """Tell if the task is a classification or a regression."""
         return self.meta.classif
