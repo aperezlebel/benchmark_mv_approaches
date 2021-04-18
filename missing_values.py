@@ -34,11 +34,11 @@ def get_missing_values(df, heuristic):
     return df_mv
 
 
-if __name__ == '__main__':
-    from database import NHIS
-    print(get_missing_values(NHIS['family'], NHIS.heuristic))
-    print(get_missing_values(NHIS['child'], NHIS.heuristic))
-    print(get_missing_values(NHIS['adult'], NHIS.heuristic))
-    print(get_missing_values(NHIS['person'], NHIS.heuristic))
-    print(get_missing_values(NHIS['injury'], NHIS.heuristic))
-    print(get_missing_values(NHIS['household'], NHIS.heuristic))
+# if __name__ == '__main__':
+#     from database import NHIS
+    # print(get_missing_values(NHIS['family'], NHIS.heuristic))
+    # print(get_missing_values(NHIS['child'], NHIS.heuristic))
+    # print(get_missing_values(NHIS['adult'], NHIS.heuristic))
+    # print(get_missing_values(NHIS['person'], NHIS.heuristic))
+    # print(get_missing_values(NHIS['injury'], NHIS.heuristic))
+    # print(get_missing_values(NHIS['household'], NHIS.heuristic))

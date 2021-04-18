@@ -95,7 +95,7 @@ filepath = 'scores/scores.csv'
 # ph.dump(filepath)
 # exit()
 
-fig = ph.plot_MIA_linear(filepath, db_order=db_order, method_order=linear_method_order, rename=rename_on_plot)
+# fig = ph.plot_MIA_linear(filepath, db_order=db_order, method_order=linear_method_order, rename=rename_on_plot)
 
 xticks = {
     # 0.5: '$\\frac{1}{2}\\times$',
@@ -110,12 +110,12 @@ xticks = {
     10: '$10\\times$',
     # 2: '$2\\times$'
 }
-fig = ph.plot_times(filepath, 'PT', xticks_dict=xticks, xlims=(0.005, 15), method_order=linear_method_order, db_order=db_order, rename=rename_on_plot)
+# fig = ph.plot_times(filepath, 'PT', xticks_dict=xticks, xlims=(0.005, 15), method_order=linear_method_order, db_order=db_order, rename=rename_on_plot)
 
 # fig = ph.plot_MIA_linear_diff(filepath, db_order=db_order, rename=rename_on_plot)
 
 # plt.tight_layout()
-plt.show()
+# plt.show()
 # exit()
 
 
@@ -138,7 +138,7 @@ plt.show()
 # ph.dump(filepath)
 # exit()
 # ph.mean_rank(filepath, method_order=method_order).to_csv('scores/ranks.csv')
-fig = ph.plot_scores(filepath, method_order=method_order, db_order=db_order, rename=rename_on_plot)#, reference_method='MIA')
+fig = ph.plot_scores(filepath, method_order=method_order, db_order=db_order, rename=rename_on_plot, reference_method='MIA')
 if fig:
     plt.show()
 
@@ -151,6 +151,6 @@ xticks = {
     3/2: '$\\frac{3}{2}\\times$',
     # 2: '$2\\times$'
 }
-fig = ph.plot_times(filepath, 'PT', xticks_dict=xticks, method_order=method_order, db_order=db_order, rename=rename_on_plot)
-if fig:
-    plt.show()
+# fig = ph.plot_times(filepath, 'PT', xticks_dict=xticks, method_order=method_order, db_order=db_order, rename=rename_on_plot)
+# if fig:
+#     plt.show()

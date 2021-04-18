@@ -195,6 +195,9 @@ def plot_feature_wise(indicators, plot=False, show=True, ax=None, nf_max=40):
         else:
             fig = plt.gcf()
 
+        if n_mv_fw_l.empty:
+            return fig, ax
+
         sns.set_color_codes('pastel')
         sns.barplot(x='N V', y='feature_shortened', data=n_mv_fw_l, ax=ax,
                     color='lightgray', label=f'Not missing', dodge=False)
@@ -493,8 +496,9 @@ def plot_rm_features(indicators, plot=False, show=True, ax=None):
 
 
 def figure1(indicators, plot=True, db_name=None, table=None):
+    """Print a global overview of missing values"""
     fig1, axes1 = plt.subplots(3, 1, figsize=(12, 6))
-    fig1.tight_layout(pad=2)#, h_pad=7)
+    fig1.tight_layout(pad=2)
     if all((db_name, table)):
         fig1.suptitle(f'Overview of missing values in {db_name} (table "{table}")',
                       fontsize='xx-large')
@@ -519,6 +523,7 @@ def figure2(indicators, plot=True, db_name=None, table=None):
         fig2.suptitle(f'Proportion of missing values in each feature'
                       f'\nof {db_name} (table "{table}")',
                       fontsize='x-large')
+
 
 def figure2bis(indicators, plot=True, db_name=None, table=None):
     matplotlib.rcParams.update({
