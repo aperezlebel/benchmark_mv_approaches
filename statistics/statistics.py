@@ -10,6 +10,7 @@ from tqdm import tqdm
 
 from prediction.tasks import tasks
 from .plot_statistics import figure1, figure2, figure2bis, figure3, plot_feature_wise_v2
+from .tests import run_wilcoxon
 
 
 memory = Memory('joblib_cache')
@@ -351,6 +352,11 @@ def run(argv=None):
         plt.savefig(f'figs/mv_distribution.pdf', bbox_inches='tight')
         plt.tight_layout()
         plt.show()
+
+        return
+
+    if args.tag == 'wilcoxon':
+        run_wilcoxon()
 
         return
 
