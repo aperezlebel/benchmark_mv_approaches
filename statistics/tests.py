@@ -58,7 +58,8 @@ def run_wilcoxon():
         'greater_pval',
         ]).set_index('method')
 
-    half1 = ['Mean',
+    half1 = [
+        'Mean',
         'Mean+mask',
         'Med',
         'Med+mask',
@@ -68,7 +69,8 @@ def run_wilcoxon():
         'KNN+mask',
     ]
 
-    half2 = ['Linear+Mean',
+    half2 = [
+        'Linear+Mean',
         'Linear+Mean+mask',
         'Linear+Med',
         'Linear+Med+mask',
@@ -85,8 +87,43 @@ def run_wilcoxon():
 
     print(W_test)
 
+    W_test.columns = pd.MultiIndex.from_tuples([s.split('_') for s in W_test.columns])
+
+    print(W_test)
+
+    W_test.rename({
+        'two-sided': 'Two-sided',
+        'greater': 'Greater',
+        'pval': 'p-value',
+        'stat': 'Statistic',
+    }, axis=1, inplace=True)
+
+    W_test.rename({
+        # 'Mean': 'Mean',
+        # 'Mean+mask': 'Mean+mask',
+        'Med': 'Median',
+        'Med+mask': 'Median+mask',
+        'Iter': 'Iterative',
+        'Iter+mask': 'Iterative+mask',
+        # 'KNN': 'KNN',
+        # 'KNN+mask': 'KNN+mask',
+        # 'Linear+Mean': 'Linear+Mean',
+        # 'Linear+Mean+mask': 'Linear+Mean+mask',
+        # 'Linear+Med': 'Linear+Med',
+        # 'Linear+Med+mask': 'Linear+Med+mask',
+        # 'Linear+Iter': 'Linear+Iterative',
+        # 'Linear+Iter+mask': 'Linear+Iterative+mask',
+        # 'Linear+KNN': 'Linear+KNN',
+        # 'Linear+KNN+mask': 'Linear+KNN+mask',
+        # 'method': 'Method',
+    }, axis=0, inplace=True)
+
+    W_test.index.rename('Method', inplace=True)
+
+    print(W_test)
+
     W_test.to_csv('scores/wilcoxon.csv')
     W_test.to_latex('scores/wilcoxon.tex')
 
-    W_test1 = W_test.loc[half1]
-    W_test2 = W_test.loc[half2]
+    # W_test1 = W_test.loc[half1]
+    # W_test2 = W_test.loc[half2]
