@@ -24,3 +24,4 @@ scores/*
 !scores/ranks.csv
 selected
 *_cache
+figs

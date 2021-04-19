@@ -1,12 +1,15 @@
 """Compute statistics about missing values on a databse."""
+import os
 import argparse
 import pandas as pd
 import numpy as np
+import matplotlib
 import matplotlib.pyplot as plt
 from joblib import Memory
+from tqdm import tqdm
 
 from prediction.tasks import tasks
-from .plot_statistics import figure1, figure2, figure2bis, figure3
+from .plot_statistics import figure1, figure2, figure2bis, figure3, plot_feature_wise_v2
 
 
 memory = Memory('joblib_cache')
@@ -267,6 +270,62 @@ def get_indicators_mv(df_mv):
     }
 
 
+def every_mv_distribution():
+    matplotlib.rcParams.update({
+        'font.size': 14,
+        'axes.titlesize': 10,
+        'axes.labelsize': 13,
+        'xtick.labelsize': 13,
+        'ytick.labelsize': 13,
+    })
+    fig, axes = plt.subplots(6, 3, figsize=(6, 9))
+
+    L1 = ['TB/death_pvals', 'TB/hemo', 'TB/hemo_pvals']
+    L2 = ['TB/platelet', 'TB/platelet_pvals', 'TB/septic_pvals']
+    # L2 = [None, None, None]
+    L3 = [None, None, None]
+    L4 = [None, None, None]
+    L5 = [None, None, None]
+    L6 = [None, None, None]
+    L3 = ['UKBB/breast_25', 'UKBB/breast_pvals', 'UKBB/fluid_pvals']
+    L4 = ['UKBB/parkinson_pvals', 'UKBB/skin_pvals', None]
+    L5 = ['MIMIC/hemo_pvals', 'MIMIC/septic_pvals', None]
+    L6 = ['NHIS/bmi_pvals', 'NHIS/income_pvals', None]
+
+    L = [L1, L2, L3, L4, L5, L6]
+
+    for i, row in enumerate(tqdm(L)):
+        for j, tag in enumerate(row):
+            ax = axes[i][j]
+
+            if tag is None:
+                ax.axis('off')
+                continue
+
+            indicators = cached_indicators(tag, encode_features=False)
+            _, _, handles = plot_feature_wise_v2(indicators, ax=ax, plot=True)
+
+            ax.set_title(f'$\\verb|{tag}|$')
+
+    axes[-1, -1].legend(handles, ['Not missing', 'Missing'], fancybox=True, shadow=True, loc='center',)
+
+    return fig, axes
+
+
+@memory.cache
+def cached_indicators(task_tag, encode_features=False):
+    task = tasks[task_tag]
+
+    if not encode_features and 'pvals' in task_tag:
+        task.meta.encode_select = None
+        task.meta.encode_transform = None
+
+    mv = task.mv
+    indicators = get_indicators_mv(mv)
+
+    return indicators
+
+
 def run(argv=None):
     """Show some statistics on the given df."""
     parser = argparse.ArgumentParser(description='Stats on missing values.')
@@ -284,17 +343,19 @@ def run(argv=None):
                         nargs='?', help='Whether to plot the figure3')
     args = parser.parse_args(argv)
 
+    if args.tag is None:
+        every_mv_distribution()
+
+        folder = f'figs/'
+        os.makedirs(folder, exist_ok=True)
+        plt.savefig(f'figs/mv_distribution.pdf', bbox_inches='tight')
+        plt.tight_layout()
+        plt.show()
+
+        return
+
     task_tag = args.tag
     plot = not args.hide
-
-    @memory.cache
-    def cached_indicators(task_tag):
-        task = tasks[task_tag]
-
-        mv = task.mv
-        indicators = get_indicators_mv(mv)
-
-        return indicators
 
     indicators = cached_indicators(task_tag)
 
@@ -316,4 +377,8 @@ def run(argv=None):
     if fig3:
         figure3(indicators, plot=plot, db_name=db_name, table=df_name)
 
+    folder = f'figs/{db_name}'
+    os.makedirs(folder, exist_ok=True)
+    plt.savefig(f'figs/{df_name}.pdf', bbox_inches='tight')
+    plt.tight_layout()
     plt.show()

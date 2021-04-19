@@ -257,14 +257,14 @@ def plot_feature_wise_v2(indicators, plot=False, show=True, ax=None, nf_max=40):
             fig = plt.gcf()
 
         sns.set_color_codes('muted')
-        plt.stackplot(n_mv_fw_l['id'].values, 100, color='lightgray', labels=['Not missing'])
-        plt.stackplot(n_mv_fw_l['id'].values, n_mv_fw_l['F MV'].values, color='b', labels=['Missing'])
-        # plt.stackplot(n_mv_fw_l['id'].values, n_mv_fw_l['N V'].values, color='lightgray', labels=['Not missing'])
-        # plt.stackplot(n_mv_fw_l['id'].values, n_mv_fw_l['N MV'].values, color='b', labels=['Missing'])
+        handle_nm, = ax.stackplot(n_mv_fw_l['id'].values, 100, color='lightgray', labels=['Not missing'])
+        handle_m, = ax.stackplot(n_mv_fw_l['id'].values, n_mv_fw_l['F MV'].values, color='b', labels=['Missing'])
+        # ax.stackplot(n_mv_fw_l['id'].values, n_mv_fw_l['N V'].values, color='lightgray', labels=['Not missing'])
+        # ax.stackplot(n_mv_fw_l['id'].values, n_mv_fw_l['N MV'].values, color='b', labels=['Missing'])
 
-        ax.legend(ncol=1, loc='upper right', frameon=True,
-                  title='Type of values')
-        ax.set(xlabel='Features', ylabel='Proportion')
+        # ax.legend(ncol=1, loc='upper right', frameon=True,
+        #           title='Type of values')
+        # ax.set(xlabel='Features', ylabel='Proportion')
         # ax.set(xlabel='Features', ylabel='Number of values')
         ax.tick_params(labelsize=7)
         sns.despine(left=True, bottom=True, ax=ax)
@@ -275,7 +275,7 @@ def plot_feature_wise_v2(indicators, plot=False, show=True, ax=None, nf_max=40):
         else:
             fig.tight_layout(rect=(0., 0, 1, .92))
 
-        return fig, ax
+        return fig, ax, (handle_nm, handle_m)
 
 
 def plot_rows(indicators, plot=False, show=True, ax=None):
