@@ -23,3 +23,5 @@ scores/*
 !scores/task_description.csv
 !scores/ranks.csv
 selected
+*_cache
+figs
