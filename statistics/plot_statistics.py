@@ -257,12 +257,15 @@ def plot_feature_wise_v2(indicators, plot=False, show=True, ax=None, nf_max=40):
             fig = plt.gcf()
 
         sns.set_color_codes('muted')
-        plt.stackplot(n_mv_fw_l['id'].values, n_mv_fw_l['N V'].values, color='lightgray', labels=['Not missing'])
-        plt.stackplot(n_mv_fw_l['id'].values, n_mv_fw_l['N MV'].values, color='b', labels=['Missing'])
+        plt.stackplot(n_mv_fw_l['id'].values, 100, color='lightgray', labels=['Not missing'])
+        plt.stackplot(n_mv_fw_l['id'].values, n_mv_fw_l['F MV'].values, color='b', labels=['Missing'])
+        # plt.stackplot(n_mv_fw_l['id'].values, n_mv_fw_l['N V'].values, color='lightgray', labels=['Not missing'])
+        # plt.stackplot(n_mv_fw_l['id'].values, n_mv_fw_l['N MV'].values, color='b', labels=['Missing'])
 
         ax.legend(ncol=1, loc='upper right', frameon=True,
                   title='Type of values')
-        ax.set(xlabel='Features', ylabel='Number of values')
+        ax.set(xlabel='Features', ylabel='Proportion')
+        # ax.set(xlabel='Features', ylabel='Number of values')
         ax.tick_params(labelsize=7)
         sns.despine(left=True, bottom=True, ax=ax)
 
@@ -536,7 +539,7 @@ def figure2bis(indicators, plot=True, db_name=None, table=None):
     fig2, _ = plot_feature_wise_v2(indicators, plot=plot)
     if all((db_name, table)):
         fig2.suptitle(f'Proportion of missing values in each feature'
-                      f'\nof {db_name} (table "{table}")',
+                      f'\nof {db_name} (table "$\\verb|{table}|$")',
                       fontsize='x-large')
 
 

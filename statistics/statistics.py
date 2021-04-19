@@ -9,6 +9,17 @@ from .plot_statistics import figure1, figure2, figure2bis, figure3
 import matplotlib.pyplot as plt
 
 
+plt.rcParams.update({
+    'text.usetex': True,
+    'mathtext.fontset': 'stix',
+    'font.family': 'STIXGeneral',
+    'axes.labelsize': 15,
+    'legend.fontsize': 11,
+    'figure.figsize': (8, 4.8),
+    # 'figure.dpi': 600,
+})
+
+
 def get_indicators_mv(df_mv):
     """Compute indicators about missing values. Used for plotting figures."""
     # 1: Statistics on the full database
@@ -264,6 +275,8 @@ def run(argv=None):
                         nargs='?', help='Whether to plot the figure1')
     parser.add_argument('--fig2', dest='fig2', default=False, const=True,
                         nargs='?', help='Whether to plot the figure2')
+    parser.add_argument('--fig2b', dest='fig2b', default=False, const=True,
+                        nargs='?', help='Whether to plot the figure2')
     parser.add_argument('--fig3', dest='fig3', default=False, const=True,
                         nargs='?', help='Whether to plot the figure3')
     args = parser.parse_args(argv)
@@ -278,16 +291,17 @@ def run(argv=None):
 
     db_name = task.meta.db
     df_name = task_tag
-    fig1, fig2, fig3 = args.fig1, args.fig2, args.fig3
+    fig1, fig2, fig2b, fig3 = args.fig1, args.fig2, args.fig2b, args.fig3
 
-    if not any((fig1, fig2, fig3)):
-        fig1, fig2, fig3 = True, True, True
+    if not any((fig1, fig2, fig2b, fig3)):
+        fig1, fig2, fig2b, fig3 = True, True, True
 
     # Plot all the indicators
     if fig1:
         figure1(indicators, plot=plot, db_name=db_name, table=df_name)
     if fig2:
         figure2(indicators, plot=plot, db_name=db_name, table=df_name)
+    if fig2b:
         figure2bis(indicators, plot=plot, db_name=db_name, table=df_name)
     if fig3:
         figure3(indicators, plot=plot, db_name=db_name, table=df_name)
