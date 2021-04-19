@@ -2,11 +2,14 @@
 import argparse
 import pandas as pd
 import numpy as np
+import matplotlib.pyplot as plt
+from joblib import Memory
 
 from prediction.tasks import tasks
 from .plot_statistics import figure1, figure2, figure2bis, figure3
 
-import matplotlib.pyplot as plt
+
+memory = Memory('joblib_cache')
 
 
 plt.rcParams.update({
@@ -284,11 +287,18 @@ def run(argv=None):
     task_tag = args.tag
     plot = not args.hide
 
+    @memory.cache
+    def cached_indicators(task_tag):
+        task = tasks[task_tag]
+
+        mv = task.mv
+        indicators = get_indicators_mv(mv)
+
+        return indicators
+
+    indicators = cached_indicators(task_tag)
+
     task = tasks[task_tag]
-
-    mv = task.mv
-    indicators = get_indicators_mv(mv)
-
     db_name = task.meta.db
     df_name = task_tag
     fig1, fig2, fig2b, fig3 = args.fig1, args.fig2, args.fig2b, args.fig3
