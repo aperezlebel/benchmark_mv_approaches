@@ -85,8 +85,8 @@ def run_wilcoxon():
 
     W_test = W_test.reindex(half1 + half2)
 
-    W_test['two-sided_pval'] = [f'{w:.2g}' for w in W_test['two-sided_pval']]
-    W_test['greater_pval'] = [f'{w:.2g}' for w in W_test['greater_pval']]
+    W_test['two-sided_pval'] = [f'{w:.1g}' for w in W_test['two-sided_pval']]
+    W_test['greater_pval'] = [f'{w:.1g}' for w in W_test['greater_pval']]
 
     print(W_test)
 
@@ -124,6 +124,14 @@ def run_wilcoxon():
     W_test.index.rename('Method', inplace=True)
 
     print(W_test)
+
+    # Delete two-sided
+    W_test.drop('Two-sided', axis=1, level=0, inplace=True)
+    W_test.columns = W_test.columns.droplevel(0)
+    W_test.drop('Statistic', axis=1, inplace=True)
+
+    print(W_test)
+
 
     W_test.to_csv('scores/wilcoxon.csv')
     W_test.to_latex('scores/wilcoxon.tex')
