@@ -10,27 +10,30 @@ def run_wilcoxon():
     path = os.path.abspath('scores/scores.csv')
     df = pd.read_csv(path, index_col=0)
 
-    # Agregate accross trials by averaging
-    df = df.reset_index()
-    df['n_trials'] = 1  # Add a count column to keep track of # of trials
-    dfgb = df.groupby(['size', 'db', 'task', 'method', 'fold'])
-    df = dfgb.agg({
-        'score': 'mean',
-        'n_trials': 'sum',
-        'scorer': PlotHelper.assert_equal,  # first and assert equal
-        'selection': PlotHelper.assert_equal,
-        'n': PlotHelper.assert_equal,
-        'p': 'mean',  #PlotHelper.assert_equal,
-        'type': PlotHelper.assert_equal,
-        'imputation_WCT': 'mean',
-        'tuning_WCT': 'mean',
-        'imputation_PT': 'mean',
-        'tuning_PT': 'mean',
-    })
+    # # Agregate accross trials by averaging
+    # df = df.reset_index()
+    # df['n_trials'] = 1  # Add a count column to keep track of # of trials
+    # dfgb = df.groupby(['size', 'db', 'task', 'method', 'fold'])
+    # df = dfgb.agg({
+    #     'score': 'mean',
+    #     'n_trials': 'sum',
+    #     'scorer': PlotHelper.assert_equal,  # first and assert equal
+    #     'selection': PlotHelper.assert_equal,
+    #     'n': PlotHelper.assert_equal,
+    #     'p': 'mean',  #PlotHelper.assert_equal,
+    #     'type': PlotHelper.assert_equal,
+    #     'imputation_WCT': 'mean',
+    #     'tuning_WCT': 'mean',
+    #     'imputation_PT': 'mean',
+    #     'tuning_PT': 'mean',
+    # })
+
+    # Aggregate both trials and folds
+    df = PlotHelper.aggregate(df, 'score')
 
     # Reset index to addlevel of the multi index to the columns of the df
     df = df.reset_index()
-    df = df.set_index(['size', 'db', 'task', 'method', 'fold'])
+    df = df.set_index(['size', 'db', 'task', 'method'])
 
     MIA = df.iloc[df.index.get_level_values('method') == 'MIA']
     MIA.reset_index(level='method', drop=True, inplace=True)
@@ -82,8 +85,8 @@ def run_wilcoxon():
 
     W_test = W_test.reindex(half1 + half2)
 
-    W_test['two-sided_pval'] = [f'{w:.2g}' for w in W_test['two-sided_pval']]
-    W_test['greater_pval'] = [f'{w:.2g}' for w in W_test['greater_pval']]
+    W_test['two-sided_pval'] = [f'{w:.1g}' for w in W_test['two-sided_pval']]
+    W_test['greater_pval'] = [f'{w:.1g}' for w in W_test['greater_pval']]
 
     print(W_test)
 
@@ -121,6 +124,14 @@ def run_wilcoxon():
     W_test.index.rename('Method', inplace=True)
 
     print(W_test)
+
+    # Delete two-sided
+    W_test.drop('Two-sided', axis=1, level=0, inplace=True)
+    W_test.columns = W_test.columns.droplevel(0)
+    W_test.drop('Statistic', axis=1, inplace=True)
+
+    print(W_test)
+
 
     W_test.to_csv('scores/wilcoxon.csv')
     W_test.to_latex('scores/wilcoxon.tex')
