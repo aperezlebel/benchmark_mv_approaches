@@ -3,7 +3,7 @@ import pandas as pd
 
 from .PlotHelper import PlotHelper
 
-def get_scores_tab(scores_raw, method_order=None, db_order=None):
+def get_scores_tab(scores_raw, method_order=None, db_order=None, relative=False):
     """Compute article scores tab from raw scores."""
     df = scores_raw.copy()
 
@@ -28,10 +28,24 @@ def get_scores_tab(scores_raw, method_order=None, db_order=None):
 
     size_order = df.index.get_level_values(0).unique()
 
+    if relative:
+        df = df.sub(avg_by_size.droplevel(1, axis=0), level=0)
+
     df = pd.concat([df, avg_by_size], axis=0)
 
     df = df.reindex(list(size_order)+['Global'], level=0)
 
-    df = df.round(2)
+    if relative:
+        def myround(x):
+            try:
+                print(x)
+                return f'{x:.1e}'
+            except:
+                return x
+
+        df = df.applymap(myround)
+
+    else:
+        df = df.round(3)
 
     return df
