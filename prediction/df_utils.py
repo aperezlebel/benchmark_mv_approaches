@@ -1,4 +1,5 @@
 """Functions to manage scores and ranks data frames."""
+import numpy as np
 import pandas as pd
 
 from .PlotHelper import PlotHelper
@@ -31,22 +32,29 @@ def get_scores_tab(scores_raw, method_order=None, db_order=None, relative=False)
     if relative:
         df = df.sub(avg_by_size.droplevel(1, axis=0), level=0)
 
-    df = pd.concat([df, avg_by_size], axis=0)
-
-    df = df.reindex(list(size_order)+['Global'], level=0)
-
     if relative:
         def myround(x):
-            try:
-                print(x)
-                return f'{x:.1e}'
-            except:
+            if np.isnan(x):
                 return x
+            else:
+                return f'{x:.0e}'
+            # try:
+            #     return f'{x:.1e}'
+            # except:
+            #     return x
 
         df = df.applymap(myround)
 
     else:
         df = df.round(3)
+
+    avg_by_size = avg_by_size.round(3)
+    df = pd.concat([df, avg_by_size], axis=0)
+
+    df = df.reindex(list(size_order)+['Global'], level=0)
+
+    df.index.rename(['Size', 'Method'], inplace=True)
+    df.columns.rename(['Database', 'Task'], inplace=True)
 
     return df
 
@@ -103,7 +111,5 @@ def get_ranks_tab(scores_raw, method_order=None, db_order=None):
 
     df.index.rename(['Size', 'Method'], inplace=True)
     df.columns.rename(['Database', 'Task'], inplace=True)
-
-    print(df)
 
     return df
