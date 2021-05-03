@@ -4,6 +4,8 @@ import numpy as np
 import pandas as pd
 from scipy.stats import f, chi2, wilcoxon, friedmanchisquare
 import scikit_posthocs
+import matplotlib.pyplot as plt
+from adjustText import adjust_text
 
 from prediction.PlotHelper import PlotHelper
 from prediction.df_utils import get_scores_tab, get_ranks_tab
@@ -46,12 +48,12 @@ def friedman_statistic(ranks, N):
     FF_pval = f.sf(FF, k-1, (k-1)*(N-1))
 
     print(f'k={k}, N={N}')
-    CD = critical_difference(k, N)
+    CD = critical_distance(k, N)
 
     return XF2, XF2_pval, FF, FF_pval, CD
 
 
-def critical_difference(k, N):
+def critical_distance(k, N):
     """Compute the critical difference for the Nemenyi test.
 
     Parameters
@@ -277,7 +279,6 @@ def run_friedman():
     sizes = df.index.get_level_values(0).unique()
 
     ranks_by_db = df.drop('AVG', level=0, axis=1)
-    # N = len(ranks_by_db.columns)
 
     rows = []
     for size in sizes:
@@ -299,6 +300,20 @@ def run_friedman():
 
     df_statistic = df_statistic.applymap(myround)
     print(df_statistic)
+
+    # fig = plt.figure()
+    # axes = fig.add_subplot(2, 2, 1)
+    fig, axes = plt.subplots(2, 2, figsize=(6, 8))
+
+    for i, ax in enumerate(axes.reshape(-1)):
+        size = sizes[i]
+        ranks = df.loc[size, ('AVG', 'All')]
+        critical_distances = df_statistic['CD'].astype(float)
+        plot_ranks(ranks, critical_distances[size], ax)
+        ax.set_title(f'Size={size}')
+
+    plt.savefig('test.pdf', bbox_inches='tight')
+    plt.show()
 
     return df_statistic
 
@@ -395,4 +410,46 @@ def run_friedman():
     # FF = (N-1)*XF2/(N*(k-1) - XF2)
     # print(FF)
 
+
+def plot_ranks(average_ranks, critical_distance, ax):
+    average_ranks = average_ranks.sort_values()
+    min_rank = np.min(average_ranks)
+
+    # Move left y-axis and bottim x-axis to centre, passing through (0,0)
+    ax.spines['left'].set_position('center')
+    ax.spines['bottom'].set_color('none')
+
+    # Eliminate upper and right axes
+    ax.spines['right'].set_color('none')
+    ax.spines['top'].set_color('none')
+
+    # Show ticks in the left and lower axes only
+    ax.xaxis.set_visible(False)#.set_ticks_position('none')
+    ax.yaxis.set_ticks_position('left')
+    ax.set_ylim(1, 9)
+    ax.set_xlim(-.3, .3)
+    ax.invert_yaxis()
+
+    ax.scatter(np.zeros_like(average_ranks), average_ranks, color='red', marker='.', clip_on=False, zorder=10)
+    cd1 = min_rank
+    cd2 = min_rank + critical_distance
+    ax.plot(-.1*np.ones(2), [cd1, cd2], color='red', marker='_', markeredgewidth=1.5)
+    ax.text(-.12, (cd1+cd2)/2, 'critical distance', rotation=90, ha='center', va='center', color='red')
+    # ax.annotate('Critical difference', xy=(-.1, (cd1+cd2)/2), textcoords="offset points",
+            # horizontalalignment="right", verticalalignment="bottom")
+
+    texts = []
+    # for i, y in enumerate(np.linspace(1.5, 8.5, len(average_ranks))):
+    y_pos = np.linspace(1.5, 8.5, len(average_ranks))
+    for i, (method, rank) in enumerate(average_ranks.iteritems()):
+        t = ax.text(.12, y_pos[i], method, va='center')
+        texts.append(t)
+        ax.plot([0, .12], [rank, y_pos[i]], color='black', ls=':', lw=0.25)
+
+    # adjust_text(texts, ax=ax, autoalign=False, ha='left', va='center')
+
+    # for text in texts:
+    #     x, y = text.get_position()
+    #     text.set_position((.12, y))
+        # text.set_horizontalalignment('left')
 
