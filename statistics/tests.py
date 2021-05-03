@@ -45,7 +45,31 @@ def friedman_statistic(ranks, N):
     XF2_pval = chi2.sf(XF2, k)
     FF_pval = f.sf(FF, k-1, (k-1)*(N-1))
 
-    return XF2, XF2_pval, FF, FF_pval
+    print(f'k={k}, N={N}')
+    CD = critical_difference(k, N)
+
+    return XF2, XF2_pval, FF, FF_pval, CD
+
+
+def critical_difference(k, N):
+    """Compute the critical difference for the Nemenyi test.
+
+    Parameters
+    ----------
+        k : Number of algorithms to compare (2 <= k <= 10)
+        N : Number of datasets algorithms were tested on
+
+    Returns
+    -------
+        CD : float
+            Critical difference
+
+    """
+    assert 2 <= k <= 10
+    q_05 = [1.960, 2.343, 2.569, 2.728, 2.850, 2.949, 3.031, 3.102, 3.164]
+    CD = q_05[k-2]*np.sqrt(k*(k+1)/(6*N))
+
+    return CD
 
 
 def run_wilcoxon():
@@ -252,16 +276,20 @@ def run_friedman():
     df = get_ranks_tab(df, method_order=method_order, db_order=db_order, average_sizes=False)
     sizes = df.index.get_level_values(0).unique()
 
-    N = len(df.drop('AVG', level=0, axis=1).columns)
+    ranks_by_db = df.drop('AVG', level=0, axis=1)
+    # N = len(ranks_by_db.columns)
 
     rows = []
     for size in sizes:
+        print(f'Size={size}: ', end='\t')
+
         ranks = df.loc[size, ('AVG', 'All')]
+        N = (~ranks_by_db.loc[size].isna().all(axis=0)).sum()
 
-        XF2, XF2_pval, FF, FF_pval = friedman_statistic(ranks, N)
-        rows.append([XF2, XF2_pval, FF, FF_pval])
+        XF2, XF2_pval, FF, FF_pval, CD = friedman_statistic(ranks, N)
+        rows.append([XF2, XF2_pval, FF, FF_pval, CD])
 
-    df_statistic = pd.DataFrame(rows, columns=['XF2', 'XF2_pval', 'FF', 'FF_pval'], index=sizes)
+    df_statistic = pd.DataFrame(rows, columns=['XF2', 'XF2_pval', 'FF', 'FF_pval', 'CD'], index=sizes)
 
     def myround(x):
         if np.isnan(x):
@@ -271,6 +299,8 @@ def run_friedman():
 
     df_statistic = df_statistic.applymap(myround)
     print(df_statistic)
+
+    return df_statistic
 
     # df = get_scores_tab(df, method_order=method_order, db_order=db_order, relative=True)
     # # df = get_ranks_tab(df, method_order=method_order, db_order=db_order)
@@ -364,3 +394,5 @@ def run_friedman():
 
     # FF = (N-1)*XF2/(N*(k-1) - XF2)
     # print(FF)
+
+

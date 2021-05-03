@@ -59,7 +59,7 @@ def get_scores_tab(scores_raw, method_order=None, db_order=None, relative=False)
     return df
 
 
-def get_ranks_tab(scores_raw, method_order=None, db_order=None):
+def get_ranks_tab(scores_raw, method_order=None, db_order=None, average_sizes=True):
     """Compute article ranks tab from raw scores."""
 
     df = scores_raw.copy()
@@ -84,12 +84,15 @@ def get_ranks_tab(scores_raw, method_order=None, db_order=None):
     if db_order is not None:
         df = df.reindex(db_order, level=0, axis=1)
 
-    avg_on_sizes = df.mean(level=1)
-    avg_on_sizes['size'] = 'AVG'
-    avg_on_sizes = avg_on_sizes.reset_index().set_index(['size', 'method'])
+    if average_sizes:
+        avg_on_sizes = df.mean(level=1)
+        avg_on_sizes['size'] = 'AVG'
+        avg_on_sizes = avg_on_sizes.reset_index().set_index(['size', 'method'])
 
+        df_with_avg_dbs = pd.concat([df, avg_on_sizes], axis=0)
 
-    df_with_avg_dbs = pd.concat([df, avg_on_sizes], axis=0)
+    else:
+        df_with_avg_dbs = df
 
     avg_on_dbs = df_with_avg_dbs.mean(axis=1, level=0)
     avg_on_dbs['All'] = avg_on_dbs.mean(axis=1)
@@ -102,11 +105,14 @@ def get_ranks_tab(scores_raw, method_order=None, db_order=None):
         except:
             return x
 
-    avg_on_sizes = avg_on_sizes.round(1)
-    avg_on_dbs = avg_on_dbs.round(1)
 
     df = df.applymap(to_int)
-    df = pd.concat([df, avg_on_sizes], axis=0)
+
+    if average_sizes:
+        avg_on_sizes = avg_on_sizes.round(1)
+        df = pd.concat([df, avg_on_sizes], axis=0)
+
+    avg_on_dbs = avg_on_dbs.round(1)
     df = pd.concat([df, avg_on_dbs], axis=1)
 
     df.index.rename(['Size', 'Method'], inplace=True)
