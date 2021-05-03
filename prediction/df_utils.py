@@ -4,7 +4,7 @@ import pandas as pd
 
 from .PlotHelper import PlotHelper
 
-def get_scores_tab(scores_raw, method_order=None, db_order=None, relative=False):
+def get_scores_tab(scores_raw, method_order=None, db_order=None, relative=False, average_sizes=True):
     """Compute article scores tab from raw scores."""
     df = scores_raw.copy()
 
@@ -48,10 +48,10 @@ def get_scores_tab(scores_raw, method_order=None, db_order=None, relative=False)
     else:
         df = df.round(3)
 
-    avg_by_size = avg_by_size.round(3)
-    df = pd.concat([df, avg_by_size], axis=0)
-
-    df = df.reindex(list(size_order)+['Global'], level=0)
+    if average_sizes:
+        avg_by_size = avg_by_size.round(3)
+        df = pd.concat([df, avg_by_size], axis=0)
+        df = df.reindex(list(size_order)+['Global'], level=0)
 
     df.index.rename(['Size', 'Method'], inplace=True)
     df.columns.rename(['Database', 'Task'], inplace=True)

@@ -74,7 +74,7 @@ def critical_distance(k, N):
     return CD
 
 
-def run_wilcoxon():
+def run_wilcoxon_():
     path = os.path.abspath('scores/scores.csv')
     df = pd.read_csv(path, index_col=0)
 
@@ -208,56 +208,55 @@ def run_wilcoxon():
     # W_test2 = W_test.loc[half2]
 
 
-def run_pairwise_wilcoxon():
+# def run_pairwise_wilcoxon():
+#     path = os.path.abspath('scores/scores.csv')
+#     df = pd.read_csv(path, index_col=0)
+
+#     # # Agregate accross trials by averaging
+#     # df = df.reset_index()
+#     # df['n_trials'] = 1  # Add a count column to keep track of # of trials
+#     # dfgb = df.groupby(['size', 'db', 'task', 'method', 'fold'])
+#     # df = dfgb.agg({
+#     #     'score': 'mean',
+#     #     'n_trials': 'sum',
+#     #     'scorer': PlotHelper.assert_equal,  # first and assert equal
+#     #     'selection': PlotHelper.assert_equal,
+#     #     'n': PlotHelper.assert_equal,
+#     #     'p': 'mean',  #PlotHelper.assert_equal,
+#     #     'type': PlotHelper.assert_equal,
+#     #     'imputation_WCT': 'mean',
+#     #     'tuning_WCT': 'mean',
+#     #     'imputation_PT': 'mean',
+#     #     'tuning_PT': 'mean',
+#     # })
+
+#     # Aggregate both trials and folds
+#     df = PlotHelper.aggregate(df, 'score')
+
+#     dfgb = df.groupby(['size', 'db', 'task'])
+#     df['rank'] = dfgb['score'].rank(method='dense', ascending=False).astype(int)
+#     print(df)
+
+#     return
+
+#     # Reset index to addlevel of the multi index to the columns of the df
+#     df = df.reset_index()
+#     # df = df.set_index(['size', 'db', 'task', 'method'])
+
+#     print(df)
+
+#     # scikit_posthocs.posthoc_wilcoxon(df, val_col='score', group_col='method')
+
+#     res = scikit_posthocs.posthoc_nemenyi(df, val_col='score', group_col='method')
+
+#     print(res)
+
+
+def run_wilcoxon():
     path = os.path.abspath('scores/scores.csv')
     df = pd.read_csv(path, index_col=0)
 
-    # # Agregate accross trials by averaging
-    # df = df.reset_index()
-    # df['n_trials'] = 1  # Add a count column to keep track of # of trials
-    # dfgb = df.groupby(['size', 'db', 'task', 'method', 'fold'])
-    # df = dfgb.agg({
-    #     'score': 'mean',
-    #     'n_trials': 'sum',
-    #     'scorer': PlotHelper.assert_equal,  # first and assert equal
-    #     'selection': PlotHelper.assert_equal,
-    #     'n': PlotHelper.assert_equal,
-    #     'p': 'mean',  #PlotHelper.assert_equal,
-    #     'type': PlotHelper.assert_equal,
-    #     'imputation_WCT': 'mean',
-    #     'tuning_WCT': 'mean',
-    #     'imputation_PT': 'mean',
-    #     'tuning_PT': 'mean',
-    # })
-
-    # Aggregate both trials and folds
-    df = PlotHelper.aggregate(df, 'score')
-
-    dfgb = df.groupby(['size', 'db', 'task'])
-    df['rank'] = dfgb['score'].rank(method='dense', ascending=False).astype(int)
-    print(df)
-
-    return
-
-    # Reset index to addlevel of the multi index to the columns of the df
-    df = df.reset_index()
-    # df = df.set_index(['size', 'db', 'task', 'method'])
-
-    print(df)
-
-    # scikit_posthocs.posthoc_wilcoxon(df, val_col='score', group_col='method')
-
-    res = scikit_posthocs.posthoc_nemenyi(df, val_col='score', group_col='method')
-
-    print(res)
-
-
-def run_friedman():
-    path = os.path.abspath('scores/scores.csv')
-    df = pd.read_csv(path, index_col=0)
-
-    method_order = [
-        'MIA',
+    method_order1 = [
         'Mean',
         'Mean+mask',
         'Med',
@@ -266,6 +265,136 @@ def run_friedman():
         'Iter+mask',
         'KNN',
         'KNN+mask',
+    ]
+
+    method_order2 = [
+        'Linear+Mean',
+        'Linear+Mean+mask',
+        'Linear+Med',
+        'Linear+Med+mask',
+        'Linear+Iter',
+        'Linear+Iter+mask',
+        'Linear+KNN',
+        'Linear+KNN+mask',
+    ]
+
+    method_order = ['MIA'] + method_order1 + method_order2
+
+    db_order = [
+        'TB',
+        'UKBB',
+        'MIMIC',
+        'NHIS',
+    ]
+
+    df = get_scores_tab(df, method_order=method_order, db_order=db_order, average_sizes=False)
+    sizes = df.index.get_level_values(0).unique()
+
+    rows = []
+    for size in sizes:
+        # print(f'Size={size}: ', end='\t')
+
+        scores = df.loc[size]
+        ref_scores = scores.loc['MIA']
+
+        methods = scores.index.unique()
+        methods = [m for m in methods if m != 'MIA']
+
+        for method in methods:
+            m_scores = scores.loc[method]
+            idx = m_scores.notnull()
+
+            x = ref_scores[idx]
+            y = m_scores[idx]
+
+            w_double = wilcoxon(x=x, y=y, alternative='two-sided')
+            w_greater = wilcoxon(x=x, y=y, alternative='greater')
+
+            rows.append([size, method, w_double[0], w_double[1], w_greater[0], w_greater[1]])
+
+    W_test = pd.DataFrame(rows, columns=[
+        'size',
+        'method',
+        'two-sided_stat',
+        'two-sided_pval',
+        'greater_stat',
+        'greater_pval',
+        ]).set_index(['size', 'method'])
+
+    # W_test = W_test.reindex(method_order)
+
+    # W_test['two-sided_pval'] = [f'{w:.1g}' for w in W_test['two-sided_pval']]
+    # W_test['greater_pval'] = [f'{w:.1g}' for w in W_test['greater_pval']]
+
+
+    W_test.drop(['two-sided_pval', 'two-sided_stat'], axis=1, inplace=True)
+
+    W_test.rename({
+        'greater_pval': 'p-value',
+        'greater_stat': 'Statistic',
+    }, axis=1, inplace=True)
+
+    W_test.index.rename('Size', level=0, inplace=True)
+    W_test.index.rename('Method', level=1, inplace=True)
+
+    W_test.drop(['Statistic'], axis=1, inplace=True)
+
+    W_test = pd.pivot_table(W_test, values='p-value', index='Method', columns='Size')
+
+    W_test = W_test.reindex(method_order1 + method_order2)
+
+    W_test.rename({
+        # 'Mean': 'Mean',
+        # 'Mean+mask': 'Mean+mask',
+        'Med': 'Median',
+        'Med+mask': 'Median+mask',
+        'Iter': 'Iterative',
+        'Iter+mask': 'Iterative+mask',
+        # 'KNN': 'KNN',
+        # 'KNN+mask': 'KNN+mask',
+        # 'Linear+Mean': 'Linear+Mean',
+        # 'Linear+Mean+mask': 'Linear+Mean+mask',
+        # 'Linear+Med': 'Linear+Med',
+        # 'Linear+Med+mask': 'Linear+Med+mask',
+        # 'Linear+Iter': 'Linear+Iterative',
+        # 'Linear+Iter+mask': 'Linear+Iterative+mask',
+        # 'Linear+KNN': 'Linear+KNN',
+        # 'Linear+KNN+mask': 'Linear+KNN+mask',
+        # 'method': 'Method',
+    }, axis=0, inplace=True)
+
+    print(W_test)
+
+    W_test.to_csv('tab/wilcoxon_greater.csv')
+    W_test.to_latex('tab/wilcoxon_greater.tex')
+
+
+def run_friedman():
+    path = os.path.abspath('scores/scores.csv')
+    df = pd.read_csv(path, index_col=0)
+
+    # method_order = [
+    #     'MIA',
+    #     'Mean',
+    #     'Mean+mask',
+    #     'Med',
+    #     'Med+mask',
+    #     'Iter',
+    #     'Iter+mask',
+    #     'KNN',
+    #     'KNN+mask',
+    # ]
+
+    method_order = [
+        'MIA',
+        'Linear+Mean',
+        'Linear+Mean+mask',
+        'Linear+Med',
+        'Linear+Med+mask',
+        'Linear+Iter',
+        'Linear+Iter+mask',
+        'Linear+KNN',
+        'Linear+KNN+mask',
     ]
 
     db_order = [
@@ -299,10 +428,7 @@ def run_friedman():
             return f'{x:.2g}'
 
     df_statistic = df_statistic.applymap(myround)
-    print(df_statistic)
 
-    # fig = plt.figure()
-    # axes = fig.add_subplot(2, 2, 1)
     fig, axes = plt.subplots(2, 2, figsize=(6, 8))
 
     for i, ax in enumerate(axes.reshape(-1)):
@@ -316,99 +442,6 @@ def run_friedman():
     plt.show()
 
     return df_statistic
-
-    # df = get_scores_tab(df, method_order=method_order, db_order=db_order, relative=True)
-    # # df = get_ranks_tab(df, method_order=method_order, db_order=db_order)
-    # # df.to_csv('ranks.csv')
-    # # df.to_latex('ranks.tex', na_rep='')
-    # print(df)
-    # df.to_latex('scores.tex', na_rep='', formatters={'Method': {'AVG': r'\textbf{AVG}'}})
-
-    # exit()
-
-    # # Aggregate both trials and folds
-    # # df = PlotHelper.aggregate(df, 'score')
-
-
-    # # df = df[['size', 'db', 'task', 'method', 'score', 'trial', 'fold']]
-    # PlotHelper.ranks(df, method_order=method_order)
-    # exit()
-
-    # r = PlotHelper.mean_rank('scores/scores.csv', method_order=method_order)
-
-
-
-    # df = df[df['method'].isin(method_order)]
-
-    # dfgb = df.groupby(['size', 'db', 'task', 'trial', 'fold'])
-    # df['rank'] = dfgb['score'].rank(method='dense', ascending=False)
-    # print(df)
-
-    # # Agregate across foldss by averaging
-    # dfgb = df.groupby(['size', 'db', 'task', 'method', 'trial'])
-    # df = dfgb.agg({'rank': 'mean', 'selection': 'first'})
-
-    # # Agregate across trials by averaging
-    # df = df.reset_index()
-    # df['n_trials'] = 1  # Add a count column to keep track of # of trials
-    # dfgb = df.groupby(['size', 'db', 'task', 'method'])
-    # df = dfgb.agg({'rank': 'mean', 'selection': 'first', 'n_trials': 'sum'})
-
-    # # We only take into account full results (n_trials == 5)
-    # df = df.reset_index()
-    # idx_valid = df.index[(df['selection'] == 'manual') | (
-    #     (df['selection'] != 'manual') & (df['n_trials'] == 5))]
-    # df = df.loc[idx_valid]
-
-    # dfgb = df.groupby(['db', 'task'])
-    # N = len(dfgb)
-
-    # # Average across tasks
-    # dfgb = df.groupby(['size', 'method'])
-    # df = dfgb.agg({'rank': 'mean'})
-
-    # # Reset index to addlevel of the multi index to the columns of the df
-    # df = df.reset_index()
-
-    # # print(df)
-    # # return
-
-    # # dfgb = df.groupby(['size', 'db', 'task'])
-    # # df['rank'] = dfgb['score'].rank(method='dense', ascending=False).astype(int)
-
-    # # print(df)
-
-    # # dfgb = df.groupby(['db', 'task', 'method'])
-    # # df = dfgb.agg({
-    # #     'rank': 'mean',
-    # # })
-
-    # # df = df.reset_index()
-    # # df = df.set_index(['size', 'db', 'task', 'method'])
-    # # with pd.option_context('display.max_rows', None, 'display.max_columns', None):
-    # #     print(df)
-
-
-
-
-    # dfgb = df.groupby(['method'])
-    # df = dfgb.agg({
-    #     'rank': 'mean',
-    # })
-
-    # print(df)
-
-    # R = np.squeeze(np.array(df))
-    # print(R)
-
-    # k = len(R)
-
-    # XF2 = 12*N/(k*(k+1))*(np.sum(np.square(R)) - 1./4*k*(k+1)**2)
-
-    # print(XF2)
-
-    # FF = (N-1)*XF2/(N*(k-1) - XF2)
-    # print(FF)
 
 
 def plot_ranks(average_ranks, critical_distance, ax):
