@@ -4,7 +4,7 @@ import pandas as pd
 
 from .PlotHelper import PlotHelper
 
-def get_scores_tab(scores_raw, method_order=None, db_order=None, relative=False):
+def get_scores_tab(scores_raw, method_order=None, db_order=None, relative=False, average_sizes=True):
     """Compute article scores tab from raw scores."""
     df = scores_raw.copy()
 
@@ -24,7 +24,7 @@ def get_scores_tab(scores_raw, method_order=None, db_order=None, relative=False)
 
     avg_by_size = df.mean(level=0)
     avg_by_size.loc['Global'] = avg_by_size.mean(skipna=True)
-    avg_by_size['method'] = 'AVG'
+    avg_by_size['method'] = 'Reference score'
     avg_by_size.set_index('method', append=True, inplace=True)
 
     size_order = df.index.get_level_values(0).unique()
@@ -48,10 +48,10 @@ def get_scores_tab(scores_raw, method_order=None, db_order=None, relative=False)
     else:
         df = df.round(3)
 
-    avg_by_size = avg_by_size.round(3)
-    df = pd.concat([df, avg_by_size], axis=0)
-
-    df = df.reindex(list(size_order)+['Global'], level=0)
+    if average_sizes:
+        avg_by_size = avg_by_size.round(3)
+        df = pd.concat([df, avg_by_size], axis=0)
+        df = df.reindex(list(size_order)+['Global'], level=0)
 
     df.index.rename(['Size', 'Method'], inplace=True)
     df.columns.rename(['Database', 'Task'], inplace=True)
@@ -59,7 +59,7 @@ def get_scores_tab(scores_raw, method_order=None, db_order=None, relative=False)
     return df
 
 
-def get_ranks_tab(scores_raw, method_order=None, db_order=None):
+def get_ranks_tab(scores_raw, method_order=None, db_order=None, average_sizes=True):
     """Compute article ranks tab from raw scores."""
 
     df = scores_raw.copy()
@@ -84,12 +84,15 @@ def get_ranks_tab(scores_raw, method_order=None, db_order=None):
     if db_order is not None:
         df = df.reindex(db_order, level=0, axis=1)
 
-    avg_on_sizes = df.mean(level=1)
-    avg_on_sizes['size'] = 'AVG'
-    avg_on_sizes = avg_on_sizes.reset_index().set_index(['size', 'method'])
+    if average_sizes:
+        avg_on_sizes = df.mean(level=1)
+        avg_on_sizes['size'] = 'AVG'
+        avg_on_sizes = avg_on_sizes.reset_index().set_index(['size', 'method'])
 
+        df_with_avg_dbs = pd.concat([df, avg_on_sizes], axis=0)
 
-    df_with_avg_dbs = pd.concat([df, avg_on_sizes], axis=0)
+    else:
+        df_with_avg_dbs = df
 
     avg_on_dbs = df_with_avg_dbs.mean(axis=1, level=0)
     avg_on_dbs['All'] = avg_on_dbs.mean(axis=1)
@@ -102,11 +105,14 @@ def get_ranks_tab(scores_raw, method_order=None, db_order=None):
         except:
             return x
 
-    avg_on_sizes = avg_on_sizes.round(1)
-    avg_on_dbs = avg_on_dbs.round(1)
 
     df = df.applymap(to_int)
-    df = pd.concat([df, avg_on_sizes], axis=0)
+
+    if average_sizes:
+        avg_on_sizes = avg_on_sizes.round(1)
+        df = pd.concat([df, avg_on_sizes], axis=0)
+
+    avg_on_dbs = avg_on_dbs.round(1)
     df = pd.concat([df, avg_on_dbs], axis=1)
 
     df.index.rename(['Size', 'Method'], inplace=True)

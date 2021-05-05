@@ -10,7 +10,7 @@ from tqdm import tqdm
 
 from prediction.tasks import tasks
 from .plot_statistics import figure1, figure2, figure2bis, figure3, plot_feature_wise_v2
-from .tests import run_wilcoxon
+from .tests import run_wilcoxon, run_friedman, dump_scores_ranks
 
 
 memory = Memory('joblib_cache')
@@ -342,6 +342,8 @@ def run(argv=None):
                         nargs='?', help='Whether to plot the figure2')
     parser.add_argument('--fig3', dest='fig3', default=False, const=True,
                         nargs='?', help='Whether to plot the figure3')
+    parser.add_argument('--linear', dest='linear', default=False, const=True,
+                        nargs='?', help='Whether to use linear methods')
     args = parser.parse_args(argv)
 
     if args.tag is None:
@@ -358,6 +360,18 @@ def run(argv=None):
     if args.tag == 'wilcoxon':
         run_wilcoxon()
 
+        return
+
+    # if args.tag == 'pwilcoxon':
+    #     run_pairwise_wilcoxon()
+    #     return
+
+    if args.tag == 'friedman':
+        run_friedman(args.linear)
+        return
+
+    if args.tag == 'dump':
+        dump_scores_ranks(args.linear)
         return
 
     task_tag = args.tag
