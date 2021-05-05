@@ -1,14 +1,16 @@
 """Run some statistical tests on the results."""
 import os
+from os.path import join
 import numpy as np
 import pandas as pd
 from scipy.stats import f, chi2, wilcoxon, friedmanchisquare
 import scikit_posthocs
 import matplotlib.pyplot as plt
-from adjustText import adjust_text
+# from adjustText import adjust_text
 
 from prediction.PlotHelper import PlotHelper
 from prediction.df_utils import get_scores_tab, get_ranks_tab
+from custom.const import get_fig_folder, get_tab_folder
 
 
 tasks_to_drop = {
@@ -214,51 +216,7 @@ def run_wilcoxon_():
     # W_test2 = W_test.loc[half2]
 
 
-# def run_pairwise_wilcoxon():
-#     path = os.path.abspath('scores/scores.csv')
-#     df = pd.read_csv(path, index_col=0)
-
-#     # # Agregate accross trials by averaging
-#     # df = df.reset_index()
-#     # df['n_trials'] = 1  # Add a count column to keep track of # of trials
-#     # dfgb = df.groupby(['size', 'db', 'task', 'method', 'fold'])
-#     # df = dfgb.agg({
-#     #     'score': 'mean',
-#     #     'n_trials': 'sum',
-#     #     'scorer': PlotHelper.assert_equal,  # first and assert equal
-#     #     'selection': PlotHelper.assert_equal,
-#     #     'n': PlotHelper.assert_equal,
-#     #     'p': 'mean',  #PlotHelper.assert_equal,
-#     #     'type': PlotHelper.assert_equal,
-#     #     'imputation_WCT': 'mean',
-#     #     'tuning_WCT': 'mean',
-#     #     'imputation_PT': 'mean',
-#     #     'tuning_PT': 'mean',
-#     # })
-
-#     # Aggregate both trials and folds
-#     df = PlotHelper.aggregate(df, 'score')
-
-#     dfgb = df.groupby(['size', 'db', 'task'])
-#     df['rank'] = dfgb['score'].rank(method='dense', ascending=False).astype(int)
-#     print(df)
-
-#     return
-
-#     # Reset index to addlevel of the multi index to the columns of the df
-#     df = df.reset_index()
-#     # df = df.set_index(['size', 'db', 'task', 'method'])
-
-#     print(df)
-
-#     # scikit_posthocs.posthoc_wilcoxon(df, val_col='score', group_col='method')
-
-#     res = scikit_posthocs.posthoc_nemenyi(df, val_col='score', group_col='method')
-
-#     print(res)
-
-
-def run_wilcoxon():
+def run_wilcoxon(graphics_folder, csv=False):
     path = os.path.abspath('scores/scores.csv')
     df = pd.read_csv(path, index_col=0)
 
@@ -358,40 +316,37 @@ def run_wilcoxon():
     W_test = W_test.reindex(method_order1 + method_order2)
 
     W_test.rename({
-        # 'Mean': 'Mean',
-        # 'Mean+mask': 'Mean+mask',
         'Med': 'Median',
         'Med+mask': 'Median+mask',
         'Iter': 'Iterative',
         'Iter+mask': 'Iterative+mask',
-        # 'KNN': 'KNN',
-        # 'KNN+mask': 'KNN+mask',
-        # 'Linear+Mean': 'Linear+Mean',
-        # 'Linear+Mean+mask': 'Linear+Mean+mask',
-        # 'Linear+Med': 'Linear+Med',
-        # 'Linear+Med+mask': 'Linear+Med+mask',
-        # 'Linear+Iter': 'Linear+Iterative',
-        # 'Linear+Iter+mask': 'Linear+Iterative+mask',
-        # 'Linear+KNN': 'Linear+KNN',
-        # 'Linear+KNN+mask': 'Linear+KNN+mask',
-        # 'method': 'Method',
     }, axis=0, inplace=True)
 
-    def myround(x):
+    def pvalue_formatter(x, alpha, n_bonferroni):
         if np.isnan(x):
             return x
         else:
-            return f'{x:.2e}'
+            if x < alpha/n_bonferroni:  # below bonferroni corrected alpha level
+                return f'{x:.1e}^{{\\star\\star}}'
 
-    W_test = W_test.applymap(myround)
+            if x < alpha:  # below alpha level but above bonferroni
+                return f'{x:.1e}^{{\\star\\star}}'
+
+            return f'{x:.1e}'
 
     print(W_test)
 
-    W_test.to_csv('tab/wilcoxon_greater.csv')
-    W_test.to_latex('tab/wilcoxon_greater.tex', na_rep='')
+    tab_folder = get_tab_folder(graphics_folder)
+
+    if csv:
+        W_test.to_csv(join(tab_folder, 'wilcoxon_greater.csv'))
+
+    print(f'Apply Bonferroni correction with {W_test.shape[0]} values.')
+    W_test = W_test.applymap(lambda x: pvalue_formatter(x, alpha=0.05, n_bonferroni=W_test.shape[0]))
+    W_test.to_latex(join(tab_folder, 'wilcoxon_greater.tex'), na_rep='', escape=False)
 
 
-def run_friedman(linear=False):
+def run_friedman(graphics_folder, linear=False, csv=False):
     path = os.path.abspath('scores/scores.csv')
     df = pd.read_csv(path, index_col=0)
 
@@ -491,12 +446,18 @@ def run_friedman(linear=False):
         plot_ranks(ranks, critical_distances[size], ax)
         ax.set_title(f'Size={size}')
 
-    plt.savefig(f'figs/critical_distance-linear_{linear}.pdf', bbox_inches='tight')
-    # plt.show()
+    fig_folder = get_fig_folder(graphics_folder)
+    tab_folder = get_tab_folder(graphics_folder)
+
+    tab_name = 'friedman_linear' if linear else 'friedman'
+    fig_name = 'critical_distance_linear' if linear else 'critical_distance'
+
+    plt.savefig(join(fig_folder, f'{fig_name}.pdf'), bbox_inches='tight')
 
     print(df_statistic)
-    df_statistic.to_csv(f'tab/friedman-linear_{linear}.csv')
-    df_statistic.to_latex(f'tab/friedman-linear_{linear}.tex', na_rep='')
+    if csv:
+        df_statistic.to_csv(join(tab_folder, f'{tab_name}.csv'))
+    df_statistic.to_latex(join(tab_folder, f'{tab_name}.tex'), na_rep='')
 
     return df_statistic
 
@@ -543,7 +504,7 @@ def plot_ranks(average_ranks, critical_distance, ax):
     #     text.set_position((.12, y))
         # text.set_horizontalalignment('left')
 
-def dump_scores_ranks(linear):
+def run_scores(graphics_folder, linear, csv=False):
     path = os.path.abspath('scores/scores.csv')
     df = pd.read_csv(path, index_col=0)
 
@@ -608,7 +569,13 @@ def dump_scores_ranks(linear):
     print(scores)
     print(ranks)
 
-    scores.to_latex(f'tab/scores-linear_{linear}.tex', na_rep='')
-    scores.to_csv(f'tab/scores-linear_{linear}.csv')
-    ranks.to_latex(f'tab/ranks-linear_{linear}.tex', na_rep='')
-    ranks.to_csv(f'tab/ranks-linear_{linear}.csv')
+    tab_folder = get_tab_folder(graphics_folder)
+    tab1_name = 'scores_linear' if linear else 'scores'
+    tab2_name = 'ranks_linear' if linear else 'ranks'
+
+    scores.to_latex(join(tab_folder, f'{tab1_name}.tex'), na_rep='')
+    ranks.to_latex(join(tab_folder, f'{tab2_name}.tex'), na_rep='')
+
+    if csv:
+            scores.to_csv(join(tab_folder, f'{tab1_name}.csv'))
+            ranks.to_csv(join(tab_folder, f'{tab2_name}.csv'))
