@@ -1,23 +1,26 @@
 import argparse
 import os
-# from .statistics import run
+import matplotlib.pyplot as plt
 
 from .tests import run_friedman, run_wilcoxon, run_scores
 from .statistics import run_mv
 from custom.const import local_graphics_folder, remote_graphics_folder
 
 
+plt.rcParams.update({
+    'text.usetex': True,
+    'mathtext.fontset': 'stix',
+    'font.family': 'STIXGeneral',
+    'axes.labelsize': 15,
+    'legend.fontsize': 11,
+    'figure.figsize': (8, 4.8),
+    # 'figure.dpi': 600,
+})
+
+
 def run(argv=None):
     parser = argparse.ArgumentParser(description='Stats on missing values.')
     parser.add_argument('program')
-    # parser.add_argument('--verbose', help='Common top-level parameter',
-    #                     action='store_true', required=False)
-    # parser.add_argument('--l', dest='linear', default=False, const=True,
-    #                     nargs='?', help='Whether to use linear methods')
-    # parser.add_argument('--a', dest='article', default=False, const=True,
-    #                     nargs='?', help='Whether to dump into article folder.')
-    # parser.add_argument('--csv', dest='csv', default=False, const=True,
-    #                     nargs='?', help='Whether to dump into csv as well.')
 
     subparsers = parser.add_subparsers(dest='action')
     parent_l = argparse.ArgumentParser(add_help=False)
@@ -49,7 +52,6 @@ def run(argv=None):
     p.add_argument('--fig3', dest='fig3', default=False, const=True,
                         nargs='?', help='Whether to plot the figure3')
 
-    # parser.add_argument('action', default=None, nargs='?', help='The action to run.')
     args = parser.parse_args(argv)
 
     graphics_folder = local_graphics_folder

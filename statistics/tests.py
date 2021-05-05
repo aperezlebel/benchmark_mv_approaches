@@ -425,9 +425,9 @@ def run_friedman(graphics_folder, linear=False, csv=False):
         N = (~ranks_by_db.loc[size].isna().all(axis=0)).sum()
 
         XF2, XF2_pval, FF, FF_pval, CD = friedman_statistic(ranks, N)
-        rows.append([XF2, XF2_pval, FF, FF_pval, CD])
+        rows.append([XF2, XF2_pval, FF, FF_pval, CD, N])
 
-    df_statistic = pd.DataFrame(rows, columns=['XF2', 'XF2_pval', 'FF', 'FF_pval', 'CD'], index=sizes)
+    df_statistic = pd.DataFrame(rows, columns=['XF2', 'XF2_pval', 'FF', 'FF_pval', 'CD', 'N'], index=sizes)
 
     def myround(x):
         if np.isnan(x):
@@ -444,7 +444,8 @@ def run_friedman(graphics_folder, linear=False, csv=False):
         ranks = df.loc[size, ('AVG', 'All')]
         critical_distances = df_statistic['CD'].astype(float)
         plot_ranks(ranks, critical_distances[size], ax)
-        ax.set_title(f'Size={size}')
+        N = df_statistic.loc[size, 'N']
+        ax.set_title(f'Size={size}, N={N}')
 
     fig_folder = get_fig_folder(graphics_folder)
     tab_folder = get_tab_folder(graphics_folder)
@@ -569,12 +570,20 @@ def run_scores(graphics_folder, linear, csv=False):
     print(scores)
     print(ranks)
 
+    # Preprocessing for latex dump
+    tasks = scores.columns.get_level_values(1)
+    rename = {k: k.replace("_", r"\_") for k in tasks}
+    rename = {k: f'\\rot{{{v}}}' for k, v in rename.items()}
+
+    scores.rename(columns=rename, inplace=True)
+    ranks.rename(columns=rename, inplace=True)
+
     tab_folder = get_tab_folder(graphics_folder)
     tab1_name = 'scores_linear' if linear else 'scores'
     tab2_name = 'ranks_linear' if linear else 'ranks'
 
-    scores.to_latex(join(tab_folder, f'{tab1_name}.tex'), na_rep='')
-    ranks.to_latex(join(tab_folder, f'{tab2_name}.tex'), na_rep='')
+    scores.to_latex(join(tab_folder, f'{tab1_name}.tex'), na_rep='', escape=False)
+    ranks.to_latex(join(tab_folder, f'{tab2_name}.tex'), na_rep='', escape=False)
 
     if csv:
             scores.to_csv(join(tab_folder, f'{tab1_name}.csv'))

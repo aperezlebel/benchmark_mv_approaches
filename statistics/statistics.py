@@ -330,33 +330,12 @@ def cached_indicators(task_tag, encode_features=False):
 
 def run_mv(args, graphics_folder):
     """Show some statistics on the given df."""
-    # parser = argparse.ArgumentParser(description='Stats on missing values.')
-    # parser.add_argument('program')
-    # parser.add_argument('action', default=None, nargs='?', help='The action to run.')
-    # parser.add_argument('--tag', default=None, nargs='?', help='The task tag')
-    # parser.add_argument('--hide', dest='hide', default=False, const=True,
-    #                     nargs='?', help='Whether to plot the stats or print')
-    # parser.add_argument('--fig1', dest='fig1', default=False, const=True,
-    #                     nargs='?', help='Whether to plot the figure1')
-    # parser.add_argument('--fig2', dest='fig2', default=False, const=True,
-    #                     nargs='?', help='Whether to plot the figure2')
-    # parser.add_argument('--fig2b', dest='fig2b', default=False, const=True,
-    #                     nargs='?', help='Whether to plot the figure2')
-    # parser.add_argument('--fig3', dest='fig3', default=False, const=True,
-    #                     nargs='?', help='Whether to plot the figure3')
-    # parser.add_argument('--linear', dest='linear', default=False, const=True,
-    #                     nargs='?', help='Whether to use linear methods')
-    # args = parser.parse_args(argv)
-
     if args.tag is None:
         every_mv_distribution()
 
         fig_folder = get_fig_folder(graphics_folder)
         fig_name = 'mv_distribution'
 
-        # folder = f'figs/'
-        # os.makedirs(folder, exist_ok=True)
-        # plt.savefig(f'figs/mv_distribution.pdf', bbox_inches='tight')
         plt.savefig(join(fig_folder, f'{fig_name}.pdf'), bbox_inches='tight')
         plt.tight_layout()
         plt.show()
