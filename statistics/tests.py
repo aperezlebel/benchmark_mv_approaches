@@ -492,9 +492,10 @@ def plot_ranks(average_ranks, critical_distance, ax):
     ax.set_xlim(-.3, .3)
     ax.invert_yaxis()
 
-    ax.scatter(np.zeros_like(average_ranks), average_ranks, color='red', marker='.', clip_on=False, zorder=10)
     cd1 = min_rank
     cd2 = min_rank + critical_distance
+    colors = ['red' if r < cd2 else 'black' for r in average_ranks]
+    ax.scatter(np.zeros_like(average_ranks), average_ranks, color=colors, marker='.', clip_on=False, zorder=10)
     ax.plot(-.1*np.ones(2), [cd1, cd2], color='red', marker='_', markeredgewidth=1.5)
     ax.text(-.12, (cd1+cd2)/2, 'critical distance', rotation=90, ha='center', va='center', color='red')
     # ax.annotate('Critical difference', xy=(-.1, (cd1+cd2)/2), textcoords="offset points",
