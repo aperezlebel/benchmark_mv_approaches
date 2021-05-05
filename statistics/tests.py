@@ -456,9 +456,19 @@ def run_friedman(graphics_folder, linear=False, csv=False):
     plt.savefig(join(fig_folder, f'{fig_name}.pdf'), bbox_inches='tight')
 
     print(df_statistic)
+
     if csv:
         df_statistic.to_csv(join(tab_folder, f'{tab_name}.csv'))
-    df_statistic.to_latex(join(tab_folder, f'{tab_name}.tex'), na_rep='')
+
+    # Preprocessing for latex dump
+
+    df_statistic.rename({
+        'XF2': r'$\chi^2_F$',
+        'XF2_pval': r'$\chi^2_F$ p-value',
+        'FF': r'$F_F$',
+        'FF_pval': r'$F_F$ p-value',
+    }, axis=1, inplace=True)
+    df_statistic.to_latex(join(tab_folder, f'{tab_name}.tex'), na_rep='', escape=False)
 
     return df_statistic
 
