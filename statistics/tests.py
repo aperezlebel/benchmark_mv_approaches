@@ -553,19 +553,17 @@ def run_scores(graphics_folder, linear, csv=False):
     scores = get_scores_tab(df, method_order=method_order, db_order=db_order, relative=True)
     ranks = get_ranks_tab(df, method_order=method_order, db_order=db_order)
 
-    scores.rename({
+    rename = {
         'Med': 'Median',
         'Med+mask': 'Median+mask',
         'Iter': 'Iterative',
         'Iter+mask': 'Iterative+mask',
-    }, axis=0, inplace=True)
+    }
 
-    ranks.rename({
-        'Med': 'Median',
-        'Med+mask': 'Median+mask',
-        'Iter': 'Iterative',
-        'Iter+mask': 'Iterative+mask',
-    }, axis=0, inplace=True)
+    if linear:
+        rename['MIA'] = 'Boosted trees+MIA'
+    scores.rename(rename, axis=0, inplace=True)
+    ranks.rename(rename, axis=0, inplace=True)
 
     print(scores)
     print(ranks)
