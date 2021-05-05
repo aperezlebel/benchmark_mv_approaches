@@ -24,7 +24,7 @@ def get_scores_tab(scores_raw, method_order=None, db_order=None, relative=False,
 
     avg_by_size = df.mean(level=0)
     avg_by_size.loc['Global'] = avg_by_size.mean(skipna=True)
-    avg_by_size['method'] = 'AVG'
+    avg_by_size['method'] = 'Reference score'
     avg_by_size.set_index('method', append=True, inplace=True)
 
     size_order = df.index.get_level_values(0).unique()

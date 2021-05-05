@@ -11,6 +11,12 @@ from prediction.PlotHelper import PlotHelper
 from prediction.df_utils import get_scores_tab, get_ranks_tab
 
 
+tasks_to_drop = {
+    'TB': 'platelet',
+    'NHIS': 'bmi_pvals',
+}
+
+
 def friedman_statistic(ranks, N):
     """Compute the Friedman statistic.
 
@@ -202,7 +208,7 @@ def run_wilcoxon_():
 
 
     W_test.to_csv('scores/wilcoxon.csv')
-    W_test.to_latex('scores/wilcoxon.tex')
+    W_test.to_latex('scores/wilcoxon.tex', na_rep='')
 
     # W_test1 = W_test.loc[half1]
     # W_test2 = W_test.loc[half2]
@@ -255,6 +261,14 @@ def run_wilcoxon_():
 def run_wilcoxon():
     path = os.path.abspath('scores/scores.csv')
     df = pd.read_csv(path, index_col=0)
+
+    # Drop tasks
+    df = df.set_index(['db', 'task'])
+    for db, task in tasks_to_drop.items():
+        df = df.drop((db, task), axis=0)
+    df = df.reset_index()
+
+    df['task'] = df['task'].str.replace('_pvals', '_screening')
 
     method_order1 = [
         'Mean',
@@ -363,39 +377,78 @@ def run_wilcoxon():
         # 'method': 'Method',
     }, axis=0, inplace=True)
 
+    def myround(x):
+        if np.isnan(x):
+            return x
+        else:
+            return f'{x:.2e}'
+
+    W_test = W_test.applymap(myround)
+
     print(W_test)
 
     W_test.to_csv('tab/wilcoxon_greater.csv')
-    W_test.to_latex('tab/wilcoxon_greater.tex')
+    W_test.to_latex('tab/wilcoxon_greater.tex', na_rep='')
 
 
-def run_friedman():
+def run_friedman(linear=False):
     path = os.path.abspath('scores/scores.csv')
     df = pd.read_csv(path, index_col=0)
 
-    # method_order = [
-    #     'MIA',
-    #     'Mean',
-    #     'Mean+mask',
-    #     'Med',
-    #     'Med+mask',
-    #     'Iter',
-    #     'Iter+mask',
-    #     'KNN',
-    #     'KNN+mask',
-    # ]
+    # Drop tasks
+    df = df.set_index(['db', 'task'])
+    for db, task in tasks_to_drop.items():
+        df = df.drop((db, task), axis=0)
+    df = df.reset_index()
 
-    method_order = [
-        'MIA',
-        'Linear+Mean',
-        'Linear+Mean+mask',
-        'Linear+Med',
-        'Linear+Med+mask',
-        'Linear+Iter',
-        'Linear+Iter+mask',
-        'Linear+KNN',
-        'Linear+KNN+mask',
-    ]
+    df['task'] = df['task'].str.replace('_pvals', '_screening')
+
+    if linear:
+        method_order = [
+            'MIA',
+            'Linear+Mean',
+            'Linear+Mean+mask',
+            'Linear+Med',
+            'Linear+Med+mask',
+            'Linear+Iter',
+            'Linear+Iter+mask',
+            'Linear+KNN',
+            'Linear+KNN+mask',
+        ]
+
+    else:
+        method_order = [
+            'MIA',
+            'Mean',
+            'Mean+mask',
+            'Med',
+            'Med+mask',
+            'Iter',
+            'Iter+mask',
+            'KNN',
+            'KNN+mask',
+        ]
+
+
+        # method_order = [
+        #     'MIA',
+        #     'Mean',
+        #     'Mean+mask',
+        #     'Med',
+        #     'Med+mask',
+        #     'Iter',
+        #     'Iter+mask',
+        #     'KNN',
+        #     'KNN+mask',
+        #     'Linear+Mean',
+        #     'Linear+Mean+mask',
+        #     'Linear+Med',
+        #     'Linear+Med+mask',
+        #     'Linear+Iter',
+        #     'Linear+Iter+mask',
+        #     'Linear+KNN',
+        #     'Linear+KNN+mask',
+        # ]
 
     db_order = [
         'TB',
@@ -429,7 +482,7 @@ def run_friedman():
 
     df_statistic = df_statistic.applymap(myround)
 
-    fig, axes = plt.subplots(2, 2, figsize=(6, 8))
+    fig, axes = plt.subplots(2, 2, figsize=(7, 8))
 
     for i, ax in enumerate(axes.reshape(-1)):
         size = sizes[i]
@@ -438,8 +491,12 @@ def run_friedman():
         plot_ranks(ranks, critical_distances[size], ax)
         ax.set_title(f'Size={size}')
 
-    plt.savefig('test.pdf', bbox_inches='tight')
-    plt.show()
+    plt.savefig(f'figs/critical_distance-linear_{linear}.pdf', bbox_inches='tight')
+    # plt.show()
+
+    print(df_statistic)
+    df_statistic.to_csv(f'tab/friedman-linear_{linear}.csv')
+    df_statistic.to_latex(f'tab/friedman-linear_{linear}.tex', na_rep='')
 
     return df_statistic
 
@@ -486,3 +543,72 @@ def plot_ranks(average_ranks, critical_distance, ax):
     #     text.set_position((.12, y))
         # text.set_horizontalalignment('left')
 
+def dump_scores_ranks(linear):
+    path = os.path.abspath('scores/scores.csv')
+    df = pd.read_csv(path, index_col=0)
+
+    # Drop tasks
+    df = df.set_index(['db', 'task'])
+    for db, task in tasks_to_drop.items():
+        df = df.drop((db, task), axis=0)
+    df = df.reset_index()
+
+    df['task'] = df['task'].str.replace('_pvals', '_screening')
+
+    if linear:
+        method_order = [
+            'MIA',
+            'Linear+Mean',
+            'Linear+Mean+mask',
+            'Linear+Med',
+            'Linear+Med+mask',
+            'Linear+Iter',
+            'Linear+Iter+mask',
+            'Linear+KNN',
+            'Linear+KNN+mask',
+        ]
+
+    else:
+        method_order = [
+            'MIA',
+            'Mean',
+            'Mean+mask',
+            'Med',
+            'Med+mask',
+            'Iter',
+            'Iter+mask',
+            'KNN',
+            'KNN+mask',
+        ]
+
+    db_order = [
+        'TB',
+        'UKBB',
+        'MIMIC',
+        'NHIS',
+    ]
+
+    scores = get_scores_tab(df, method_order=method_order, db_order=db_order, relative=True)
+    ranks = get_ranks_tab(df, method_order=method_order, db_order=db_order)
+
+    scores.rename({
+        'Med': 'Median',
+        'Med+mask': 'Median+mask',
+        'Iter': 'Iterative',
+        'Iter+mask': 'Iterative+mask',
+    }, axis=0, inplace=True)
+
+    ranks.rename({
+        'Med': 'Median',
+        'Med+mask': 'Median+mask',
+        'Iter': 'Iterative',
+        'Iter+mask': 'Iterative+mask',
+    }, axis=0, inplace=True)
+
+    print(scores)
+    print(ranks)
+
+    scores.to_latex(f'tab/scores-linear_{linear}.tex', na_rep='')
+    scores.to_csv(f'tab/scores-linear_{linear}.csv')
+    ranks.to_latex(f'tab/ranks-linear_{linear}.tex', na_rep='')
+    ranks.to_csv(f'tab/ranks-linear_{linear}.csv')
