@@ -536,7 +536,7 @@ def figure2bis(indicators, plot=True, db_name=None, table=None):
         'xtick.labelsize': 13,
         'ytick.labelsize': 13,
     })
-    fig2, _ = plot_feature_wise_v2(indicators, plot=plot)
+    fig2, *_ = plot_feature_wise_v2(indicators, plot=plot)
     if all((db_name, table)):
         fig2.suptitle(f'Proportion of missing values in each feature'
                       f'\nof {db_name} (table "$\\verb|{table}|$")',

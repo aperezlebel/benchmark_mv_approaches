@@ -34,9 +34,11 @@ def get_scores_tab(scores_raw, method_order=None, db_order=None, relative=False,
 
     if relative:
         def myround(x):
-            if np.isnan(x):
+            if pd.isnull(x):
                 return x
             else:
+                # space = '' if x < 0 else r'\hphantom{-}'
+                # return f'{space}{x:.0e}'
                 return f'{x:.0e}'
             # try:
             #     return f'{x:.1e}'
@@ -52,6 +54,15 @@ def get_scores_tab(scores_raw, method_order=None, db_order=None, relative=False,
         avg_by_size = avg_by_size.round(3)
         df = pd.concat([df, avg_by_size], axis=0)
         df = df.reindex(list(size_order)+['Global'], level=0)
+
+    def space(x):
+        if pd.isnull(x):
+            return x
+        else:
+            space = '' if float(x) < 0 else r'\hphantom{-}'
+            return f'{space}{x}'
+
+    df = df.applymap(space)
 
     df.index.rename(['Size', 'Method'], inplace=True)
     df.columns.rename(['Database', 'Task'], inplace=True)

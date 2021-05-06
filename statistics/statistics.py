@@ -1,5 +1,6 @@
 """Compute statistics about missing values on a databse."""
 import os
+from os.path import join
 import argparse
 import pandas as pd
 import numpy as np
@@ -9,8 +10,8 @@ from joblib import Memory
 from tqdm import tqdm
 
 from prediction.tasks import tasks
+from custom.const import get_fig_folder
 from .plot_statistics import figure1, figure2, figure2bis, figure3, plot_feature_wise_v2
-from .tests import run_wilcoxon, run_friedman, dump_scores_ranks
 
 
 memory = Memory('joblib_cache')
@@ -327,51 +328,18 @@ def cached_indicators(task_tag, encode_features=False):
     return indicators
 
 
-def run(argv=None):
+def run_mv(args, graphics_folder):
     """Show some statistics on the given df."""
-    parser = argparse.ArgumentParser(description='Stats on missing values.')
-    parser.add_argument('program')
-    parser.add_argument('tag', default=None, nargs='?', help='The task tag')
-    parser.add_argument('--hide', dest='hide', default=False, const=True,
-                        nargs='?', help='Whether to plot the stats or print')
-    parser.add_argument('--fig1', dest='fig1', default=False, const=True,
-                        nargs='?', help='Whether to plot the figure1')
-    parser.add_argument('--fig2', dest='fig2', default=False, const=True,
-                        nargs='?', help='Whether to plot the figure2')
-    parser.add_argument('--fig2b', dest='fig2b', default=False, const=True,
-                        nargs='?', help='Whether to plot the figure2')
-    parser.add_argument('--fig3', dest='fig3', default=False, const=True,
-                        nargs='?', help='Whether to plot the figure3')
-    parser.add_argument('--linear', dest='linear', default=False, const=True,
-                        nargs='?', help='Whether to use linear methods')
-    args = parser.parse_args(argv)
-
     if args.tag is None:
         every_mv_distribution()
 
-        folder = f'figs/'
-        os.makedirs(folder, exist_ok=True)
-        plt.savefig(f'figs/mv_distribution.pdf', bbox_inches='tight')
+        fig_folder = get_fig_folder(graphics_folder)
+        fig_name = 'mv_distribution'
+
+        plt.savefig(join(fig_folder, f'{fig_name}.pdf'), bbox_inches='tight')
         plt.tight_layout()
         plt.show()
 
-        return
-
-    if args.tag == 'wilcoxon':
-        run_wilcoxon()
-
-        return
-
-    # if args.tag == 'pwilcoxon':
-    #     run_pairwise_wilcoxon()
-    #     return
-
-    if args.tag == 'friedman':
-        run_friedman(args.linear)
-        return
-
-    if args.tag == 'dump':
-        dump_scores_ranks(args.linear)
         return
 
     task_tag = args.tag
@@ -385,7 +353,7 @@ def run(argv=None):
     fig1, fig2, fig2b, fig3 = args.fig1, args.fig2, args.fig2b, args.fig3
 
     if not any((fig1, fig2, fig2b, fig3)):
-        fig1, fig2, fig2b, fig3 = True, True, True
+        fig1, fig2, fig2b, fig3 = True, True, True, True
 
     # Plot all the indicators
     if fig1:
@@ -397,8 +365,9 @@ def run(argv=None):
     if fig3:
         figure3(indicators, plot=plot, db_name=db_name, table=df_name)
 
-    folder = f'figs/{db_name}'
-    os.makedirs(folder, exist_ok=True)
-    plt.savefig(f'figs/{df_name}.pdf', bbox_inches='tight')
+    fig_folder = get_fig_folder(graphics_folder)
+
+    os.makedirs(join(fig_folder, db_name), exist_ok=True)
+    plt.savefig(join(fig_folder, f'{df_name}.pdf'), bbox_inches='tight')
     plt.tight_layout()
     plt.show()
