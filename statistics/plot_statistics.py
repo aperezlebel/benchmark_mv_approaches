@@ -4,6 +4,8 @@ import seaborn as sns
 import matplotlib.pyplot as plt
 import pandas as pd
 import numpy as np
+import matplotlib.ticker as ticker
+from mpl_toolkits.axes_grid.parasite_axes import SubplotHost
 
 
 # Plot functions: each indicator has a differebt way of beaing plotted
@@ -564,10 +566,119 @@ def figure3(indicators, plot=True, db_name=None, table=None):
 
 
 def plot_feature_types(props, ax=None):
-    if ax is None:
-        _, ax = plt.subplots(figsize=(10, 4))
+    matplotlib.rcParams.update({
+        # 'font.size': 14,
+        # 'axes.titlesize': 10,
+        'axes.labelsize': 10,
+        'xtick.labelsize': 8,
+        'ytick.labelsize': 8,
+    })
 
+    if ax is None:
+        fig, ax = plt.subplots(figsize=(5, 5))
+        # fig = plt.figure(figsize=(5, 5))
+        # ax = plt.gca()
+        # fig = plt.figure(figsize=(5, 5))
+        # ax = SubplotHost(fig, 111)
+        # fig.add_subplot(ax)
+
+    props.reset_index(inplace=True)
     props['tag'] = props['tag'].str.replace('_', '-')
-    sns.barplot(y='tag', x='continue', data=props, orient='h')
+    props['task'] = props['task'].str.replace('_', r'\_')
+    props['task'] = props['task'].str.replace('pvals', r'screening')
+
+    # Compute cumsums for plotting
+    props['categorical+ordinal'] = props['categorical'] + props['ordinal']
+    props['continue+ordinal'] = props['continue'] + props['ordinal']
+    # props['T'] = props['T'].astype(str)
+    # sns.set_color_codes('muted')
+
+    # print(props)
+    # exit()
+    sns.set_color_codes('pastel')
+    g1 = sns.barplot(y='tag', x='n', data=props, orient='h', hue='T', color='b', palette=['b'], ax=ax)
+    g2 = sns.barplot(y='tag', x='categorical+ordinal', data=props, orient='h', hue='T', color='r', palette=['r'], ax=ax)
+    g3 = sns.barplot(y='tag', x='categorical', data=props, orient='h', hue='T', color='g', palette=['g'], ax=ax)
+    # sns.barplot(y='tag', x='n', data=props, orient='h', hue='T', color='g', palette=['g'], ax=ax)
+    # sns.barplot(y='tag', x='continue+ordinal', data=props, orient='h', hue='T', color='r', palette=['r'], ax=ax)
+    # sns.barplot(y='tag', x='continue', data=props, orient='h', hue='T', color='b', palette=['b'], ax=ax)
+    # plt.legend(handles=[g1, g2, g3])
+    # plt.legend(handles=[ax.patches[0]])
+    handles, labels = ax.get_legend_handles_labels()
+    # print(handles)
+    ax.legend(handles=[handles[10], handles[5], handles[0]], labels=['Categorical', 'Ordinal', 'Continue'],
+    title='Feature type', fancybox=True, shadow=False, loc='upper center', bbox_to_anchor=(0.215, 1.17), ncol=3)
+    # print(ax.lines)
+    # print(g1.legend_)
+    # print(ax.get_legend().handles)
+    ax.set_xlabel('Features')
+    # ax.set_ylabel('Tasks')
+    ax.set_ylabel('')
+
+    # plt.gca().remove_overlapping_locs = False
+    props.set_index(['db', 'task', 'T'], inplace=True)
+    subprops = props.iloc[props.index.get_level_values('T') == 0]
+    minor_YT = ax.get_yaxis().get_majorticklocs()
+    # print(minor_YT)
+    subprops['YT_V'] = minor_YT
+    # print(subprops)
+    # major_YT = subprops.groupby(by=subprops.index.get_level_values(0)).first()['YT_V'].tolist()
+    # subprops['task'] = subprops.index.get_level_values(1)
+    major = subprops.groupby(level=[0])['YT_V'].first()
+    # print(major)
+    # major_YT = major['YT_V'].tolist()
+    # major_YT_labels = list(major.index)
+    # print(major_YT)
+    # subprops.__delitem__('YT_V')
+    # ax.set_yticks(minor_YT, minor=True)
+    # print(subprops.index.get_level_values(1))
+    # ax.set_yticklabels(subprops.index.get_level_values(1), minor=True)
+    # ax.tick_params(which='major', pad=75)
+    # print(major_YT)
+    # print((subprops.index.get_level_values(0)).unique())
+    # _ = plt.yticks(['a', 'b', 'c'], [0, 1, 2])
+    # _ = plt.yticks(major_YT, (subprops.index.get_level_values(0)).unique(), rotation=0)
+    # ax.set_yticks(major_YT, minor=False)
+    # print(major_YT)
+    # print(subprops.index.get_level_values(0).unique())
+    # ax.set_yticklabels(major_YT_labels, minor=False)
+    # xtickslocs = ax.get_xticks()
+    # print(xtickslocs)
+    print(major)
+    ax.set_yticklabels(subprops.index.get_level_values(1))
+    # ax.set_yticklabels((subprops.index.get_level_values(0)).unique(), minor=False)
+
+    xlim = ax.get_xlim()
+
+    # ax.text(0.5, 0.5, 'BONJOUR', transform=ax.transAxes)
+    for i, (idx, value) in enumerate(major.items()):
+        # print(i)
+        # print(major.iloc[i])
+        # print(idx)
+        ax.text(-40, major.iloc[i], idx, va='center', ha='right')#, in_layout=False)
+        # ax.text(0, major.iloc[i], idx, va='center', ha='right', transform=fig.transFigure)
+
+    ax.set_xlim(xlim)
+    # plt.subplots_adjust(left=0.4)
+    # ax.set_yticks(minor_YT, minor=True)
+    # print(subprops.index.get_level_values(1))
+    # ax.set_yticklabels(subprops.index.get_level_values(1), minor=True)
+    # ax.tick_params(which='major', pad=50)
+    # ax.yaxis.set_minor_formatter(FormatStrFormatter("%.2f"))
+
+    # Second X-axis
+    # ax2 = ax.twinx()
+    # offset = -100, 0 # Position of the second axis
+    # new_axisline = ax2.get_grid_helper().new_fixed_axis
+    # ax2.axis["left"] = new_axisline(loc="left", axes=ax2, offset=offset)
+    # # ax2.axis["right"].set_visible(False)
+
+    # ax2.set_xticks([0.0, 0.6, 1.0])
+    # # ax2.yaxis.set_major_formatter(ticker.NullFormatter())
+    # ax2.yaxis.set_major_locator(ticker.FixedLocator([0.3, 0.8]))
+    # ax2.yaxis.set_major_formatter(ticker.FixedFormatter(['mammal', 'reptiles']))
+
+    plt.tight_layout(pad=0.3)
+    plt.savefig('test.pdf', bbox_inches='tight')
     plt.show()
 

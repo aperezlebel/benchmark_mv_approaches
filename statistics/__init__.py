@@ -13,6 +13,7 @@ plt.rcParams.update({
     'font.family': 'STIXGeneral',
     'axes.labelsize': 15,
     'legend.fontsize': 11,
+    'legend.title_fontsize': 11,
     'figure.figsize': (8, 4.8),
     # 'figure.dpi': 600,
 })

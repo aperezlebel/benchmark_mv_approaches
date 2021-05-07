@@ -439,11 +439,11 @@ def run_prop(args, graphics_folder, encode_features=False):
         'TB/platelet',
         'TB/platelet_pvals',
         'TB/septic_pvals',
-        # 'UKBB/breast_25',
-        # 'UKBB/breast_pvals',
-        # 'UKBB/fluid_pvals',
-        # 'UKBB/parkinson_pvals',
-        # 'UKBB/skin_pvals',
+        'UKBB/breast_25',
+        'UKBB/breast_pvals',
+        'UKBB/fluid_pvals',
+        'UKBB/parkinson_pvals',
+        'UKBB/skin_pvals',
         'MIMIC/hemo_pvals',
         'MIMIC/septic_pvals',
         'NHIS/bmi_pvals',
@@ -512,8 +512,7 @@ def run_prop(args, graphics_folder, encode_features=False):
     props.set_index(['db', 'task', 'T'], inplace=True)
 
     print(props)
-
-    # plot_feature_types(props)
+    plot_feature_types(props)
 
 
 
