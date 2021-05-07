@@ -19,3 +19,13 @@ NOT_A_FEATURE = -1
 METADATA_PATH = 'database/metadata/'
 
 MV_PLACEHOLDER = 'MISSING_VALUE'
+
+
+def is_categorical(x):
+    return x in [CATEGORICAL, BINARY]
+
+def is_ordinal(x):
+    return x in [ORDINAL]
+
+def is_continue(x):
+    return x in [CONTINUE_I, CONTINUE_R, DATE_TIMESTAMP]

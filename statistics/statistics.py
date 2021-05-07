@@ -11,7 +11,10 @@ from tqdm import tqdm
 
 from prediction.tasks import tasks
 from custom.const import get_fig_folder
-from .plot_statistics import figure1, figure2, figure2bis, figure3, plot_feature_wise_v2
+from .plot_statistics import figure1, figure2, figure2bis, figure3, plot_feature_wise_v2, plot_feature_types
+from database import dbs, _load_feature_types
+from database.constants import BINARY, CONTINUE_R, CATEGORICAL
+from database.constants import is_categorical, is_continue, is_ordinal
 
 
 memory = Memory('joblib_cache')
@@ -371,3 +374,157 @@ def run_mv(args, graphics_folder):
     plt.savefig(join(fig_folder, f'{df_name}.pdf'), bbox_inches='tight')
     plt.tight_layout()
     plt.show()
+
+
+@memory.cache
+def cached_prop(task_tag, encode_features=False, T=0):
+    task = tasks.get(task_tag, T=T)
+    db_name = task.meta.db
+    db = dbs[db_name]
+    df_name = task.meta.df_name
+
+    # Load types of all inital features of the database
+    db_types = _load_feature_types(db, df_name, anonymized=False)
+
+    L = list(task.X.columns)
+    L.sort()
+
+    L = [f.split('_')[0] for f in L]
+    L = list(set(L))
+
+    if db_name == 'TB':
+        task_types = pd.Series(CONTINUE_R, index=L)
+    elif db_name == 'UKBB':
+        task_types = pd.Series(BINARY, index=L)
+    else:
+        task_types = pd.Series(CATEGORICAL, index=L)
+
+    # Cast both index to str
+    db_types.index = db_types.index.astype(str)
+    task_types.index = task_types.index.astype(str)
+
+    task_cols = set(task_types.index)
+    db_cols = set(db_types.index)
+    missing_cols = task_cols - db_cols
+    m = len(missing_cols)
+    if m > 0:
+        print(f'{m} features not found in DB features:\n{missing_cols}')
+    else:
+        print('All features found in DB features')
+    task_types.update(db_types)
+
+    f_categorical = task_types.map(is_categorical)
+    f_ordinal = task_types.map(is_ordinal)
+    f_continue = task_types.map(is_continue)
+
+    n_categorical = f_categorical.sum()
+    n_ordinal = f_ordinal.sum()
+    n_continue = f_continue.sum()
+
+    print(n_categorical, n_ordinal, n_continue)
+
+    assert n_categorical + n_ordinal + n_continue == len(task_types)
+
+    return n_categorical, n_ordinal, n_continue
+
+
+def run_prop(args, graphics_folder, encode_features=False):
+    # task_tag = args.tag
+
+
+    task_tags = [
+        'TB/death_pvals',
+        'TB/hemo',
+        'TB/hemo_pvals',
+        'TB/platelet',
+        'TB/platelet_pvals',
+        'TB/septic_pvals',
+        # 'UKBB/breast_25',
+        # 'UKBB/breast_pvals',
+        # 'UKBB/fluid_pvals',
+        # 'UKBB/parkinson_pvals',
+        # 'UKBB/skin_pvals',
+        'MIMIC/hemo_pvals',
+        'MIMIC/septic_pvals',
+        'NHIS/bmi_pvals',
+        'NHIS/income_pvals',
+    ]
+    # task_tag = task_tags[0]
+    # task = tasks[task_tag]
+    # db_name = task.meta.db
+    # db = dbs[db_name]
+    # df_name = task.meta.df_name
+
+    # # if not encode_features and 'pvals' in task_tag:
+    # #     task.meta.encode_select = None
+    # #     task.meta.encode_transform = None
+
+    # # Load types of all inital features of the database
+    # db_types = _load_feature_types(db, df_name, anonymized=False)
+    # # print(db_types)
+    # L = list(task.X.columns.astype(str))
+    # L.sort()
+
+    # print(f'Features in X:\n{L}')
+    # print(len(L))
+    # # Kepp parents features only
+    # L = [f.split('_')[0] for f in L]
+    # L = list(set(L))
+
+    # print(f'Parents features:\n{L}')
+    # print(len(L))
+
+    # task_types = pd.Series(CATEGORICAL, index=L)
+
+    # # Cast both index to str
+    # db_types.index = db_types.index.astype(str)
+    # task_types.index = task_types.index.astype(str)
+
+    # task_cols = set(task_types.index)
+    # db_cols = set(db_types.index)
+    # missing_cols = task_cols - db_cols
+    # m = len(missing_cols)
+    # if m > 0:
+    #     raise ValueError(f'{m} features not found in DB features:\n{missing_cols}')
+    # else:
+    #     print('All features found in DB features')
+    # task_types.update(db_types)
+
+    # print(task_types)
+
+    # exit()
+
+
+    rows = []
+    for task_tag in task_tags:
+        Ts = list(range(5)) if 'pvals' in task_tag else [0]
+        print(task_tag)
+
+        db, task = task_tag.split('/')
+
+        for T in Ts:
+            n_categorical, n_ordinal, n_continue = cached_prop(task_tag, T=T)
+            rows.append([db, task, T, n_categorical, n_ordinal, n_continue])
+
+    props = pd.DataFrame(rows, columns=['db',  'task', 'T', 'categorical', 'ordinal', 'continue'])
+    props['tag'] = props['db'].str.cat('/'+props['task'])
+    props['n'] = props['categorical'] + props['ordinal'] + props['continue']
+    props.set_index(['db', 'task', 'T'], inplace=True)
+
+    print(props)
+
+    # plot_feature_types(props)
+
+
+
+    # return props
+
+
+
+
+        # fig_folder = get_fig_folder(graphics_folder)
+        # fig_name = 'proportion'
+
+        # plt.savefig(join(fig_folder, f'{fig_name}.pdf'), bbox_inches='tight')
+        # plt.tight_layout()
+        # plt.show()

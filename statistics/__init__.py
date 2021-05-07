@@ -3,7 +3,7 @@ import os
 import matplotlib.pyplot as plt
 
 from .tests import run_friedman, run_wilcoxon, run_scores
-from .statistics import run_mv
+from .statistics import run_mv, run_prop
 from custom.const import local_graphics_folder, remote_graphics_folder
 
 
@@ -52,6 +52,9 @@ def run(argv=None):
     p.add_argument('--fig3', dest='fig3', default=False, const=True,
                         nargs='?', help='Whether to plot the figure3')
 
+    p = subparsers.add_parser('prop', parents=[parent_a])
+    p.add_argument('tag', default=None, nargs='?', help='The task tag')
+
     args = parser.parse_args(argv)
 
     graphics_folder = local_graphics_folder
@@ -71,6 +74,9 @@ def run(argv=None):
 
     elif args.action == 'mv':
         run_mv(args, graphics_folder)
+
+    elif args.action == 'prop':
+        run_prop(args, graphics_folder)
 
     else:
         raise ValueError(f'Not known action {args.action}.')

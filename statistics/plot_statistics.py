@@ -562,3 +562,12 @@ def figure3(indicators, plot=True, db_name=None, table=None):
     plot_rm_rows(indicators, plot=plot, ax=axes3[0])
     plot_rm_features(indicators, plot=plot, ax=axes3[1])
 
+
+def plot_feature_types(props, ax=None):
+    if ax is None:
+        _, ax = plt.subplots(figsize=(10, 4))
+
+    props['tag'] = props['tag'].str.replace('_', '-')
+    sns.barplot(y='tag', x='continue', data=props, orient='h')
+    plt.show()
+
