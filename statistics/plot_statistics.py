@@ -644,7 +644,7 @@ def plot_feature_types(props, ax=None):
     # ax.set_yticklabels(major_YT_labels, minor=False)
     # xtickslocs = ax.get_xticks()
     # print(xtickslocs)
-    print(major)
+    # print(major)
     ax.set_yticklabels(subprops.index.get_level_values(1))
     # ax.set_yticklabels((subprops.index.get_level_values(0)).unique(), minor=False)
 
@@ -678,7 +678,7 @@ def plot_feature_types(props, ax=None):
     # ax2.yaxis.set_major_locator(ticker.FixedLocator([0.3, 0.8]))
     # ax2.yaxis.set_major_formatter(ticker.FixedFormatter(['mammal', 'reptiles']))
 
-    plt.tight_layout(pad=0.3)
-    plt.savefig('test.pdf', bbox_inches='tight')
-    plt.show()
+    # plt.tight_layout(pad=0.3)
+    # plt.savefig('test.pdf', bbox_inches='tight')
+    # plt.show()
 

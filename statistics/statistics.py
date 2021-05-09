@@ -514,16 +514,9 @@ def run_prop(args, graphics_folder, encode_features=False):
     print(props)
     plot_feature_types(props)
 
+    fig_folder = get_fig_folder(graphics_folder)
+    fig_name = 'proportion'
 
-
-    # return props
-
-
-
-
-        # fig_folder = get_fig_folder(graphics_folder)
-        # fig_name = 'proportion'
-
-        # plt.savefig(join(fig_folder, f'{fig_name}.pdf'), bbox_inches='tight')
-        # plt.tight_layout()
-        # plt.show()
+    plt.savefig(join(fig_folder, f'{fig_name}.pdf'), bbox_inches='tight')
+    plt.tight_layout(pad=0.3)
+    plt.show()
