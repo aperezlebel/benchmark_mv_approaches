@@ -16,6 +16,7 @@ from database import dbs, _load_feature_types
 from database.constants import BINARY, CONTINUE_R, CATEGORICAL
 from database.constants import is_categorical, is_continue, is_ordinal
 from .tests import tasks_to_drop
+from custom.const import get_tab_folder
 
 
 memory = Memory('joblib_cache')
@@ -30,6 +31,25 @@ plt.rcParams.update({
     'figure.figsize': (8, 4.8),
     # 'figure.dpi': 600,
 })
+
+
+task_tags = [
+    'TB/death_pvals',
+    'TB/hemo',
+    'TB/hemo_pvals',
+    'TB/platelet',
+    'TB/platelet_pvals',
+    'TB/septic_pvals',
+    'UKBB/breast_25',
+    'UKBB/breast_pvals',
+    'UKBB/fluid_pvals',
+    'UKBB/parkinson_pvals',
+    'UKBB/skin_pvals',
+    'MIMIC/hemo_pvals',
+    'MIMIC/septic_pvals',
+    'NHIS/bmi_pvals',
+    'NHIS/income_pvals',
+]
 
 
 def get_indicators_mv(df_mv):
@@ -378,7 +398,7 @@ def run_mv(args, graphics_folder):
 
 
 @memory.cache
-def cached_prop(task_tag, encode_features=False, T=0):
+def cached_types(task_tag, encode_features=False, T=0):
     task = tasks.get(task_tag, T=T)
     db_name = task.meta.db
     db = dbs[db_name]
@@ -414,6 +434,12 @@ def cached_prop(task_tag, encode_features=False, T=0):
         print('All features found in DB features')
     task_types.update(db_types)
 
+    return task_types
+
+
+def get_prop(task_tag, encode_features=False, T=0):
+    task_types = cached_types(task_tag, encode_features, T=T)
+
     f_categorical = task_types.map(is_categorical)
     f_ordinal = task_types.map(is_ordinal)
     f_continue = task_types.map(is_continue)
@@ -429,24 +455,7 @@ def cached_prop(task_tag, encode_features=False, T=0):
     return n_categorical, n_ordinal, n_continue
 
 
-def run_prop(args, graphics_folder, encode_features=False):
-    task_tags = [
-        'TB/death_pvals',
-        'TB/hemo',
-        'TB/hemo_pvals',
-        'TB/platelet',
-        'TB/platelet_pvals',
-        'TB/septic_pvals',
-        'UKBB/breast_25',
-        'UKBB/breast_pvals',
-        'UKBB/fluid_pvals',
-        'UKBB/parkinson_pvals',
-        'UKBB/skin_pvals',
-        'MIMIC/hemo_pvals',
-        'MIMIC/septic_pvals',
-        'NHIS/bmi_pvals',
-        'NHIS/income_pvals',
-    ]
+def run_prop(args, graphics_folder):
 
     rows = []
     for task_tag in task_tags:
@@ -456,7 +465,7 @@ def run_prop(args, graphics_folder, encode_features=False):
         db, task = task_tag.split('/')
 
         for T in Ts:
-            n_categorical, n_ordinal, n_continue = cached_prop(task_tag, T=T)
+            n_categorical, n_ordinal, n_continue = get_prop(task_tag, T=T)
             rows.append([db, task, T, n_categorical, n_ordinal, n_continue])
 
     props = pd.DataFrame(rows, columns=['db',  'task', 'T', 'categorical', 'ordinal', 'continue'])
@@ -480,3 +489,108 @@ def run_prop(args, graphics_folder, encode_features=False):
     plt.savefig(join(fig_folder, f'{fig_name}.pdf'), bbox_inches='tight')
     plt.tight_layout(pad=0.3)
     plt.show()
+
+
+def compute_correlation(_X):
+    """Compute the pairwise correlation from observations of a feature vector.
+
+    Similar to numpy.corrcoef except that it ignores missing observations in X.
+
+    Parameters
+    ----------
+    X : np.array of shape (k, n)
+        Matrix containing the n observations of the k features
+
+    Returns
+    -------
+    R : np.array of shape (k, k)
+        Pairwise correlation coefficients
+    N : np.array of shape (k, k)
+        Number of values taken for correlation computation of pair of features
+
+    """
+    X = np.array(_X)
+    k, n = X.shape
+    R = np.nan*np.ones((k, k))
+    N = np.zeros((k, k))
+
+    for i in range(k):
+        for j in range(k):
+            x1 = X[i, :]
+            x2 = X[j, :]
+
+            # Select index for which no missing values are in x1 nor x2
+            idx = ~np.isnan(x1) & ~np.isnan(x2)
+            n_values = np.sum(idx)
+            if n_values < 100:
+                print(f'Warning: only {n_values} values taken for correlation.')
+
+            R[i, j] = np.nan if n_values < 3 else np.corrcoef([x1[idx], x2[idx]])[0, 1]
+            N[i, j] = n_values
+
+    if isinstance(_X, pd.DataFrame):
+            features = _X.index
+            R = pd.DataFrame(R, index=features, columns=features)
+
+    return R, N
+
+
+@memory.cache
+def cached_task_correlation(task_tag, encode_features=False, T=0):
+    task = tasks.get(task_tag, T=T)
+    db_name = task.meta.db
+    db = dbs[db_name]
+    df_name = task.meta.df_name
+
+    task_types = cached_types(task_tag, encode_features=encode_features, T=T)
+
+
+    f_categorical = task_types.map(is_categorical)
+    f_ordinal = task_types.map(is_ordinal)
+    f_continue = task_types.map(is_continue)
+
+
+    f_selected = f_ordinal | f_continue
+    f_selected = f_selected[f_selected]
+
+    X_selected = task.X[f_selected[f_selected].index]
+
+    R, N = compute_correlation(X_selected.T)
+
+
+    return R, N
+
+
+def run_cor(args, graphics_folder, csv=False):
+    # task_tag = 'TB/death_pvals'
+    # T = 0
+
+    # R, N = cached_task_correlation(task_tag, T=T)
+
+    # print(R)
+    # print(N)
+
+    rows = []
+    for task_tag in task_tags:
+        Ts = list(range(5)) if 'pvals' in task_tag else [0]
+        print(task_tag)
+
+        db, task = task_tag.split('/')
+
+        for T in Ts:
+            R, _ = cached_task_correlation(task_tag, T=T)
+            N = (R.abs() > args.t).sum(axis=1)
+            N_mean = N.mean()
+            rows.append([db, task, T, N_mean])
+
+    df_cor = pd.DataFrame(rows, columns=['db',  'task', 'T', 'N_mean'])
+    df_cor = df_cor.groupby(['db',  'task']).agg({'N_mean': 'mean'})
+    print(df_cor)
+
+    tab_folder = get_tab_folder(graphics_folder)
+    tab_name = 'correlation'
+
+    df_cor.to_latex(join(tab_folder, f'{tab_name}.tex'), na_rep='', escape=False)
+
+    if csv:
+            df_cor.to_csv(join(tab_folder, f'{tab_name}.csv'))
