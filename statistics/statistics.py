@@ -15,6 +15,7 @@ from .plot_statistics import figure1, figure2, figure2bis, figure3, plot_feature
 from database import dbs, _load_feature_types
 from database.constants import BINARY, CONTINUE_R, CATEGORICAL
 from database.constants import is_categorical, is_continue, is_ordinal
+from .tests import tasks_to_drop
 
 
 memory = Memory('joblib_cache')
@@ -429,9 +430,6 @@ def cached_prop(task_tag, encode_features=False, T=0):
 
 
 def run_prop(args, graphics_folder, encode_features=False):
-    # task_tag = args.tag
-
-
     task_tags = [
         'TB/death_pvals',
         'TB/hemo',
@@ -449,51 +447,6 @@ def run_prop(args, graphics_folder, encode_features=False):
         'NHIS/bmi_pvals',
         'NHIS/income_pvals',
     ]
-    # task_tag = task_tags[0]
-    # task = tasks[task_tag]
-    # db_name = task.meta.db
-    # db = dbs[db_name]
-    # df_name = task.meta.df_name
-
-    # # if not encode_features and 'pvals' in task_tag:
-    # #     task.meta.encode_select = None
-    # #     task.meta.encode_transform = None
-
-    # # Load types of all inital features of the database
-    # db_types = _load_feature_types(db, df_name, anonymized=False)
-    # # print(db_types)
-    # L = list(task.X.columns.astype(str))
-    # L.sort()
-
-    # print(f'Features in X:\n{L}')
-    # print(len(L))
-    # # Kepp parents features only
-    # L = [f.split('_')[0] for f in L]
-    # L = list(set(L))
-
-    # print(f'Parents features:\n{L}')
-    # print(len(L))
-
-    # task_types = pd.Series(CATEGORICAL, index=L)
-
-    # # Cast both index to str
-    # db_types.index = db_types.index.astype(str)
-    # task_types.index = task_types.index.astype(str)
-
-    # task_cols = set(task_types.index)
-    # db_cols = set(db_types.index)
-    # missing_cols = task_cols - db_cols
-    # m = len(missing_cols)
-    # if m > 0:
-    #     raise ValueError(f'{m} features not found in DB features:\n{missing_cols}')
-    # else:
-    #     print('All features found in DB features')
-    # task_types.update(db_types)
-
-    # print(task_types)
-
-    # exit()
-
 
     rows = []
     for task_tag in task_tags:
@@ -509,9 +462,16 @@ def run_prop(args, graphics_folder, encode_features=False):
     props = pd.DataFrame(rows, columns=['db',  'task', 'T', 'categorical', 'ordinal', 'continue'])
     props['tag'] = props['db'].str.cat('/'+props['task'])
     props['n'] = props['categorical'] + props['ordinal'] + props['continue']
-    props.set_index(['db', 'task', 'T'], inplace=True)
 
+    # Drop tasks
+    props = props.set_index(['db', 'task'])
+    for db, task in tasks_to_drop.items():
+        props = props.drop((db, task), axis=0)
+    props = props.reset_index()
+
+    props.set_index(['db', 'task', 'T'], inplace=True)
     print(props)
+
     plot_feature_types(props)
 
     fig_folder = get_fig_folder(graphics_folder)
