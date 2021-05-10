@@ -4,7 +4,7 @@ import pandas as pd
 
 from .PlotHelper import PlotHelper
 
-def get_scores_tab(scores_raw, method_order=None, db_order=None, relative=False, average_sizes=True):
+def get_scores_tab(scores_raw, method_order=None, db_order=None, relative=False, average_sizes=True, formatting=True):
     """Compute article scores tab from raw scores."""
     df = scores_raw.copy()
 
@@ -32,26 +32,35 @@ def get_scores_tab(scores_raw, method_order=None, db_order=None, relative=False,
     if relative:
         df = df.sub(avg_by_size.droplevel(1, axis=0), level=0)
 
-    if relative:
-        def myround(x):
-            if pd.isnull(x):
-                return x
-            else:
-                # space = '' if x < 0 else r'\hphantom{-}'
-                # return f'{space}{x:.0e}'
-                return f'{x:.0e}'
-            # try:
-            #     return f'{x:.1e}'
-            # except:
-            #     return x
+    if formatting:
+        if relative:
+            def myround(x):
+                if pd.isnull(x):
+                    return x
+                else:
+                    # space = '' if x < 0 else r'\hphantom{-}'
+                    # return f'{space}{x:.0e}'
+                    s1 = f'{x:.0e}'
+                    # Remove the 0 from the exponent
+                    if s1[-2] == '0':
+                        s2 = s1[:-2] + s1[-1]
+                    else:
+                        s2 = s1
+                    assert np.isclose(float(s1), float(s2)).all()
+                    return s2
+                # try:
+                #     return f'{x:.1e}'
+                # except:
+                #     return x
 
-        df = df.applymap(myround)
+            df = df.applymap(myround)
 
-    else:
-        df = df.round(3)
+        else:
+            df = df.round(3)
 
     if average_sizes:
-        avg_by_size = avg_by_size.round(3)
+        if formatting:
+            avg_by_size = avg_by_size.round(3)
         df = pd.concat([df, avg_by_size], axis=0)
         df = df.reindex(list(size_order)+['Global'], level=0)
 
@@ -62,7 +71,8 @@ def get_scores_tab(scores_raw, method_order=None, db_order=None, relative=False,
             space = '' if float(x) < 0 else r'\hphantom{-}'
             return f'{space}{x}'
 
-    df = df.applymap(space)
+    if formatting:
+        df = df.applymap(space)
 
     df.index.rename(['Size', 'Method'], inplace=True)
     df.columns.rename(['Database', 'Task'], inplace=True)

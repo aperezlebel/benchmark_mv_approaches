@@ -259,7 +259,8 @@ def run_wilcoxon(graphics_folder, csv=False):
         'NHIS',
     ]
 
-    df = get_scores_tab(df, method_order=method_order, db_order=db_order, average_sizes=False)
+    df = get_scores_tab(df, method_order=method_order, db_order=db_order,
+                        average_sizes=False, formatting=False)
     sizes = df.index.get_level_values(0).unique()
 
     rows = []
@@ -278,6 +279,8 @@ def run_wilcoxon(graphics_folder, csv=False):
 
             x = ref_scores[idx]
             y = m_scores[idx]
+
+            print(x)
 
             w_double = wilcoxon(x=x, y=y, alternative='two-sided')
             w_greater = wilcoxon(x=x, y=y, alternative='greater')
@@ -330,7 +333,7 @@ def run_wilcoxon(graphics_folder, csv=False):
                 return f'{x:.1e}^{{\\star\\star}}'
 
             if x < alpha:  # below alpha level but above bonferroni
-                return f'{x:.1e}^{{\\star\\star}}'
+                return f'{x:.1e}^{{\\star}}'
 
             return f'{x:.1e}'
 
@@ -438,6 +441,11 @@ def run_friedman(graphics_folder, linear=False, csv=False):
     df_statistic = df_statistic.applymap(myround)
 
     fig, axes = plt.subplots(2, 2, figsize=(7, 8))
+
+    if linear:
+        print(df)
+        df.rename({'MIA': 'Boosted trees+MIA'}, axis=0, inplace=True)
+        print(df)
 
     for i, ax in enumerate(axes.reshape(-1)):
         size = sizes[i]

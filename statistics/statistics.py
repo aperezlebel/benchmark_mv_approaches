@@ -628,11 +628,11 @@ def run_cor(args, graphics_folder, absolute=False, csv=False):
     df_cor.rename({'N_mean': r'$\bar{n}$', 'prop': r'$\bar{p}$'}, axis=1, inplace=True)
 
     tab_folder = get_tab_folder(graphics_folder)
-    tab_name = 'correlation'
+    tab_name = 'correlation_abs' if absolute else 'correlation'
 
     print(df_cor)
 
     df_cor.to_latex(join(tab_folder, f'{tab_name}.tex'), na_rep='', escape=False)
 
     if csv:
-            df_cor.to_csv(join(tab_folder, f'{tab_name}.csv'))
+        df_cor.to_csv(join(tab_folder, f'{tab_name}.csv'))
