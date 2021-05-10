@@ -575,7 +575,7 @@ def plot_feature_types(props, ax=None):
     })
 
     if ax is None:
-        fig, ax = plt.subplots(figsize=(5, 5))
+        fig, ax = plt.subplots(figsize=(4.5, 6.5))
 
     props.reset_index(inplace=True)
     props['tag'] = props['tag'].str.replace('_', '-')
@@ -585,13 +585,16 @@ def plot_feature_types(props, ax=None):
     # Compute cumsums for plotting
     props['categorical+ordinal'] = props['categorical'] + props['ordinal']
     props['continue+ordinal'] = props['continue'] + props['ordinal']
-    sns.set_color_codes('pastel')
-    g1 = sns.barplot(y='tag', x='n', data=props, orient='h', hue='T', color='b', palette=['b'], ax=ax)
-    g2 = sns.barplot(y='tag', x='categorical+ordinal', data=props, orient='h', hue='T', color='r', palette=['r'], ax=ax)
-    g3 = sns.barplot(y='tag', x='categorical', data=props, orient='h', hue='T', color='g', palette=['g'], ax=ax)
+
+    c1, c2, c3 = sns.color_palette('deep', n_colors=3)
+    g1 = sns.barplot(y='tag', x='n', data=props, orient='h', hue='T', color=c1, palette=[c1], ax=ax)
+    g2 = sns.barplot(y='tag', x='categorical+ordinal', data=props, orient='h', hue='T', color=c3, palette=[c3], ax=ax)
+    g3 = sns.barplot(y='tag', x='categorical', data=props, orient='h', hue='T', color=c2, palette=[c2], ax=ax)
     handles, labels = ax.get_legend_handles_labels()
-    ax.legend(handles=[handles[10], handles[5], handles[0]], labels=['Categorical', 'Ordinal', 'Continue'],
-    title='Feature type', fancybox=True, shadow=False, loc='upper center', bbox_to_anchor=(0.215, 1.17), ncol=3)
+    ax.legend(handles=[handles[10], handles[5], handles[0]],
+              labels=['Categorical', 'Ordinal', 'Continue'],
+              title='Feature type', fancybox=True, shadow=False,
+              loc='upper center', bbox_to_anchor=(0.215, 1.17), ncol=3)
     ax.set_xlabel('Features')
     ax.set_ylabel('')
 

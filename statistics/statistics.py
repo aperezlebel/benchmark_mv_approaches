@@ -483,7 +483,7 @@ def run_prop(args, graphics_folder):
     # Drop tasks
     props = props.set_index(['db', 'task'])
     for db, task in tasks_to_drop.items():
-        props = props.drop((db, task), axis=0)
+        props = props.drop((db, task), axis=0, errors='ignore')
     props = props.reset_index()
 
     props.set_index(['db', 'task', 'T'], inplace=True)
