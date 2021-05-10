@@ -569,15 +569,8 @@ def cached_task_correlation(task_tag, encode_features=False, T=0):
     return R, N
 
 
-def run_cor(args, graphics_folder, csv=False):
-    # task_tag = 'TB/death_pvals'
-    # T = 0
-
-    # R, N = cached_task_correlation(task_tag, T=T)
-
-    # print(R)
-    # print(N)
-    thresholds = [0.05, 0.1, 0.2, 0.3]
+def run_cor(args, graphics_folder, absolute=False, csv=False):
+    thresholds = [0.1, 0.2, 0.3]
 
     rows = []
     for task_tag in task_tags:
@@ -589,39 +582,25 @@ def run_cor(args, graphics_folder, csv=False):
         for T in Ts:
             R, _ = cached_task_correlation(task_tag, T=T)
             for threshold in thresholds:
-                N = (R.abs() > threshold).sum(axis=1)
+                if absolute:
+                    R = R.abs()
+                N = (R > threshold).sum(axis=1)
                 N_mean = N.mean()
                 k = R.shape[0]
                 rows.append([db, task, T, threshold, k, N_mean, N_mean/k])
 
     df_cor = pd.DataFrame(rows, columns=['db',  'task', 'T', 'threshold', 'n_selected', 'N_mean', 'prop'])
-    print(df_cor)
     df_n_selected = df_cor.groupby(['db',  'task']).agg({'n_selected': 'mean'})
-    print(df_n_selected)
     df_cor = df_cor.pivot(index=['db', 'task', 'T'], columns='threshold', values=['N_mean', 'prop'])
-    print(df_cor)
     df_cor = df_cor.groupby(['db',  'task'])
     df_cor = df_cor.agg('mean')
 
     df_cor_mean = df_cor.mean()
     df_cor_mean = pd.DataFrame(df_cor_mean).T
-    print(df_cor_mean)
     df_cor_mean.index = pd.MultiIndex.from_tuples([('AVG', '')])
-    print(df_cor_mean)
-    # print(pd.DataFrame(df_cor_mean).T)
-    # df_cor_mean = pd.DataFrame(df_cor_mean), index=[('AVG', '')], columns=df_cor_mean.index)
-    # df_cor.loc[('AVG', '')] = df_cor_mean
     df_cor = pd.concat([df_cor, df_cor_mean], axis=0)
-    # print(df_n_selected.mean())
     df_n_selected.loc[('AVG', ''), 'n_selected'] = float(df_n_selected.mean())
-    # print(df_n_selected)
-    # exit()
-    # df_n_selected = pd.concat([])
-    # exit()
-    print(df_cor)
-    # print(df_cor_mean)
-    # exit()
-    # print(df_cor['N_mean'])
+
     def to_int(x):  # Convert to int and robust to NaN
         try:
             return str(int(x))
@@ -634,45 +613,24 @@ def run_cor(args, graphics_folder, csv=False):
         except:
             return x
 
-    # df = df.applymap(to_int)
     df_cor['N_mean'] = df_cor['N_mean'].applymap(to_int)
-    # df_cor['N_mean'] = df_cor['N_mean'].round(1)
-
     df_cor['prop'] = df_cor['prop'].applymap(to_percent)
-    print(df_cor)
-    # exit()
-    # df_cor = df_cor.swaplevel(axis=1)
-    # df_cor.sort_index(level=0, axis=1, inplace=True)
-    # df_cor_mean = df_cor_mean.swaplevel(axis=0)
-    # df_cor_mean.sort_index(level=0, axis=0, inplace=True)
-    # print(df_cor_mean)
-    # exit()
-    print(df_cor)
-    # exit()
-
     df_cor['n_selected'] = df_n_selected.applymap(to_int)
-    # df_cor[''] = pd.Series('', index=df_n_selected.index)  # Empty feature
     df_cor.set_index('n_selected', append=True, inplace=True)
-    # df_cor.set_index('', append=True, inplace=True)
-    print(df_cor)
-
 
     df_cor = df_cor.reindex(db_order+['AVG'], level=0, axis=0)
-    # df_cor = df_cor.reorder_levels(db_order, axis=0)
-    print(df_cor)
 
     # Processing for dumping
     df_cor.index.rename(['Database', 'Task', 'N features'], inplace=True)
-    # df_cor.index.rename(['Database', 'Task', 'N features', ''], inplace=True)
     df_cor.index = df_cor.index.set_levels(df_cor.index.levels[1].str.replace('pvals', 'screening'), level=1)
     df_cor.index = df_cor.index.set_levels(df_cor.index.levels[1].str.replace('_', r'\_'), level=1)
     df_cor.columns.rename(['', 'Threshold'], inplace=True)
     df_cor.rename({'N_mean': r'$\bar{n}$', 'prop': r'$\bar{p}$'}, axis=1, inplace=True)
-    print(df_cor)
-
 
     tab_folder = get_tab_folder(graphics_folder)
     tab_name = 'correlation'
+
+    print(df_cor)
 
     df_cor.to_latex(join(tab_folder, f'{tab_name}.tex'), na_rep='', escape=False)
 

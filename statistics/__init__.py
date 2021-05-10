@@ -58,6 +58,8 @@ def run(argv=None):
 
     p = subparsers.add_parser('cor', parents=[parent_a, parent_csv])
     p.add_argument('--t', type=float, default=0.1, help='Threshold for correlation')
+    p.add_argument('--abs', type=bool, default=False, const=True, nargs='?',
+                   help='Whether to use absolute values of correlation')
 
     args = parser.parse_args(argv)
 
@@ -83,7 +85,7 @@ def run(argv=None):
         run_prop(args, graphics_folder)
 
     elif args.action == 'cor':
-        run_cor(args, graphics_folder, csv=args.csv)
+        run_cor(args, graphics_folder, csv=args.csv, absolute=args.abs)
 
     else:
         raise ValueError(f'Not known action {args.action}.')
