@@ -1,16 +1,16 @@
 Database,Task,Target,Description
-MIMIC,hemo_pvals,"One of [""78559"", ""99809"", ""9584""] found in ""ICD9_CODE""",Predict the hemorrhagic shock from the LABEVENTS table only.
-MIMIC,septic_pvals,"""ICD9_CODE"" == ""78552""",Predict the septic shock from the LABEVENTS table only.
-NHIS,bmi_pvals,"""BMI""","Predict the Body Mass Index (BMI) with information from tables: household, family, person and adult."
-NHIS,income_pvals,"""ERNYR-P""","Predict the income earned on the previous year with information from tables: household, family, person and adult."
-TB,death_pvals,"""Décès"" == ""Oui""",Predict the death of patients.
-TB,hemo,"""Choc hémorragique (? 4 CGR sur 6h)"" == ""Oui""",Predict the hemorrhagic shock using features defined in \cite{hemo_paper}.
-TB,hemo_pvals,"""Choc hémorragique (? 4 CGR sur 6h)"" == ""Oui""",Predict the hemorrhagic shock using ANOVA selection.
-TB,platelet,"""Plaquettes""",Predict the platelet count on arrival at the hospital using features defined in \cite{platelet_paper}.
-TB,platelet_pvals,"""Plaquettes""",Predict the platelet count on arrival at the hospital using ANOVA selection.
-TB,septic_pvals,"""Choc septique"" == ""Oui""",Predict septic shock.
-UKBB,breast_25,"One of [""C500"", ""C501"", ""C502"", ""C503"", ""C504"", ""C505"", ""C506"", ""C508"", ""C509""] found in one of [""41270-0.0"", ""41202-0.0"", ""41204-0.0"", ""40006-0.0""] (ICD10 features) or one of [""1740"", ""1743"", ""1744"", ""1745"", ""1748"", ""1749""] found in one of [""41271-0.0"", ""41203-0.0"", ""41205-0.0"", ""40013-0.0""] (ICD9 features)",Predict malignant neoplasm of breast on female patients only using  features defined in \cite{breast_paper}.
+MIMIC,hemo_pvals,"One of: 78559, 99809, 9584; found in ICD9_CODE",Predict the hemorrhagic shock from the LABEVENTS table only.
+MIMIC,septic_pvals,ICD9_CODE == 78552,Predict the septic shock from the LABEVENTS table only.
+NHIS,bmi_pvals,BMI,"Predict the Body Mass Index (BMI) with information from tables: household, family, person and adult."
+NHIS,income_pvals,ERNYR-P,"Predict the income earned on the previous year with information from tables: household, family, person and adult."
+TB,death_pvals,Décès == Oui,Predict the death of patients.
+TB,hemo,Choc hémorragique (? 4 CGR sur 6h) == Oui,Predict the hemorrhagic shock using features defined in \cite{hemo_paper}.
+TB,hemo_pvals,Choc hémorragique (? 4 CGR sur 6h) == Oui,Predict the hemorrhagic shock using ANOVA selection.
+TB,platelet,Plaquettes,Predict the level of platelet on arrival at the hospital using features defined in \cite{platelet_paper}.
+TB,platelet_pvals,Plaquettes,Predict the level of platelet on arrival at the hospital using ANOVA selection.
+TB,septic_pvals,Choc septique == Oui,Predict septic shock.
+UKBB,breast_25,"One of: C500, C501, C502, C503, C504, C505, C506, C508, C509; found in one of: 41270-0.0, 41202-0.0, 41204-0.0, 40006-0.0; or one of: 1740, 1743, 1744, 1745, 1748, 1749; found in one of: 41271-0.0, 41203-0.0, 41205-0.0, 40013-0.0",Predict malignant neoplasm of breast on female patients only using  features defined in \cite{breast_paper}.
 UKBB,breast_pvals,Same as breast_25,Predict malignant neoplasm of breast on female patients only using ANOVA selection.
-UKBB,fluid_pvals,"""20016-0.0""",Predict the fluid intelligence score.
-UKBB,parkinson_pvals,"One of [""G20"", ""G210"", ""G211"", ""G212"", ""G213"", ""G214"", ""G218"", ""G219"", ""G22"", ""F023""] found in one of [""41270-0.0"", ""41202-0.0"", ""41204-0.0"", ""40006-0.0""] (ICD10 features) or one of [""3320"", ""3321""] found in one of [""41271-0.0"", ""41203-0.0"", ""41205-0.0"", ""40013-0.0""] (ICD9 features)",Predict Parkinson's disease.
-UKBB,skin_pvals,"One of [C430"", ""C431"", ""C432"", ""C433"", ""C434"", ""C435"", ""C436"", ""C437"", ""C438"", ""C439"", ""C440"", ""C441"", ""C442"", ""C443"", ""C444"", ""C445"", ""C446"", ""C447"", ""C448"", ""C449""] found in one of [""41270-0.0"", ""41202-0.0"", ""41204-0.0"", ""40006-0.0""] (ICD10 features) or one of [""1720"", ""1723"", ""1725"", ""1726"", ""1727"", ""1729"", ""1730"", ""1731"", ""1732"", ""1733"", ""1734"", ""1735"", ""1736"", ""1737"", ""1739""]  found in one of[""41271-0.0"", ""41203-0.0"", ""41205-0.0"", ""40013-0.0""] (ICD9 features)",Predict melanoma and other malignant neoplasms of skin.
+UKBB,fluid_pvals,20016-0.0,Predict the fluid intelligence score.
+UKBB,parkinson_pvals,"One of: G20, G210, G211, G212, G213, G214, G218, G219, G22, F023; found in one of: 41270-0.0, 41202-0.0, 41204-0.0, 40006-0.0; or one of: 3320, 3321; found in one of: 41271-0.0, 41203-0.0, 41205-0.0, 40013-0.0",Predict Parkinson's disease.
+UKBB,skin_pvals,"One of: C430, C431, C432, C433, C434, C435, C436, C437, C438, C439, C440, C441, C442, C443, C444, C445, C446, C447, C448, C449; found in one of: 41270-0.0, 41202-0.0, 41204-0.0, 40006-0.0; or one of: 1720, 1723, 1725, 1726, 1727, 1729, 1730, 1731, 1732, 1733, 1734, 1735, 1736, 1737, 1739; found in one of: 41271-0.0, 41203-0.0, 41205-0.0, 40013-0.0",Predict melanoma and other malignant neoplasms of skin.
