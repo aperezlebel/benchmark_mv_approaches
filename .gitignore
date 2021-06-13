@@ -14,6 +14,7 @@ UKBB
 results*
 custom/*
 !*.dist
+!custom/const.py
 .DS_Store
 logs*
 .env
@@ -21,6 +22,7 @@ temp
 scores/*
 !scores/scores.csv
 !scores/descriptions.csv
+!scores/descriptions.numbers
 !scores/task_description.csv
 !scores/ranks.csv
 selected
