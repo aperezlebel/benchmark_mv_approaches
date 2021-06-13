@@ -992,16 +992,20 @@ class PlotHelper(object):
     @staticmethod
     def plot_times(filepath, which, xticks_dict=None, xlims=None, db_order=None,
                    method_order=None, rename=dict(), reference_method=None):
-        df = pd.read_csv(filepath, index_col=0)
+        if not isinstance(filepath, pd.DataFrame):
+            scores = pd.read_csv(filepath, index_col=0)
+        else:
+            scores = filepath
+
         if which == 'PT':
-            df['total_PT'] = df['imputation_PT'].fillna(0) + df['tuning_PT']
+            scores['total_PT'] = scores['imputation_PT'].fillna(0) + scores['tuning_PT']
             value = 'total_PT'
         elif which == 'WCT':
-            df['total_WCT'] = df['imputation_WCT'].fillna(0) + df['tuning_WCT']
+            scores['total_WCT'] = scores['imputation_WCT'].fillna(0) + scores['tuning_WCT']
             value = 'total_WCT'
         else:
             raise ValueError(f'Unknown argument {which}')
-        fig, _ = PlotHelper._plot(df, value, how='log',
+        fig, _ = PlotHelper._plot(scores, value, how='log',
                                     xticks_dict=xticks_dict,
                                     xlims=xlims,
                                     method_order=method_order,

@@ -101,8 +101,32 @@ def run_boxplot(graphics_folder, linear):
 
     if linear:
         fig = PlotHelper.plot_MIA_linear(scores, db_order=db_order, method_order=linear_method_order, rename=rename_on_plot)
+        xticks = {
+            # 0.5: '$\\frac{1}{2}\\times$',
+            1/50: '$\\frac{1}{50}\\times$',
+            1/10: '$\\frac{1}{10}\\times$',
+            1/3: '$\\frac{1}{3}\\times$',
+            # 0.75: '$\\frac{3}{4}\\times$',
+            1: '$1\\times$',
+            # 4/3: '$\\frac{4}{3}\\times$',
+            # 10: '$\\frac{10}{1}\\times$',
+            3: '$3\\times$',
+            10: '$10\\times$',
+            # 2: '$2\\times$'
+        }
+        fig_time = PlotHelper.plot_times(scores, 'PT', xticks_dict=xticks, xlims=(0.005, 15), method_order=linear_method_order, db_order=db_order, rename=rename_on_plot)
+    
     else:
         fig = PlotHelper.plot_scores(scores, method_order=method_order, db_order=db_order, rename=rename_on_plot, reference_method=None)
+        xticks = {
+            # 0.5: '$\\frac{1}{2}\\times$',
+            2/3: '$\\frac{2}{3}\\times$',
+            # 0.75: '$\\frac{3}{4}\\times$',
+            1: '$1\\times$',
+            # 4/3: '$\\frac{4}{3}\\times$',
+            3/2: '$\\frac{3}{2}\\times$',
+            # 2: '$2\\times$'
+        }
+        fig_time = PlotHelper.plot_times(scores, 'PT', xticks_dict=xticks, method_order=method_order, db_order=db_order, rename=rename_on_plot)
     
-    if fig:
-        plt.show()
+    plt.show()
