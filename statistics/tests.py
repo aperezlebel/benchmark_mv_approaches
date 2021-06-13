@@ -3,8 +3,7 @@ import os
 from os.path import join
 import numpy as np
 import pandas as pd
-from scipy.stats import f, chi2, wilcoxon, friedmanchisquare
-import scikit_posthocs
+from scipy.stats import f, chi2, wilcoxon
 import matplotlib.pyplot as plt
 # from adjustText import adjust_text
 
@@ -603,5 +602,5 @@ def run_scores(graphics_folder, linear, csv=False):
     ranks.to_latex(join(tab_folder, f'{tab2_name}.tex'), na_rep='', escape=False)# , column_format='L'*ranks.shape[1])
 
     if csv:
-            scores.to_csv(join(tab_folder, f'{tab1_name}.csv'))
-            ranks.to_csv(join(tab_folder, f'{tab2_name}.csv'))
+        scores.to_csv(join(tab_folder, f'{tab1_name}.csv'))
+        ranks.to_csv(join(tab_folder, f'{tab2_name}.csv'))

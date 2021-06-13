@@ -968,7 +968,7 @@ class PlotHelper(object):
                                        method_order=method_order,
                                        db_order=db_order, rename=rename,
                                        reference_method=reference_method,
-                                       figsize=(17, 5.25),
+                                       figsize=(18, 5.25),
                                        legend_bbox=(4.22, 1.015))
 
         df_ranks = get_ranks_tab(scores, method_order=method_order, db_order=db_order, average_sizes=True)
@@ -1011,7 +1011,7 @@ class PlotHelper(object):
                                     method_order=method_order,
                                     db_order=db_order, rename=rename,
                                     reference_method=reference_method,
-                                    figsize=None)
+                                    figsize=(19, 5.25))
         return fig
 
     # @staticmethod
