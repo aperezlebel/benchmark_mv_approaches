@@ -2,7 +2,60 @@
 import numpy as np
 import pandas as pd
 
-from .PlotHelper import PlotHelper
+
+def assert_equal(s):
+    """Check if all value of the series are equal and return the value."""
+    if s.empty:
+        return 0
+
+    if not (s.iloc[0] == s).all():
+        raise ValueError(
+            f'Values differ but supposed to be constant. Col: {s.name}.'
+        )
+    return s.iloc[0]
+
+
+def aggregate(df, value):
+    # Agregate accross folds by averaging
+    df['n_folds'] = 1
+    dfgb = df.groupby(['size', 'db', 'task', 'method', 'trial'])
+    df = dfgb.agg({
+        value: 'mean',
+        'n_folds': 'sum',
+        'scorer': assert_equal,  # first and assert equal
+        'selection': assert_equal,
+        'n': assert_equal,
+        'p': assert_equal,
+        'type': assert_equal,
+        'imputation_WCT': 'mean',
+        'tuning_WCT': 'mean',
+        'imputation_PT': 'mean',
+        'tuning_PT': 'mean',
+    })
+
+    # Agregate accross trials by averaging
+    df = df.reset_index()
+    df['n_trials'] = 1  # Add a count column to keep track of # of trials
+    dfgb = df.groupby(['size', 'db', 'task', 'method'])
+    df = dfgb.agg({
+        value: 'mean',
+        'n_trials': 'sum',
+        'n_folds': 'sum',
+        'scorer': assert_equal,  # first and assert equal
+        'selection': assert_equal,
+        'n': assert_equal,
+        'p': 'mean',  #assert_equal,
+        'type': assert_equal,
+        'imputation_WCT': 'mean',
+        'tuning_WCT': 'mean',
+        'imputation_PT': 'mean',
+        'tuning_PT': 'mean',
+    })
+
+    # Reset index to addlevel of the multi index to the columns of the df
+    df = df.reset_index()
+
+    return df
 
 def get_scores_tab(scores_raw, method_order=None, db_order=None, relative=False, average_sizes=True, formatting=True):
     """Compute article scores tab from raw scores."""
@@ -11,7 +64,7 @@ def get_scores_tab(scores_raw, method_order=None, db_order=None, relative=False,
     if method_order is not None:
         df = df[df['method'].isin(method_order)]
 
-    df = PlotHelper.aggregate(df, 'score')
+    df = aggregate(df, 'score')
     df.set_index(['size', 'db', 'task', 'method'], inplace=True)
 
     df = pd.pivot_table(df, values='score', index=['size', 'method'], columns=['db', 'task'])
@@ -90,7 +143,7 @@ def get_ranks_tab(scores_raw, method_order=None, db_order=None, average_sizes=Tr
     else:
         method_order = df['method'].unique()
 
-    df = PlotHelper.aggregate(df, 'score')
+    df = aggregate(df, 'score')
 
     dfgb = df.groupby(['size', 'db', 'task'])
     df['rank'] = dfgb['score'].rank(method='dense', ascending=False)
