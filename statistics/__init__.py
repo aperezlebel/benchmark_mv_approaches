@@ -1,5 +1,10 @@
 import argparse
 import os
+import matplotlib
+try:
+    matplotlib.use('TkAgg')
+except ImportError:
+    pass
 import matplotlib.pyplot as plt
 
 from .tests import run_friedman, run_wilcoxon, run_scores

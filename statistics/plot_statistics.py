@@ -8,7 +8,7 @@ import matplotlib.ticker as ticker
 from mpl_toolkits.axes_grid.parasite_axes import SubplotHost
 
 
-# Plot functions: each indicator has a differebt way of beaing plotted
+# Plot functions: each indicator has a different way of being plotted
 def plot_global(indicators, plot=False, show=True, ax=None):
     """Plot statistics on the full database."""
     # Get required indicators

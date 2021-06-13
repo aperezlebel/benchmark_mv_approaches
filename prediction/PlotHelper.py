@@ -7,7 +7,10 @@ import re
 import os
 from sklearn.metrics import r2_score, roc_auc_score
 import matplotlib
-matplotlib.use('MacOSX')
+try:
+    matplotlib.use('MacOSX')
+except ImportError:
+    pass
 import matplotlib.pyplot as plt
 import seaborn as sns
 from decimal import Decimal
