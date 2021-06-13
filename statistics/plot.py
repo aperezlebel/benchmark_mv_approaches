@@ -99,6 +99,10 @@ def run_boxplot(graphics_folder, linear):
         scores = scores.drop((db, task), axis=0)
     scores = scores.reset_index()
 
-    fig = PlotHelper.plot_scores(scores, method_order=method_order, db_order=db_order, rename=rename_on_plot, reference_method=None)
+    if linear:
+        fig = PlotHelper.plot_MIA_linear(scores, db_order=db_order, method_order=linear_method_order, rename=rename_on_plot)
+    else:
+        fig = PlotHelper.plot_scores(scores, method_order=method_order, db_order=db_order, rename=rename_on_plot, reference_method=None)
+    
     if fig:
         plt.show()

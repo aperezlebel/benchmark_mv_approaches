@@ -1063,11 +1063,14 @@ class PlotHelper(object):
 
     @staticmethod
     def plot_MIA_linear(filepath, db_order, method_order, rename=dict()):
-        df = pd.read_csv(filepath, index_col=0)
+        if not isinstance(filepath, pd.DataFrame):
+            scores = pd.read_csv(filepath, index_col=0)
+        else:
+            scores = filepath
         # Select methods of interest
-        df = df.loc[df['method'].isin(method_order)]
+        scores = scores.loc[scores['method'].isin(method_order)]
 
-        fig, axes = PlotHelper._plot(df, 'score', how='no-norm',
+        fig, axes = PlotHelper._plot(scores, 'score', how='no-norm',
                                        rename=rename,
                                        db_order=db_order,
                                        method_order=method_order,
@@ -1090,9 +1093,9 @@ class PlotHelper(object):
                                        legend_bbox=(4.22, 1.015),
                                        )
 
-        df_ranks = PlotHelper.mean_rank(filepath, method_order=method_order)
+        df_ranks = get_ranks_tab(scores, method_order=method_order, db_order=db_order, average_sizes=True)
 
-        global_avg_ranks = df_ranks[('Global', 'AVG')]
+        global_avg_ranks = df_ranks[('AVG', 'All')].loc['AVG']
         cellText = np.transpose([list(global_avg_ranks.astype(str))])
         rowLabels = list(global_avg_ranks.index)
         rowLabels = [PlotHelper.rename_str(rename, s) for s in rowLabels]
