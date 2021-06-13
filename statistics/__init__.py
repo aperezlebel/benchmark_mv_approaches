@@ -7,9 +7,10 @@ except ImportError:
     pass
 import matplotlib.pyplot as plt
 
+from custom.const import local_graphics_folder, remote_graphics_folder
 from .tests import run_friedman, run_wilcoxon, run_scores
 from .statistics import run_mv, run_prop, run_cor
-from custom.const import local_graphics_folder, remote_graphics_folder
+from .plot import run_boxplot
 
 
 plt.rcParams.update({
@@ -66,6 +67,8 @@ def run(argv=None):
     p.add_argument('--abs', type=bool, default=False, const=True, nargs='?',
                    help='Whether to use absolute values of correlation')
 
+    p = subparsers.add_parser('boxplot', parents=[parent_a, parent_l])
+
     args = parser.parse_args(argv)
 
     graphics_folder = local_graphics_folder
@@ -91,6 +94,9 @@ def run(argv=None):
 
     elif args.action == 'cor':
         run_cor(args, graphics_folder, csv=args.csv, absolute=args.abs)
+
+    elif args.action == 'boxplot':
+        run_boxplot(graphics_folder, linear=args.linear)
 
     else:
         raise ValueError(f'Not known action {args.action}.')
