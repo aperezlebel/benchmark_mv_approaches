@@ -51,13 +51,16 @@ task_tags = [
     'NHIS/income_pvals',
 ]
 
-
 db_order = [
     'TB',
     'UKBB',
     'MIMIC',
     'NHIS',
 ]
+
+db_rename = {
+    'TB': 'Traumabase',
+}
 
 
 def get_indicators_mv(df_mv):
@@ -462,9 +465,7 @@ def get_prop(task_tag, encode_features=False, T=0):
 
     return n_categorical, n_ordinal, n_continue
 
-db_rename = {
-    'TB': 'Traumabase',
-}
+
 def run_prop(args, graphics_folder):
 
     rows = []
@@ -589,7 +590,7 @@ def run_cor(args, graphics_folder, absolute=False, csv=False, prop_only=True):
                 N = (R > threshold).sum(axis=1)
                 N_mean = N.mean()
                 k = R.shape[0]
-                rows.append([db, task, T, threshold, k, N_mean, N_mean/k])
+                rows.append([db_rename.get(db, db), task, T, threshold, k, N_mean, N_mean/k])
 
     df_cor = pd.DataFrame(rows, columns=['db',  'task', 'T', 'threshold', 'n_selected', 'N_mean', 'prop'])
     df_n_selected = df_cor.groupby(['db',  'task']).agg({'n_selected': 'mean'})
@@ -620,7 +621,9 @@ def run_cor(args, graphics_folder, absolute=False, csv=False, prop_only=True):
     df_cor['n_selected'] = df_n_selected.applymap(to_int)
     df_cor.set_index('n_selected', append=True, inplace=True)
 
-    df_cor = df_cor.reindex(db_order+['AVG'], level=0, axis=0)
+    db_order_renamed = [db_rename.get(db, db) for db in db_order]
+
+    df_cor = df_cor.reindex(db_order_renamed+['AVG'], level=0, axis=0)
 
     # Processing for dumping
     df_cor.index.rename(['Database', 'Task', 'N features'], inplace=True)
