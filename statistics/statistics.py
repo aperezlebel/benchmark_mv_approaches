@@ -537,8 +537,8 @@ def compute_correlation(_X):
             N[i, j] = n_values
 
     if isinstance(_X, pd.DataFrame):
-            features = _X.index
-            R = pd.DataFrame(R, index=features, columns=features)
+        features = _X.index
+        R = pd.DataFrame(R, index=features, columns=features)
 
     return R, N
 
@@ -569,7 +569,7 @@ def cached_task_correlation(task_tag, encode_features=False, T=0):
     return R, N
 
 
-def run_cor(args, graphics_folder, absolute=False, csv=False):
+def run_cor(args, graphics_folder, absolute=False, csv=False, prop_only=True):
     thresholds = [0.1, 0.2, 0.3]
 
     rows = []
@@ -624,8 +624,15 @@ def run_cor(args, graphics_folder, absolute=False, csv=False):
     df_cor.index.rename(['Database', 'Task', 'N features'], inplace=True)
     df_cor.index = df_cor.index.set_levels(df_cor.index.levels[1].str.replace('pvals', 'screening'), level=1)
     df_cor.index = df_cor.index.set_levels(df_cor.index.levels[1].str.replace('_', r'\_'), level=1)
-    df_cor.columns.rename(['', 'Threshold'], inplace=True)
-    df_cor.rename({'N_mean': r'$\bar{n}$', 'prop': r'$\bar{p}$'}, axis=1, inplace=True)
+
+    if prop_only:
+        df_cor.drop(['N_mean'], axis=1, inplace=True)
+        df_cor.rename({'prop': 'Threshold'}, axis=1, inplace=True)
+        df_cor.columns.rename(['', ''], inplace=True)
+
+    else:
+        df_cor.columns.rename(['', 'Threshold'], inplace=True)
+        df_cor.rename({'N_mean': r'$\bar{n}$', 'prop': r'$\bar{p}$'}, axis=1, inplace=True)
 
     tab_folder = get_tab_folder(graphics_folder)
     tab_name = 'correlation_abs' if absolute else 'correlation'

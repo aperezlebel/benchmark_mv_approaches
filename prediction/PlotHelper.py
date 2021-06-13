@@ -545,14 +545,14 @@ class PlotHelper(object):
     @staticmethod
     def assert_equal(s):
         """Check if all value of the series are equal and return the value."""
-        if not s.empty:
+        if s.empty:
             return 0
 
-        if not (s[0] == s).all():
+        if not (s.iloc[0] == s).all():
             raise ValueError(
                 f'Values differ but supposed to be constant. Col: {s.name}.'
             )
-        return s[0]
+        return s.iloc[0]
 
     @staticmethod
     def aggregate(df, value):
@@ -937,6 +937,73 @@ class PlotHelper(object):
         print(df_pt)
 
         return df_pt
+
+    @staticmethod
+    def ranks(filepath, method_order=None):
+        if not isinstance(filepath, pd.DataFrame):
+            df = pd.read_csv(filepath, index_col=0)
+        else:
+            df = filepath.copy()
+
+        # Check method order
+        methods = list(df['method'].unique())
+        if method_order is None:
+            method_order = methods
+        elif set(method_order).issubset(set(methods)):
+            # Keep only the rows having methods in method_order
+            df = df[df['method'].isin(method_order)]
+        else:
+            raise ValueError(f'Method order missmatch existing ones {methods}')
+
+        # Compute ranks on each fold, trial
+        dfgb = df.groupby(['size', 'db', 'task', 'trial', 'fold'])
+        df['rank'] = dfgb['score'].rank(method='dense', ascending=False)
+
+        # Average accross folds and trials
+        mean_scores = PlotHelper.aggregate(df, 'score')
+        mean_ranks = PlotHelper.aggregate(df, 'rank')
+
+        dfgb = mean_scores.groupby(['size', 'db', 'task'])
+        mean_scores['rank'] = dfgb['score'].rank(method='dense', ascending=False)
+
+        mean_scores = mean_scores.set_index(['size', 'db', 'task', 'method'])
+        mean_ranks = mean_ranks.set_index(['size', 'db', 'task', 'method'])
+
+        rank_of_mean_scores = mean_scores['rank']
+        mean_scores = mean_scores['score']
+        mean_ranks = mean_ranks['rank']
+
+        rank_of_mean_scores = rank_of_mean_scores.reset_index()
+        mean_scores = mean_scores.reset_index()
+        mean_ranks = mean_ranks.reset_index()
+
+        # print(mean_scores)
+        # print(rank_of_mean_scores)
+        # print(mean_ranks)
+
+        # Average on dataset size
+        dfgb = mean_scores.groupby(['db', 'task', 'method'])
+        mean_scores_on_sizes = dfgb.agg({'score': 'mean'})
+
+        dfgb = rank_of_mean_scores.groupby(['db', 'task', 'method'])
+        mean_rank_of_mean_scores_on_sizes = dfgb.agg({'rank': 'mean'})
+
+        dfgb = mean_ranks.groupby(['db', 'task', 'method'])
+        mean_ranks_on_sizes = dfgb.agg({'rank': 'mean'})
+
+        dfgb = mean_scores_on_sizes.groupby(['db', 'task'])
+        rank_of_mean_scores_on_sizes = dfgb['score'].rank(method='dense', ascending=False)
+
+        print(mean_scores_on_sizes)
+        print(rank_of_mean_scores_on_sizes)
+        print(mean_rank_of_mean_scores_on_sizes)
+        print(mean_ranks_on_sizes)
+
+        ranks_on_sizes = mean_ranks_on_sizes.copy().rename({'rank': 'mean_ranks'}, axis=1)
+        ranks_on_sizes['rank_of_mean_scores'] = rank_of_mean_scores_on_sizes
+        ranks_on_sizes['mean_rank_of_mean_scores'] = mean_rank_of_mean_scores_on_sizes
+
+        print(ranks_on_sizes)
 
     @staticmethod
     def plot_scores(filepath, db_order=None, method_order=None, rename=dict(),

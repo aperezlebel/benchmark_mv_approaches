@@ -330,10 +330,10 @@ def run_wilcoxon(graphics_folder, csv=False):
             return x
         else:
             if x < alpha/n_bonferroni:  # below bonferroni corrected alpha level
-                return f'{x:.1e}^{{\\star\\star}}'
+                return f'$\\text{{{x:.1e}}}^{{\\star\\star}}$'
 
             if x < alpha:  # below alpha level but above bonferroni
-                return f'{x:.1e}^{{\\star}}'
+                return f'$\\text{{{x:.1e}}}^{{\\star}}$'
 
             return f'{x:.1e}'
 
@@ -599,8 +599,8 @@ def run_scores(graphics_folder, linear, csv=False):
     tab1_name = 'scores_linear' if linear else 'scores'
     tab2_name = 'ranks_linear' if linear else 'ranks'
 
-    scores.to_latex(join(tab_folder, f'{tab1_name}.tex'), na_rep='', escape=False)
-    ranks.to_latex(join(tab_folder, f'{tab2_name}.tex'), na_rep='', escape=False)
+    scores.to_latex(join(tab_folder, f'{tab1_name}.tex'), na_rep='', escape=False) #, column_format='L'*scores.shape[1])
+    ranks.to_latex(join(tab_folder, f'{tab2_name}.tex'), na_rep='', escape=False)# , column_format='L'*ranks.shape[1])
 
     if csv:
             scores.to_csv(join(tab_folder, f'{tab1_name}.csv'))

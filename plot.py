@@ -1,4 +1,6 @@
 """Plot the results of --train4."""
+import pandas as pd
+
 from prediction.PlotHelper import PlotHelper
 import matplotlib.pyplot as plt
 
@@ -118,15 +120,38 @@ xticks = {
 # plt.show()
 # exit()
 
+db_order = [
+    'TB',
+    'UKBB',
+    'MIMIC',
+    'NHIS',
+]
 
-# df = ph.get_task_description(filepath)
-# df.to_csv('scores/task_description.csv')
-# with pd.option_context("max_colwidth", None):
-#     df.to_latex('scores/task_description.tex', bold_rows=True)
-# print(df)
+df = ph.get_task_description(filepath)
 
-
+# print(df['n'])
 # exit()
+
+# Drop tasks
+tasks_to_drop = {
+    'TB': 'platelet',
+    'NHIS': 'bmi_pvals',
+}
+# df = df.set_index(['Database', 'Task'])
+for db, task in tasks_to_drop.items():
+    df = df.drop((db, task), axis=0)
+df = df.reset_index()
+df = df.set_index(['Database', 'Task'])
+
+df = df.reindex(db_order, level=0, axis=0)
+
+df.to_csv('scores/task_description.csv')
+with pd.option_context("max_colwidth", None):
+    df.to_latex('scores/task_description.tex', bold_rows=False)
+print(df)
+
+
+exit()
 
 # df = pd.read_csv(filepath)
 # df['total_PT'] = df['imputation_PT'].fillna(0) + df['tuning_PT']
