@@ -1,7 +1,9 @@
+from os.path import join
 import pandas as pd
 import matplotlib.pyplot as plt
 
 from prediction.PlotHelper import PlotHelper
+from custom.const import get_fig_folder, get_tab_folder
 
 rename = {
     '': 'MIA',
@@ -128,5 +130,11 @@ def run_boxplot(graphics_folder, linear):
             # 2: '$2\\times$'
         }
         fig_time = PlotHelper.plot_times(scores, 'PT', xticks_dict=xticks, method_order=method_order, db_order=db_order, rename=rename_on_plot)
+
+    fig_folder = get_fig_folder(graphics_folder)
     
-    plt.show()
+    fig_name = 'boxplots_scores_linear' if linear else 'boxplots_scores'
+    fig_time_name = 'boxplots_times_linear' if linear else 'boxplots_times'
+
+    fig.savefig(join(fig_folder, f'{fig_name}.pdf'), bbox_inches='tight')
+    fig_time.savefig(join(fig_folder, f'{fig_time_name}.pdf'), bbox_inches='tight')
