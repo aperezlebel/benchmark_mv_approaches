@@ -2,6 +2,11 @@
 import pandas as pd
 
 from prediction.PlotHelper import PlotHelper
+import matplotlib
+try:
+    matplotlib.use('TkAgg')
+except ImportError:
+    pass
 import matplotlib.pyplot as plt
 
 
@@ -93,6 +98,18 @@ ph = PlotHelper(root_folder='results_original/graham_v5/results/', rename=rename
 
 filepath = 'scores/scores.csv'
 
+scores = pd.read_csv(filepath, index_col=0)
+
+tasks_to_drop = {
+    'TB': 'platelet',
+    'NHIS': 'bmi_pvals',
+}
+# Drop tasks
+scores = scores.set_index(['db', 'task'])
+for db, task in tasks_to_drop.items():
+    scores = scores.drop((db, task), axis=0)
+scores = scores.reset_index()
+
 # # ph.plot_MIA_v_linear(filepath)
 # ph.dump(filepath)
 # exit()
@@ -127,31 +144,31 @@ db_order = [
     'NHIS',
 ]
 
-df = ph.get_task_description(filepath)
+# df = ph.get_task_description(filepath)
 
-# print(df['n'])
-# exit()
+# # print(df['n'])
+# # exit()
 
-# Drop tasks
-tasks_to_drop = {
-    'TB': 'platelet',
-    'NHIS': 'bmi_pvals',
-}
+# # Drop tasks
+# tasks_to_drop = {
+#     'TB': 'platelet',
+#     'NHIS': 'bmi_pvals',
+# }
+# # df = df.set_index(['Database', 'Task'])
+# for db, task in tasks_to_drop.items():
+#     df = df.drop((db, task), axis=0)
+# df = df.reset_index()
 # df = df.set_index(['Database', 'Task'])
-for db, task in tasks_to_drop.items():
-    df = df.drop((db, task), axis=0)
-df = df.reset_index()
-df = df.set_index(['Database', 'Task'])
 
-df = df.reindex(db_order, level=0, axis=0)
+# df = df.reindex(db_order, level=0, axis=0)
 
-df.to_csv('scores/task_description.csv')
-with pd.option_context("max_colwidth", None):
-    df.to_latex('scores/task_description.tex', bold_rows=False)
-print(df)
+# df.to_csv('scores/task_description.csv')
+# with pd.option_context("max_colwidth", None):
+#     df.to_latex('scores/task_description.tex', bold_rows=False)
+# print(df)
 
 
-exit()
+# exit()
 
 # df = pd.read_csv(filepath)
 # df['total_PT'] = df['imputation_PT'].fillna(0) + df['tuning_PT']
@@ -163,7 +180,7 @@ exit()
 # ph.dump(filepath)
 # exit()
 # ph.mean_rank(filepath, method_order=method_order).to_csv('scores/ranks.csv')
-fig = ph.plot_scores(filepath, method_order=method_order, db_order=db_order, rename=rename_on_plot, reference_method='MIA')
+fig = ph.plot_scores(scores, method_order=method_order, db_order=db_order, rename=rename_on_plot, reference_method=None)
 if fig:
     plt.show()
 

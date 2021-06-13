@@ -1,5 +1,6 @@
 """Implement  PlotHelper for train4 results."""
 import os
+from prediction.df_utils import get_ranks_tab
 import yaml
 import pandas as pd
 import numpy as np
@@ -7,14 +8,16 @@ import re
 import os
 from sklearn.metrics import r2_score, roc_auc_score
 import matplotlib
-try:
-    matplotlib.use('MacOSX')
-except ImportError:
-    pass
+# try:
+#     matplotlib.use('MacOSX')
+# except ImportError:
+#     pass
 import matplotlib.pyplot as plt
 import seaborn as sns
 from decimal import Decimal
 import shutil
+
+from prediction.df_utils import assert_equal, aggregate, get_ranks_tab
 
 
 class PlotHelper(object):
@@ -460,7 +463,7 @@ class PlotHelper(object):
         """Build and dump a csv that will explain each task once completed."""
         df = pd.read_csv(filepath)
 
-        df = self.aggregate(df, 'score')
+        df = aggregate(df, 'score')
 
         print(df)
 
@@ -469,11 +472,11 @@ class PlotHelper(object):
             'score': 'mean',
             # 'n_trials': 'sum',
             # 'n_folds': 'sum',
-            'scorer': PlotHelper.assert_equal,  # first and assert equal
-            'selection': PlotHelper.assert_equal,
-            'n': PlotHelper.assert_equal,
-            'p': PlotHelper.assert_equal,
-            'type': PlotHelper.assert_equal,
+            'scorer': assert_equal,  # first and assert equal
+            'selection': assert_equal,
+            'n': assert_equal,
+            'p': assert_equal,
+            'type': assert_equal,
             'imputation_WCT': 'mean',
             'tuning_WCT': 'mean',
             'imputation_PT': 'mean',
@@ -546,61 +549,6 @@ class PlotHelper(object):
         return df
 
     @staticmethod
-    def assert_equal(s):
-        """Check if all value of the series are equal and return the value."""
-        if s.empty:
-            return 0
-
-        if not (s.iloc[0] == s).all():
-            raise ValueError(
-                f'Values differ but supposed to be constant. Col: {s.name}.'
-            )
-        return s.iloc[0]
-
-    @staticmethod
-    def aggregate(df, value):
-        # Agregate accross folds by averaging
-        df['n_folds'] = 1
-        dfgb = df.groupby(['size', 'db', 'task', 'method', 'trial'])
-        df = dfgb.agg({
-            value: 'mean',
-            'n_folds': 'sum',
-            'scorer': PlotHelper.assert_equal,  # first and assert equal
-            'selection': PlotHelper.assert_equal,
-            'n': PlotHelper.assert_equal,
-            'p': PlotHelper.assert_equal,
-            'type': PlotHelper.assert_equal,
-            'imputation_WCT': 'mean',
-            'tuning_WCT': 'mean',
-            'imputation_PT': 'mean',
-            'tuning_PT': 'mean',
-        })
-
-        # Agregate accross trials by averaging
-        df = df.reset_index()
-        df['n_trials'] = 1  # Add a count column to keep track of # of trials
-        dfgb = df.groupby(['size', 'db', 'task', 'method'])
-        df = dfgb.agg({
-            value: 'mean',
-            'n_trials': 'sum',
-            'n_folds': 'sum',
-            'scorer': PlotHelper.assert_equal,  # first and assert equal
-            'selection': PlotHelper.assert_equal,
-            'n': PlotHelper.assert_equal,
-            'p': 'mean',  #PlotHelper.assert_equal,
-            'type': PlotHelper.assert_equal,
-            'imputation_WCT': 'mean',
-            'tuning_WCT': 'mean',
-            'imputation_PT': 'mean',
-            'tuning_PT': 'mean',
-        })
-
-        # Reset index to addlevel of the multi index to the columns of the df
-        df = df.reset_index()
-
-        return df
-
-    @staticmethod
     def _plot(filepath, value, how, xticks_dict=None, xlims=None, db_order=None,
               method_order=None, rename=dict(), reference_method=None,
               figsize=None, legend_bbox=None, xlabel=None):
@@ -635,7 +583,7 @@ class PlotHelper(object):
         methods = list(df['method'].unique())
         n_methods = len(methods)
 
-        df = PlotHelper.aggregate(df, value)
+        df = aggregate(df, value)
 
         # Compute and add relative value
         df = PlotHelper._add_relative_value(df, value, how,
@@ -963,8 +911,8 @@ class PlotHelper(object):
         df['rank'] = dfgb['score'].rank(method='dense', ascending=False)
 
         # Average accross folds and trials
-        mean_scores = PlotHelper.aggregate(df, 'score')
-        mean_ranks = PlotHelper.aggregate(df, 'rank')
+        mean_scores = aggregate(df, 'score')
+        mean_ranks = aggregate(df, 'rank')
 
         dfgb = mean_scores.groupby(['size', 'db', 'task'])
         mean_scores['rank'] = dfgb['score'].rank(method='dense', ascending=False)
@@ -1011,16 +959,21 @@ class PlotHelper(object):
     @staticmethod
     def plot_scores(filepath, db_order=None, method_order=None, rename=dict(),
                     reference_method=None,):
-        fig, axes = PlotHelper._plot(filepath, 'score', how='no-norm',
+        if not isinstance(filepath, pd.DataFrame):
+            scores = pd.read_csv(filepath, index_col=0)
+        else:
+            scores = filepath
+
+        fig, axes = PlotHelper._plot(scores, 'score', how='no-norm',
                                        method_order=method_order,
                                        db_order=db_order, rename=rename,
                                        reference_method=reference_method,
                                        figsize=(17, 5.25),
                                        legend_bbox=(4.22, 1.015))
 
-        df_ranks = PlotHelper.mean_rank(filepath, method_order=method_order)
+        df_ranks = get_ranks_tab(scores, method_order=method_order, db_order=db_order, average_sizes=True)
 
-        global_avg_ranks = df_ranks[('Global', 'AVG')]
+        global_avg_ranks = df_ranks[('AVG', 'All')].loc['AVG']
         cellText = np.transpose([list(global_avg_ranks.astype(str))])
         rowLabels = list(global_avg_ranks.index)
         rowLabels = [PlotHelper.rename_str(rename, s) for s in rowLabels]
