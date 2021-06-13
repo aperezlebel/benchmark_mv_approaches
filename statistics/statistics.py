@@ -37,7 +37,7 @@ task_tags = [
     'TB/death_pvals',
     'TB/hemo',
     'TB/hemo_pvals',
-    'TB/platelet',
+    # 'TB/platelet',
     'TB/platelet_pvals',
     'TB/septic_pvals',
     'UKBB/breast_25',
@@ -47,7 +47,7 @@ task_tags = [
     'UKBB/skin_pvals',
     'MIMIC/hemo_pvals',
     'MIMIC/septic_pvals',
-    'NHIS/bmi_pvals',
+    # 'NHIS/bmi_pvals',
     'NHIS/income_pvals',
 ]
 
@@ -462,7 +462,9 @@ def get_prop(task_tag, encode_features=False, T=0):
 
     return n_categorical, n_ordinal, n_continue
 
-
+db_rename = {
+    'TB': 'Traumabase',
+}
 def run_prop(args, graphics_folder):
 
     rows = []
@@ -474,7 +476,7 @@ def run_prop(args, graphics_folder):
 
         for T in Ts:
             n_categorical, n_ordinal, n_continue = get_prop(task_tag, T=T)
-            rows.append([db, task, T, n_categorical, n_ordinal, n_continue])
+            rows.append([db_rename.get(db, db), task, T, n_categorical, n_ordinal, n_continue])
 
     props = pd.DataFrame(rows, columns=['db',  'task', 'T', 'categorical', 'ordinal', 'continue'])
     props['tag'] = props['db'].str.cat('/'+props['task'])
