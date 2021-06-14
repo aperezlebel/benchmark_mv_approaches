@@ -11,6 +11,7 @@ from custom.const import local_graphics_folder, remote_graphics_folder
 from .tests import run_friedman, run_wilcoxon, run_scores
 from .statistics import run_mv, run_prop, run_cor
 from .plot import run_boxplot
+from .tabs import run_desc
 
 
 plt.rcParams.update({
@@ -68,6 +69,7 @@ def run(argv=None):
                    help='Whether to use absolute values of correlation')
 
     p = subparsers.add_parser('boxplot', parents=[parent_a, parent_l])
+    p = subparsers.add_parser('desc', parents=[parent_a])
 
     args = parser.parse_args(argv)
 
@@ -97,6 +99,9 @@ def run(argv=None):
 
     elif args.action == 'boxplot':
         run_boxplot(graphics_folder, linear=args.linear)
+
+    elif args.action == 'desc':
+        run_desc(graphics_folder)
 
     else:
         raise ValueError(f'Not known action {args.action}.')

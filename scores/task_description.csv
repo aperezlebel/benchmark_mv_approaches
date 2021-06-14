@@ -1,10 +1,10 @@
 Database,Task,Score,Scorer,Selection,n,p,Type,Imputation time (s),Tuning time (s),Total time (s),Target,Description
 TB,death_pvals,0.96,AUC,A,12341,98.2,C,233,2808,3042,Décès == Oui,Predict the death of patients.
-TB,hemo,0.85,AUC,M,19569,12.0,C,7,1057,1064,Choc hémorragique (? 4 CGR sur 6h) == Oui,Predict the hemorrhagic shock using features defined in \cite{hemo_paper}.
+TB,hemo,0.85,AUC,M,19569,12.0,C,7,1057,1064,Choc hémorragique (? 4 CGR sur 6h) == Oui,Predict the hemorrhagic shock using features defined in \cite{Jiang2020a}.
 TB,hemo_pvals,0.95,AUC,A,13047,89.2,C,136,2033,2169,Choc hémorragique (? 4 CGR sur 6h) == Oui,Predict the hemorrhagic shock using ANOVA selection.
 TB,platelet_pvals,-2.34,R2,A,12696,96.6,R,71,2430,2501,Plaquettes,Predict the level of platelet on arrival at the hospital using ANOVA selection.
 TB,septic_pvals,0.86,AUC,A,6046,90.6,C,41,1661,1703,Choc septique == Oui,Predict septic shock.
-UKBB,breast_25,0.6,AUC,M,273384,66.0,C,383,1992,2376,"One of: C500, C501, C502, C503, C504, C505, C506, C508, C509; found in one of: 41270-0.0, 41202-0.0, 41204-0.0, 40006-0.0; or one of: 1740, 1743, 1744, 1745, 1748, 1749; found in one of: 41271-0.0, 41203-0.0, 41205-0.0, 40013-0.0",Predict malignant neoplasm of breast on female patients only using  features defined in \cite{breast_paper}.
+UKBB,breast_25,0.6,AUC,M,273384,66.0,C,383,1992,2376,"One of: C500, C501, C502, C503, C504, C505, C506, C508, C509; found in one of: 41270-0.0, 41202-0.0, 41204-0.0, 40006-0.0; or one of: 1740, 1743, 1744, 1745, 1748, 1749; found in one of: 41271-0.0, 41203-0.0, 41205-0.0, 40013-0.0",Predict malignant neoplasm of breast on female patients only using  features defined in \cite{Lall2019}.
 UKBB,breast_pvals,0.59,AUC,A,182257,100.0,C,1051,3221,4273,Same as breast_25,Predict malignant neoplasm of breast on female patients only using ANOVA selection.
 UKBB,fluid_pvals,0.56,R2,A,110308,100.0,R,240,3309,3550,20016-0.0,Predict the fluid intelligence score.
 UKBB,parkinson_pvals,0.65,AUC,A,335005,100.0,C,661,2710,3371,"One of: G20, G210, G211, G212, G213, G214, G218, G219, G22, F023; found in one of: 41270-0.0, 41202-0.0, 41204-0.0, 40006-0.0; or one of: 3320, 3321; found in one of: 41271-0.0, 41203-0.0, 41205-0.0, 40013-0.0",Predict Parkinson's disease.

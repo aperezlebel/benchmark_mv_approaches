@@ -459,9 +459,13 @@ class PlotHelper(object):
 
         df.to_csv(filepath)
 
-    def get_task_description(self, filepath):
+    @staticmethod
+    def get_task_description(filepath):
         """Build and dump a csv that will explain each task once completed."""
-        df = pd.read_csv(filepath)
+        if not isinstance(filepath, pd.DataFrame):
+            df = pd.read_csv(filepath, index_col=0)
+        else:
+            df = filepath
 
         df = aggregate(df, 'score')
 

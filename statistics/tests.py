@@ -17,10 +17,16 @@ tasks_to_drop = {
     'NHIS': 'bmi_pvals',
 }
 
-
 db_rename = {
     'TB': 'Traumabase',
 }
+
+db_order = [
+    'TB',
+    'UKBB',
+    'MIMIC',
+    'NHIS',
+]
 
 
 def friedman_statistic(ranks, N):
