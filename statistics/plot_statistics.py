@@ -229,7 +229,7 @@ def plot_feature_wise(indicators, plot=False, show=True, ax=None, nf_max=40):
         return fig, ax
 
 
-def plot_feature_wise_v2(indicators, plot=False, show=True, ax=None, nf_max=40):
+def plot_feature_wise_v2(indicators, plot=False, show=True, ax=None, nf_max=40, color='b'):
     """Plot the statistics feature-wise."""
     n_mv_fw = indicators['feature-wise']
 
@@ -258,9 +258,9 @@ def plot_feature_wise_v2(indicators, plot=False, show=True, ax=None, nf_max=40):
         else:
             fig = plt.gcf()
 
-        sns.set_color_codes('muted')
+        sns.set_color_codes('pastel')
         handle_nm, = ax.stackplot(n_mv_fw_l['id'].values, 100, color='lightgray', labels=['Not missing'])
-        handle_m, = ax.stackplot(n_mv_fw_l['id'].values, n_mv_fw_l['F MV'].values, color='b', labels=['Missing'])
+        handle_m, = ax.stackplot(n_mv_fw_l['id'].values, n_mv_fw_l['F MV'].values, color=color, labels=['Missing'])
         # ax.stackplot(n_mv_fw_l['id'].values, n_mv_fw_l['N V'].values, color='lightgray', labels=['Not missing'])
         # ax.stackplot(n_mv_fw_l['id'].values, n_mv_fw_l['N MV'].values, color='b', labels=['Missing'])
 

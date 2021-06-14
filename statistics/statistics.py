@@ -311,14 +311,14 @@ def every_mv_distribution():
     matplotlib.rcParams.update({
         'font.size': 14,
         'axes.titlesize': 10,
-        'axes.labelsize': 13,
-        'xtick.labelsize': 13,
-        'ytick.labelsize': 13,
+        'axes.labelsize': 8,
+        # 'xtick.labelsize': 13,
+        # 'ytick.labelsize': 13,
     })
     fig, axes = plt.subplots(6, 3, figsize=(6, 9))
 
     L1 = ['TB/death_pvals', 'TB/hemo', 'TB/hemo_pvals']
-    L2 = ['TB/platelet', 'TB/platelet_pvals', 'TB/septic_pvals']
+    L2 = ['TB/platelet_pvals', 'TB/septic_pvals', None]
     # L2 = [None, None, None]
     L3 = [None, None, None]
     L4 = [None, None, None]
@@ -327,9 +327,22 @@ def every_mv_distribution():
     L3 = ['UKBB/breast_25', 'UKBB/breast_pvals', 'UKBB/fluid_pvals']
     L4 = ['UKBB/parkinson_pvals', 'UKBB/skin_pvals', None]
     L5 = ['MIMIC/hemo_pvals', 'MIMIC/septic_pvals', None]
-    L6 = ['NHIS/bmi_pvals', 'NHIS/income_pvals', None]
+    L6 = ['NHIS/income_pvals', None, None]
 
     L = [L1, L2, L3, L4, L5, L6]
+
+    colors = {
+        'TB': 'tab:blue',
+        'UKBB': 'tab:orange',
+        'MIMIC': 'tab:green',
+        'NHIS': 'tab:red',
+        # 'TB': 'blue',
+        # 'UKBB': 'orange',
+        # 'MIMIC': 'green',
+        # 'NHIS': 'red',
+    }
+
+    handles_dict = {}
 
     for i, row in enumerate(tqdm(L)):
         for j, tag in enumerate(row):
@@ -339,12 +352,26 @@ def every_mv_distribution():
                 ax.axis('off')
                 continue
 
+            db, task = tag.split('/')
             indicators = cached_indicators(tag, encode_features=False)
-            _, _, handles = plot_feature_wise_v2(indicators, ax=ax, plot=True)
+            _, _, handles = plot_feature_wise_v2(indicators, ax=ax, plot=True, color=colors[db])
 
-            ax.set_title(f'$\\verb|{tag}|$')
+            db = db.replace('TB', 'Traumabase')
+            handles_dict[db] = handles[1]
 
-    axes[-1, -1].legend(handles, ['Not missing', 'Missing'], fancybox=True, shadow=True, loc='center',)
+            task = task.replace('_', '\\_')
+            ax.set_title(task)
+
+    axes[-1, 0].set_xlabel('Features')
+    axes[-1, 0].set_ylabel('Proportion')
+    axes[-1, -1].legend(handles_dict.values(), handles_dict.keys(),
+    fancybox=True, shadow=True, loc='center', title='Missing values')
+    # p_dummy, = plt.plot([0], marker='None', linestyle='None', label='dummy-tophead')
+    # handles_dict[''] = handles[0]
+    # handles = [p_dummy]*5+list(handles_dict.values())
+    # labels = ['Missing'] + ['']*3 + ['Not missing'] + list(handles_dict.keys())
+    # axes[-1, -1].legend(handles, labels, ncol=2,
+    # fancybox=True, shadow=True, loc='center',)
 
     return fig, axes
 
@@ -517,6 +544,7 @@ def compute_correlation(_X):
     R : np.array of shape (k, k)
         Pairwise correlation coefficients
     N : np.array of shape (k, k)
+        Number of values taken for correlation computation of pair of features
         Number of values taken for correlation computation of pair of features
 
     """
