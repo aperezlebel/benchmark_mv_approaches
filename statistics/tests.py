@@ -18,6 +18,11 @@ tasks_to_drop = {
 }
 
 
+db_rename = {
+    'TB': 'Traumabase',
+}
+
+
 def friedman_statistic(ranks, N):
     """Compute the Friedman statistic.
 
@@ -582,6 +587,10 @@ def run_scores(graphics_folder, linear, csv=False):
         rename['MIA'] = 'Boosted trees+MIA'
     scores.rename(rename, axis=0, inplace=True)
     ranks.rename(rename, axis=0, inplace=True)
+
+    # Rename DBs
+    scores.rename(db_rename, axis=1, inplace=True)
+    ranks.rename(db_rename, axis=1, inplace=True)
 
     print(scores)
     print(ranks)
