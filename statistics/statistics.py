@@ -621,7 +621,9 @@ def run_cor(args, graphics_folder, absolute=False, csv=False, prop_only=True):
     df_cor['n_selected'] = df_n_selected.applymap(to_int)
     df_cor.set_index('n_selected', append=True, inplace=True)
 
-    df_cor = df_cor.reindex(db_order+['AVG'], level=0, axis=0)
+    db_order_renamed = [db_rename.get(db, db) for db in db_order]
+
+    df_cor = df_cor.reindex(db_order_renamed+['AVG'], level=0, axis=0)
 
     # Processing for dumping
     df_cor.index.rename(['Database', 'Task', 'N features'], inplace=True)
