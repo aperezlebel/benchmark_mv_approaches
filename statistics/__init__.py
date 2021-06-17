@@ -44,7 +44,7 @@ def run(argv=None):
         '--csv', dest='csv', default=False, const=True,
         nargs='?', help='Whether to dump into csv as well.')
 
-    subparsers.add_parser('wilcoxon', parents=[parent_a, parent_csv])
+    subparsers.add_parser('wilcoxon', parents=[parent_a, parent_l, parent_csv])
     subparsers.add_parser('friedman', parents=[parent_a, parent_l, parent_csv])
     subparsers.add_parser('scores', parents=[parent_a, parent_l, parent_csv])
     p = subparsers.add_parser('mv', parents=[parent_a])
@@ -80,7 +80,7 @@ def run(argv=None):
     print(f'Dump into "{graphics_folder}"')
 
     if args.action == 'wilcoxon':
-        run_wilcoxon(graphics_folder, csv=args.csv)
+        run_wilcoxon(graphics_folder, linear=args.linear, csv=args.csv)
 
     elif args.action == 'friedman':
         run_friedman(graphics_folder, linear=args.linear, csv=args.csv)

@@ -226,7 +226,7 @@ def run_wilcoxon_():
     # W_test2 = W_test.loc[half2]
 
 
-def run_wilcoxon(graphics_folder, csv=False):
+def run_wilcoxon_mia(graphics_folder, csv=False):
     path = os.path.abspath('scores/scores.csv')
     df = pd.read_csv(path, index_col=0)
 
@@ -358,6 +358,154 @@ def run_wilcoxon(graphics_folder, csv=False):
     W_test = W_test.applymap(lambda x: pvalue_formatter(x, alpha=0.05, n_bonferroni=W_test.shape[0]))
     W_test.to_latex(join(tab_folder, 'wilcoxon_greater.tex'), na_rep='', escape=False)
 
+
+def run_wilcoxon_linear(graphics_folder, csv=False):
+    path = os.path.abspath('scores/scores.csv')
+    df = pd.read_csv(path, index_col=0)
+
+    # Drop tasks
+    df = df.set_index(['db', 'task'])
+    for db, task in tasks_to_drop.items():
+        df = df.drop((db, task), axis=0)
+    df = df.reset_index()
+
+    df['task'] = df['task'].str.replace('_pvals', '_screening')
+
+    method_order1 = [
+        'Mean',
+        'Mean+mask',
+        'Med',
+        'Med+mask',
+        'Iter',
+        'Iter+mask',
+        'KNN',
+        'KNN+mask',
+    ]
+
+    method_order2 = [
+        'Linear+Mean',
+        'Linear+Mean+mask',
+        'Linear+Med',
+        'Linear+Med+mask',
+        'Linear+Iter',
+        'Linear+Iter+mask',
+        'Linear+KNN',
+        'Linear+KNN+mask',
+    ]
+
+    method_order = method_order1 + method_order2
+
+    db_order = [
+        'TB',
+        'UKBB',
+        'MIMIC',
+        'NHIS',
+    ]
+
+    df = get_scores_tab(df, method_order=method_order, db_order=db_order,
+                        average_sizes=False, formatting=False)
+    sizes = df.index.get_level_values(0).unique()
+
+    rows = []
+    for size in sizes:
+        # print(f'Size={size}: ', end='\t')
+
+        scores = df.loc[size]
+        for method1, method2 in zip(method_order1, method_order2):
+            try:
+                scores1 = scores.loc[method1]
+                scores2 = scores.loc[method2]
+
+            # methods = scores.index.unique()
+            # methods = [m for m in methods if m != 'MIA']
+
+            # for method in methods:
+                # m_scores = scores.loc[method]
+                # idx = m_scores.notnull()
+
+                # x = ref_scores[idx]
+                # y = m_scores[idx]
+
+                # print(x)
+                x, y = scores1, scores2
+
+                w_double = wilcoxon(x=x, y=y, alternative='two-sided')
+                w_greater = wilcoxon(x=x, y=y, alternative='greater')
+
+            except KeyError:
+                w_double_= (np.nan, np.nan)
+                w_greater = (np.nan, np.nan)
+
+            rows.append([size, method1, w_double[0], w_double[1], w_greater[0], w_greater[1]])
+
+    W_test = pd.DataFrame(rows, columns=[
+        'size',
+        'imputer',
+        'two-sided_stat',
+        'two-sided_pval',
+        'greater_stat',
+        'greater_pval',
+        ]).set_index(['size', 'imputer'])
+
+    # W_test = W_test.reindex(method_order)
+
+    # W_test['two-sided_pval'] = [f'{w:.1g}' for w in W_test['two-sided_pval']]
+    # W_test['greater_pval'] = [f'{w:.1g}' for w in W_test['greater_pval']]
+
+
+    W_test.drop(['two-sided_pval', 'two-sided_stat'], axis=1, inplace=True)
+
+    W_test.rename({
+        'greater_pval': 'p-value',
+        'greater_stat': 'Statistic',
+    }, axis=1, inplace=True)
+
+    W_test.index.rename('Size', level=0, inplace=True)
+    W_test.index.rename('Imputer', level=1, inplace=True)
+
+    W_test.drop(['Statistic'], axis=1, inplace=True)
+
+    W_test = pd.pivot_table(W_test, values='p-value', index='Imputer', columns='Size')
+
+    W_test = W_test.reindex(method_order1)
+
+    W_test.rename({
+        'Med': 'Median',
+        'Med+mask': 'Median+mask',
+        'Iter': 'Iterative',
+        'Iter+mask': 'Iterative+mask',
+    }, axis=0, inplace=True)
+
+    def pvalue_formatter(x, alpha, n_bonferroni):
+        if np.isnan(x):
+            return x
+        else:
+            if x < alpha/n_bonferroni:  # below bonferroni corrected alpha level
+                return f'$\\text{{{x:.1e}}}^{{\\star\\star}}$'
+
+            if x < alpha:  # below alpha level but above bonferroni
+                return f'$\\text{{{x:.1e}}}^{{\\star}}$'
+
+            return f'{x:.1e}'
+
+    print(W_test)
+
+    tab_folder = get_tab_folder(graphics_folder)
+
+    if csv:
+        W_test.to_csv(join(tab_folder, 'wilcoxon_linear_greater.csv'))
+
+    print(f'Apply Bonferroni correction with {W_test.shape[0]} values.')
+    W_test = W_test.applymap(lambda x: pvalue_formatter(x, alpha=0.05, n_bonferroni=W_test.shape[0]))
+    W_test.to_latex(join(tab_folder, 'wilcoxon_linear_greater.tex'), na_rep='', escape=False, table_env='tabularx')
+
+
+def run_wilcoxon(graphics_folder, linear=False, csv=False):
+    if linear:
+        run_wilcoxon_linear(graphics_folder, csv=csv)
+    else:
+        run_wilcoxon_mia(graphics_folder, csv=csv)
+    
 
 def run_friedman(graphics_folder, linear=False, csv=False):
     path = os.path.abspath('scores/scores.csv')
