@@ -226,15 +226,23 @@ def run_wilcoxon_():
     # W_test2 = W_test.loc[half2]
 
 
-def run_wilcoxon_mia(graphics_folder, csv=False):
+def run_wilcoxon_mia(graphics_folder, csv=False, greater=True):
     path = os.path.abspath('scores/scores.csv')
     df = pd.read_csv(path, index_col=0)
 
+    which = 'greater' if greater else 'less'
+
+    # # Drop tasks
+    # df = df.set_index(['db', 'task'])
+    # for db, task in tasks_to_drop.items():
+    #     df = df.drop((db, task), axis=0)
+    # df = df.reset_index()
+
+
     # Drop tasks
-    df = df.set_index(['db', 'task'])
     for db, task in tasks_to_drop.items():
-        df = df.drop((db, task), axis=0)
-    df = df.reset_index()
+        df.drop(index=df[(df['db'] == db) & (df['task'] == task)].index, inplace=True)
+    
 
     df['task'] = df['task'].str.replace('_pvals', '_screening')
 
@@ -290,20 +298,23 @@ def run_wilcoxon_mia(graphics_folder, csv=False):
             x = ref_scores[idx]
             y = m_scores[idx]
 
+            # if not greater:
+            #     x, y = y, x
+
             print(x)
 
             w_double = wilcoxon(x=x, y=y, alternative='two-sided')
-            w_greater = wilcoxon(x=x, y=y, alternative='greater')
+            w_onesided = wilcoxon(x=x, y=y, alternative=which)
 
-            rows.append([size, method, w_double[0], w_double[1], w_greater[0], w_greater[1]])
+            rows.append([size, method, w_double[0], w_double[1], w_onesided[0], w_onesided[1]])
 
     W_test = pd.DataFrame(rows, columns=[
         'size',
         'method',
         'two-sided_stat',
         'two-sided_pval',
-        'greater_stat',
-        'greater_pval',
+        f'{which}_stat',
+        f'{which}_pval',
         ]).set_index(['size', 'method'])
 
     # W_test = W_test.reindex(method_order)
@@ -315,8 +326,8 @@ def run_wilcoxon_mia(graphics_folder, csv=False):
     W_test.drop(['two-sided_pval', 'two-sided_stat'], axis=1, inplace=True)
 
     W_test.rename({
-        'greater_pval': 'p-value',
-        'greater_stat': 'Statistic',
+        f'{which}_pval': 'p-value',
+        f'{which}_stat': 'Statistic',
     }, axis=1, inplace=True)
 
     W_test.index.rename('Size', level=0, inplace=True)
@@ -352,22 +363,29 @@ def run_wilcoxon_mia(graphics_folder, csv=False):
     tab_folder = get_tab_folder(graphics_folder)
 
     if csv:
-        W_test.to_csv(join(tab_folder, 'wilcoxon_greater.csv'))
+        W_test.to_csv(join(tab_folder, f'wilcoxon_{which}.csv'))
 
     print(f'Apply Bonferroni correction with {W_test.shape[0]} values.')
     W_test = W_test.applymap(lambda x: pvalue_formatter(x, alpha=0.05, n_bonferroni=W_test.shape[0]))
-    W_test.to_latex(join(tab_folder, 'wilcoxon_greater.tex'), na_rep='', escape=False)
+    W_test.to_latex(join(tab_folder, f'wilcoxon_{which}.tex'), na_rep='', escape=False, table_env='tabularx')
 
 
-def run_wilcoxon_linear(graphics_folder, csv=False):
+def run_wilcoxon_linear(graphics_folder, csv=False, greater=True):
     path = os.path.abspath('scores/scores.csv')
     df = pd.read_csv(path, index_col=0)
 
+    which = 'greater' if greater else 'less'
+
+    # # Drop tasks
+    # df = df.set_index(['db', 'task'])
+    # for db, task in tasks_to_drop.items():
+    #     df = df.drop((db, task), axis=0)
+    # df = df.reset_index()
+
     # Drop tasks
-    df = df.set_index(['db', 'task'])
     for db, task in tasks_to_drop.items():
-        df = df.drop((db, task), axis=0)
-    df = df.reset_index()
+        df.drop(index=df[(df['db'] == db) & (df['task'] == task)].index, inplace=True)
+    
 
     df['task'] = df['task'].str.replace('_pvals', '_screening')
 
@@ -428,23 +446,26 @@ def run_wilcoxon_linear(graphics_folder, csv=False):
 
                 # print(x)
                 x, y = scores1, scores2
+                
+                # if not greater:
+                #     x, y = y, x
 
                 w_double = wilcoxon(x=x, y=y, alternative='two-sided')
-                w_greater = wilcoxon(x=x, y=y, alternative='greater')
+                w_onesided = wilcoxon(x=x, y=y, alternative=which)
 
             except KeyError:
                 w_double_= (np.nan, np.nan)
-                w_greater = (np.nan, np.nan)
+                w_onesided = (np.nan, np.nan)
 
-            rows.append([size, method1, w_double[0], w_double[1], w_greater[0], w_greater[1]])
+            rows.append([size, method1, w_double[0], w_double[1], w_onesided[0], w_onesided[1]])
 
     W_test = pd.DataFrame(rows, columns=[
         'size',
         'imputer',
         'two-sided_stat',
         'two-sided_pval',
-        'greater_stat',
-        'greater_pval',
+        f'{which}_stat',
+        f'{which}_pval',
         ]).set_index(['size', 'imputer'])
 
     # W_test = W_test.reindex(method_order)
@@ -456,8 +477,8 @@ def run_wilcoxon_linear(graphics_folder, csv=False):
     W_test.drop(['two-sided_pval', 'two-sided_stat'], axis=1, inplace=True)
 
     W_test.rename({
-        'greater_pval': 'p-value',
-        'greater_stat': 'Statistic',
+        f'{which}_pval': 'p-value',
+        f'{which}_stat': 'Statistic',
     }, axis=1, inplace=True)
 
     W_test.index.rename('Size', level=0, inplace=True)
@@ -493,18 +514,18 @@ def run_wilcoxon_linear(graphics_folder, csv=False):
     tab_folder = get_tab_folder(graphics_folder)
 
     if csv:
-        W_test.to_csv(join(tab_folder, 'wilcoxon_linear_greater.csv'))
+        W_test.to_csv(join(tab_folder, f'wilcoxon_linear_{which}.csv'))
 
     print(f'Apply Bonferroni correction with {W_test.shape[0]} values.')
     W_test = W_test.applymap(lambda x: pvalue_formatter(x, alpha=0.05, n_bonferroni=W_test.shape[0]))
-    W_test.to_latex(join(tab_folder, 'wilcoxon_linear_greater.tex'), na_rep='', escape=False, table_env='tabularx')
+    W_test.to_latex(join(tab_folder, f'wilcoxon_linear_{which}.tex'), na_rep='', escape=False, table_env='tabularx')
 
 
-def run_wilcoxon(graphics_folder, linear=False, csv=False):
+def run_wilcoxon(graphics_folder, linear=False, csv=False, greater=True):
     if linear:
-        run_wilcoxon_linear(graphics_folder, csv=csv)
+        run_wilcoxon_linear(graphics_folder, csv=csv, greater=greater)
     else:
-        run_wilcoxon_mia(graphics_folder, csv=csv)
+        run_wilcoxon_mia(graphics_folder, csv=csv, greater=greater)
     
 
 def run_friedman(graphics_folder, linear=False, csv=False):
@@ -778,8 +799,16 @@ def run_scores(graphics_folder, linear, csv=False):
         else:
             return f'\\textbf{{{x}}}'
 
+    smallskip = '0.15in'
+    bigskip = '0.3in'
+    index_rename = {}
+    
     for size in [2500, 10000, 25000, 100000, 'Average']:
         scores.loc[(size, 'Reference score')] = scores.loc[(size, 'Reference score')].apply(boldify)
+        skip = bigskip if size == 'Average' else smallskip
+        index_rename[size] = f'\\rule{{0pt}}{{{skip}}} {size}'
+
+    scores.rename(index_rename, index=0, level=0, inplace=True)
 
     tab_folder = get_tab_folder(graphics_folder)
     tab1_name = 'scores_linear' if linear else 'scores'
