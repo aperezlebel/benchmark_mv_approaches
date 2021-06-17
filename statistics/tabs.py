@@ -80,6 +80,8 @@ def run_desc(graphics_folder):
 
     # Rename DBs
     df.rename(db_rename, axis=0, inplace=True)
+    # Rotate Traumabase
+    df.rename({'Traumabase': '\\rotsmash{Traumabase}'}, axis=0, inplace=True)
 
     # Custom escape content of table
     df['Target'] = df['Target'].map(lambda x: str(x).replace('_', r'\_'))
