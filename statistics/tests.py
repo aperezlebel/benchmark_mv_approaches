@@ -805,17 +805,26 @@ def run_scores(graphics_folder, linear, csv=False):
     
     for size in [2500, 10000, 25000, 100000, 'Average']:
         scores.loc[(size, 'Reference score')] = scores.loc[(size, 'Reference score')].apply(boldify)
+        if size == 2500:
+            continue
         skip = bigskip if size == 'Average' else smallskip
         index_rename[size] = f'\\rule{{0pt}}{{{skip}}} {size}'
 
-    scores.rename(index_rename, index=0, level=0, inplace=True)
+    scores.rename(index_rename, axis=0, level=0, inplace=True)
+    ranks.rename(index_rename, axis=0, level=0, inplace=True)
+
+    n_latex_columns = len(ranks.columns)+2
+    column_format = 'l'*(n_latex_columns-5)+f'@{{\\hskip {smallskip}}}'+'l'*5
+
+    # ranks.rename({v:f'\\smash{{{v}}}' for v in ranks.columns.get_level_values(0)}, axis=1, level=0, inplace=True)
 
     tab_folder = get_tab_folder(graphics_folder)
     tab1_name = 'scores_linear' if linear else 'scores'
     tab2_name = 'ranks_linear' if linear else 'ranks'
 
     scores.to_latex(join(tab_folder, f'{tab1_name}.tex'), na_rep='', escape=False, table_env='tabularx') #, column_format='L'*scores.shape[1])
-    ranks.to_latex(join(tab_folder, f'{tab2_name}.tex'), na_rep='', escape=False, table_env='tabularx')# , column_format='L'*ranks.shape[1])
+    ranks.to_latex(join(tab_folder, f'{tab2_name}.tex'), na_rep='', escape=False,
+    table_env='tabularx', column_format=column_format)
 
     if csv:
         scores.to_csv(join(tab_folder, f'{tab1_name}.csv'))
