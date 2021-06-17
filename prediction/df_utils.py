@@ -109,12 +109,10 @@ def get_scores_tab(scores_raw, method_order=None, db_order=None, relative=False,
             df = df.applymap(myround)
 
         else:
-            # df = df.round(2)
             df = df.applymap(lambda x: x if pd.isnull(x) else f'{x:.2f}')
 
     if average_sizes:
         if formatting:
-            # avg_by_size = avg_by_size.round(2)
             avg_by_size = avg_by_size.applymap(lambda x: x if pd.isnull(x) else f'{x:.2f}')
         df = pd.concat([df, avg_by_size], axis=0)
         df = df.reindex(list(size_order)+['Average'], level=0)

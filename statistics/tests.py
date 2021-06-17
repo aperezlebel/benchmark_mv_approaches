@@ -747,6 +747,19 @@ def run_scores(graphics_folder, linear, csv=False):
     print(scores)
     print(ranks)
 
+    # Turn bold the best ranks
+    best_ranks_by_task = ranks.loc['Average'].astype(float).idxmin(axis=0, skipna=True)
+    for (db, task), best_method in best_ranks_by_task.iteritems():
+        ranks.loc[('Average', best_method), (db, task)] = f"\\textbf{{{ranks.loc[('Average', best_method), (db, task)]}}}"
+    
+    best_ranks_by_size = ranks['Average'].drop('Average', axis=0, level=0).astype(float).groupby(['Size']).idxmin(axis=0, skipna=True)
+    for db in best_ranks_by_size.columns:
+        for size, value in best_ranks_by_size[db].iteritems():
+            if pd.isnull(value):
+                continue
+            best_method = value[1]
+            ranks.loc[(size, best_method), ('Average', db)] = f"\\textbf{{{ranks.loc[(size, best_method), ('Average', db)]}}}"
+
     # Preprocessing for latex dump
     tasks = scores.columns.get_level_values(1)
     rename = {k: k.replace("_", r"\_") for k in tasks}
@@ -755,9 +768,10 @@ def run_scores(graphics_folder, linear, csv=False):
     scores.rename(columns=rename, inplace=True)
     ranks.rename(columns=rename, inplace=True)
 
-    # # Rotate dbs on ranks
+    # Rotate dbs on ranks
     ranks.rename({v: f'\\rot{{{v}}}' for v in ranks['Average'].columns}, axis=1, level=1, inplace=True)
 
+    # Turn bold the reference scores
     def boldify(x):
         if pd.isnull(x):
             return ''
