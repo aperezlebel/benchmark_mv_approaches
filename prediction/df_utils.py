@@ -76,7 +76,7 @@ def get_scores_tab(scores_raw, method_order=None, db_order=None, relative=False,
         df = df.reindex(db_order, level=0, axis=1)
 
     avg_by_size = df.mean(level=0)
-    avg_by_size.loc['Global'] = avg_by_size.mean(skipna=True)
+    avg_by_size.loc['Average'] = avg_by_size.mean(skipna=True)
     avg_by_size['method'] = 'Reference score'
     avg_by_size.set_index('method', append=True, inplace=True)
 
@@ -109,13 +109,15 @@ def get_scores_tab(scores_raw, method_order=None, db_order=None, relative=False,
             df = df.applymap(myround)
 
         else:
-            df = df.round(3)
+            # df = df.round(2)
+            df = df.applymap(lambda x: x if pd.isnull(x) else f'{x:.2f}')
 
     if average_sizes:
         if formatting:
-            avg_by_size = avg_by_size.round(3)
+            # avg_by_size = avg_by_size.round(2)
+            avg_by_size = avg_by_size.applymap(lambda x: x if pd.isnull(x) else f'{x:.2f}')
         df = pd.concat([df, avg_by_size], axis=0)
-        df = df.reindex(list(size_order)+['Global'], level=0)
+        df = df.reindex(list(size_order)+['Average'], level=0)
 
     def space(x):
         if pd.isnull(x):
@@ -160,7 +162,7 @@ def get_ranks_tab(scores_raw, method_order=None, db_order=None, average_sizes=Tr
 
     if average_sizes:
         avg_on_sizes = df.mean(level=1)
-        avg_on_sizes['size'] = 'AVG'
+        avg_on_sizes['size'] = 'Average'
         avg_on_sizes = avg_on_sizes.reset_index().set_index(['size', 'method'])
 
         df_with_avg_dbs = pd.concat([df, avg_on_sizes], axis=0)
@@ -171,7 +173,7 @@ def get_ranks_tab(scores_raw, method_order=None, db_order=None, average_sizes=Tr
     avg_on_dbs = df_with_avg_dbs.mean(axis=1, level=0)
     avg_on_dbs['All'] = avg_on_dbs.mean(axis=1)
 
-    avg_on_dbs.columns = pd.MultiIndex.from_product([['AVG'], avg_on_dbs.columns])
+    avg_on_dbs.columns = pd.MultiIndex.from_product([['Average'], avg_on_dbs.columns])
 
     def to_int(x):  # Convert to int and robust to NaN
         try:

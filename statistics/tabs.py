@@ -15,10 +15,15 @@ def run_desc(graphics_folder):
     # Drop tasks
     scores = scores.set_index(['db', 'task'])
     for db, task in tasks_to_drop.items():
+        # print(scores.shape)
         scores = scores.drop((db, task), axis=0)
     scores = scores.reset_index()
+    # exit()
 
     df = PlotHelper.get_task_description(scores)
+
+    print(df)
+    exit()
 
     print(list(df.columns))
     time_columns = {
@@ -69,8 +74,11 @@ def run_desc(graphics_folder):
     # exit()
 
     # df = df.set_index(['Database', 'Task'])
+    print(df.shape)
     for db, task in tasks_to_drop.items():
         df = df.drop((db, task), axis=0)
+        print(df.shape)
+    exit()
     df = df.reset_index()
     df = df.set_index(['Database', 'Task'])
 

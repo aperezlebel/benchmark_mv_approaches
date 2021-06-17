@@ -687,11 +687,9 @@ def run_scores(graphics_folder, linear, csv=False):
     df = pd.read_csv(path, index_col=0)
 
     # Drop tasks
-    df = df.set_index(['db', 'task'])
     for db, task in tasks_to_drop.items():
-        df = df.drop((db, task), axis=0)
-    df = df.reset_index()
-
+        df.drop(index=df[(df['db'] == db) & (df['task'] == task)].index, inplace=True)
+    
     df['task'] = df['task'].str.replace('_pvals', '_screening')
 
     if linear:
@@ -757,12 +755,24 @@ def run_scores(graphics_folder, linear, csv=False):
     scores.rename(columns=rename, inplace=True)
     ranks.rename(columns=rename, inplace=True)
 
+    # # Rotate dbs on ranks
+    ranks.rename({v: f'\\rot{{{v}}}' for v in ranks['Average'].columns}, axis=1, level=1, inplace=True)
+
+    def boldify(x):
+        if pd.isnull(x):
+            return ''
+        else:
+            return f'\\textbf{{{x}}}'
+
+    for size in [2500, 10000, 25000, 100000, 'Average']:
+        scores.loc[(size, 'Reference score')] = scores.loc[(size, 'Reference score')].apply(boldify)
+
     tab_folder = get_tab_folder(graphics_folder)
     tab1_name = 'scores_linear' if linear else 'scores'
     tab2_name = 'ranks_linear' if linear else 'ranks'
 
-    scores.to_latex(join(tab_folder, f'{tab1_name}.tex'), na_rep='', escape=False) #, column_format='L'*scores.shape[1])
-    ranks.to_latex(join(tab_folder, f'{tab2_name}.tex'), na_rep='', escape=False)# , column_format='L'*ranks.shape[1])
+    scores.to_latex(join(tab_folder, f'{tab1_name}.tex'), na_rep='', escape=False, table_env='tabularx') #, column_format='L'*scores.shape[1])
+    ranks.to_latex(join(tab_folder, f'{tab2_name}.tex'), na_rep='', escape=False, table_env='tabularx')# , column_format='L'*ranks.shape[1])
 
     if csv:
         scores.to_csv(join(tab_folder, f'{tab1_name}.csv'))
