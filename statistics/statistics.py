@@ -649,11 +649,11 @@ def run_cor(args, graphics_folder, absolute=False, csv=False, prop_only=True):
     df_cor['n_selected'] = df_n_selected.applymap(to_int)
     df_cor.set_index('n_selected', append=True, inplace=True)
 
-    db_rename2 = db_rename.copy()
-    db_rename2['TB'] = '\\rotsmash\{Traumabase\}'
-    db_order_renamed = [db_rename2.get(db, db) for db in db_order]
-
+    db_order_renamed = [db_rename.get(db, db) for db in db_order]
     df_cor = df_cor.reindex(db_order_renamed+['AVG'], level=0, axis=0)
+
+    # Rotate Traumabase
+    df_cor.rename({'Traumabase': '\\rotsmash{Traumabase}'}, axis=0, inplace=True)
 
     # Processing for dumping
     df_cor.index.rename(['Database', 'Task', 'N features'], inplace=True)
