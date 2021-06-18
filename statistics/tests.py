@@ -283,8 +283,6 @@ def run_wilcoxon_mia(graphics_folder, csv=False, greater=True):
 
     rows = []
     for size in sizes:
-        # print(f'Size={size}: ', end='\t')
-
         scores = df.loc[size]
         ref_scores = scores.loc['MIA']
 
@@ -298,10 +296,8 @@ def run_wilcoxon_mia(graphics_folder, csv=False, greater=True):
             x = ref_scores[idx]
             y = m_scores[idx]
 
-            # if not greater:
-            #     x, y = y, x
-
-            print(x)
+            assert not x.isnull().any()
+            assert not y.isnull().any()
 
             w_double = wilcoxon(x=x, y=y, alternative='two-sided')
             w_onesided = wilcoxon(x=x, y=y, alternative=which)
@@ -429,29 +425,35 @@ def run_wilcoxon_linear(graphics_folder, csv=False, greater=True):
         # print(f'Size={size}: ', end='\t')
 
         scores = df.loc[size]
+        # if size < 100000:
+        #     continue
+        # print(scores)
         for method1, method2 in zip(method_order1, method_order2):
             try:
                 scores1 = scores.loc[method1]
                 scores2 = scores.loc[method2]
 
-            # methods = scores.index.unique()
-            # methods = [m for m in methods if m != 'MIA']
-
-            # for method in methods:
-                # m_scores = scores.loc[method]
-                # idx = m_scores.notnull()
-
-                # x = ref_scores[idx]
-                # y = m_scores[idx]
-
-                # print(x)
                 x, y = scores1, scores2
-                
-                # if not greater:
-                #     x, y = y, x
+
+                # Drop nans, results are wrong otherwise
+                idx_na_x = x[x.isna()].index
+                idx_na_y = y[y.isna()].index
+                idx_na = idx_na_x.union(idx_na_y)
+
+                x = x.drop(index=idx_na)
+                y = y.drop(index=idx_na)
+
+                pd.testing.assert_index_equal(x.index, y.index)
+                assert not x.isnull().any()
+                assert not y.isnull().any()
 
                 w_double = wilcoxon(x=x, y=y, alternative='two-sided')
                 w_onesided = wilcoxon(x=x, y=y, alternative=which)
+                w_onesided2 = wilcoxon(x-y, alternative=which)
+                print(f'{method1} - {method2}')
+                print(x-y)
+                print(which, w_onesided)
+                print(which, w_onesided2)
 
             except KeyError:
                 w_double_= (np.nan, np.nan)
