@@ -14,7 +14,7 @@ from custom.const import get_fig_folder
 from .plot_statistics import figure1, figure2, figure2bis, figure3, plot_feature_wise_v2, plot_feature_types
 from database import dbs, _load_feature_types
 from database.constants import BINARY, CONTINUE_R, CATEGORICAL
-from database.constants import is_categorical, is_continue, is_ordinal
+from database.constants import is_categorical, is_continuous, is_ordinal
 from .tests import tasks_to_drop
 from custom.const import get_tab_folder
 
@@ -480,17 +480,17 @@ def get_prop(task_tag, encode_features=False, T=0):
 
     f_categorical = task_types.map(is_categorical)
     f_ordinal = task_types.map(is_ordinal)
-    f_continue = task_types.map(is_continue)
+    f_continuous = task_types.map(is_continuous)
 
     n_categorical = f_categorical.sum()
     n_ordinal = f_ordinal.sum()
-    n_continue = f_continue.sum()
+    n_continuous = f_continuous.sum()
 
-    print(n_categorical, n_ordinal, n_continue)
+    print(n_categorical, n_ordinal, n_continuous)
 
-    assert n_categorical + n_ordinal + n_continue == len(task_types)
+    assert n_categorical + n_ordinal + n_continuous == len(task_types)
 
-    return n_categorical, n_ordinal, n_continue
+    return n_categorical, n_ordinal, n_continuous
 
 
 def run_prop(args, graphics_folder):
@@ -503,12 +503,12 @@ def run_prop(args, graphics_folder):
         db, task = task_tag.split('/')
 
         for T in Ts:
-            n_categorical, n_ordinal, n_continue = get_prop(task_tag, T=T)
-            rows.append([db_rename.get(db, db), task, T, n_categorical, n_ordinal, n_continue])
+            n_categorical, n_ordinal, n_continuous = get_prop(task_tag, T=T)
+            rows.append([db_rename.get(db, db), task, T, n_categorical, n_ordinal, n_continuous])
 
-    props = pd.DataFrame(rows, columns=['db',  'task', 'T', 'categorical', 'ordinal', 'continue'])
+    props = pd.DataFrame(rows, columns=['db',  'task', 'T', 'categorical', 'ordinal', 'continuous'])
     props['tag'] = props['db'].str.cat('/'+props['task'])
-    props['n'] = props['categorical'] + props['ordinal'] + props['continue']
+    props['n'] = props['categorical'] + props['ordinal'] + props['continuous']
 
     # Drop tasks
     props = props.set_index(['db', 'task'])

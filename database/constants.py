@@ -27,5 +27,5 @@ def is_categorical(x):
 def is_ordinal(x):
     return x in [ORDINAL]
 
-def is_continue(x):
+def is_continuous(x):
     return x in [CONTINUE_I, CONTINUE_R, DATE_TIMESTAMP]
