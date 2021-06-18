@@ -619,6 +619,7 @@ def run_friedman(graphics_folder, linear=False, csv=False):
         print(df)
         df.rename({'MIA': 'Boosted trees+MIA'}, axis=0, inplace=True)
         print(df)
+        fig.subplots_adjust(wspace=0.37)
 
     else:
         rename = {
@@ -644,7 +645,7 @@ def run_friedman(graphics_folder, linear=False, csv=False):
     tab_name = 'friedman_linear' if linear else 'friedman'
     fig_name = 'critical_distance_linear' if linear else 'critical_distance'
 
-    plt.savefig(join(fig_folder, f'{fig_name}.pdf'), bbox_inches='tight')
+    plt.savefig(join(fig_folder, f'{fig_name}.pdf'), bbox_inches='tight', pad_inches=0)
 
     print(df_statistic)
 
@@ -691,6 +692,7 @@ def plot_ranks(average_ranks, critical_distance, ax):
     min_rank = np.min(average_ranks)
 
     # Move left y-axis and bottim x-axis to centre, passing through (0,0)
+    # ax.spines['left'].set_position(('axes', 0.5))
     ax.spines['left'].set_position('center')
     ax.spines['bottom'].set_color('none')
 
@@ -704,13 +706,14 @@ def plot_ranks(average_ranks, critical_distance, ax):
     ax.set_ylim(1, 9)
     ax.set_xlim(-.3, .3)
     ax.invert_yaxis()
+    # ax.set_position([0, 0, 1, 1])
 
     cd1 = min_rank
     cd2 = min_rank + critical_distance
     colors = ['red' if r < cd2 else 'black' for r in average_ranks]
     ax.scatter(np.zeros_like(average_ranks), average_ranks, color=colors, marker='.', clip_on=False, zorder=10)
     ax.plot(-.1*np.ones(2), [cd1, cd2], color='red', marker='_', markeredgewidth=1.5)
-    ax.text(-.12, (cd1+cd2)/2, 'critical distance', rotation=90, ha='center', va='center', color='red')
+    ax.text(-.12, (cd1+cd2)/2, 'critical distance', rotation=90, ha='center', va='center', color='red', fontsize=12)
     # ax.annotate('Critical difference', xy=(-.1, (cd1+cd2)/2), textcoords="offset points",
             # horizontalalignment="right", verticalalignment="bottom")
 
