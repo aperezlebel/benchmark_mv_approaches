@@ -40,7 +40,6 @@ rename_on_plot = {
     'relative_total_PT': 'Relative total training time',
     'relative_total_WCT': 'Relative wall-clock time',
     'TB': 'Traumabase',
-    'UKBB': 'UK BioBank',
     'Mean+mask': 'Mean\n+mask',
     'Med': 'Median',
     'Med+mask': 'Median\n+mask',
@@ -126,7 +125,7 @@ def run_boxplot(graphics_folder, linear):
             10: '$10\\times$',
             # 2: '$2\\times$'
         }
-        fig_time = PlotHelper.plot_times(scores, 'PT', xticks_dict=xticks, xlims=(0.005, 15), method_order=linear_method_order, db_order=db_order, rename=rename_on_plot)
+        fig_time = PlotHelper.plot_times(scores, 'PT', xticks_dict=xticks, xlims=(0.005, 15), method_order=linear_method_order, db_order=db_order, rename=rename_on_plot, linear=linear)
     
     else:
         fig = PlotHelper.plot_scores(scores, method_order=method_order, db_order=db_order, rename=rename_on_plot, reference_method=None)
@@ -139,7 +138,7 @@ def run_boxplot(graphics_folder, linear):
             3/2: '$\\frac{3}{2}\\times$',
             # 2: '$2\\times$'
         }
-        fig_time = PlotHelper.plot_times(scores, 'PT', xticks_dict=xticks, method_order=method_order, db_order=db_order, rename=rename_on_plot)
+        fig_time = PlotHelper.plot_times(scores, 'PT', xticks_dict=xticks, method_order=method_order, db_order=db_order, rename=rename_on_plot, linear=linear)
 
     fig_folder = get_fig_folder(graphics_folder)
     

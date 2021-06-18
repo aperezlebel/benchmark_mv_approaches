@@ -771,9 +771,16 @@ class PlotHelper(object):
                                      )
             # g3.legend(title='title')
 
+            if not legend_bbox and i < len(sizes)-1:
+                twinx.get_legend().remove()
+
+            elif legend_bbox and i > 0:
+                twinx.get_legend().remove()
+                
+
             if i > 0:  # if not the first axis
                 ax.yaxis.set_visible(False)
-                twinx.get_legend().remove()
+                # twinx.get_legend().remove()
             else:
                 # Get yticks labels and rename them according to given dict
                 labels = [item.get_text() for item in ax.get_yticklabels()]
@@ -988,20 +995,33 @@ class PlotHelper(object):
         table = axes[-1].table(cellText=cellText, loc='right',
                        rowLabels=rowLabels,
                        colLabels=['Mean\nrank'],
-                       bbox=[1.32, -0.11, .2, .87],
+                       bbox=[1.32, -0.11, .19, .87],
                     #    bbox=[1.3, 0, .2, .735],
                        colWidths=[0.2],
                        )
         table.set_fontsize(13)
 
-        # cells = table.get_celld()
-        # print(list(cells.keys()))
-        # # exit()
-        # h = 10
-        # for i in range(cellText.shape[0]+1):
-        #     cells[i, 0].set_height(h)
-        #     if i > 0:
-        #         cells[i, -1].set_height(h)
+        # Add brackets
+        ax = axes[0]
+        fs = 18
+        lw = 1.3
+        dh = 1./9
+        l_tail = 0.03
+        pos_arrow = -0.3
+        # Here is the label and arrow code of interest
+        ax.annotate('Constant\nimputation\n\n', xy=(pos_arrow, 6*dh), xytext=(pos_arrow-l_tail, 6*dh), xycoords='axes fraction', 
+                    fontsize=fs, ha='center', va='center',
+                    bbox=None,#dict(boxstyle='square', fc='white'),
+                    arrowprops=dict(arrowstyle=f'-[, widthB={70/fs}, lengthB=0.5', lw=lw),
+                    rotation=90,
+                    )
+
+        ax.annotate('Conditional\nimputation\n\n', xy=(pos_arrow, 2*dh), xytext=(pos_arrow-l_tail, 2*dh), xycoords='axes fraction', 
+                    fontsize=fs, ha='center', va='center',
+                    bbox=None,#dict(boxstyle='square', fc='white'),
+                    arrowprops=dict(arrowstyle=f'-[, widthB={70/fs}, lengthB=0.5', lw=lw),
+                    rotation=90,
+                    )
 
         plt.subplots_adjust(right=.88)
 
@@ -1009,7 +1029,7 @@ class PlotHelper(object):
 
     @staticmethod
     def plot_times(filepath, which, xticks_dict=None, xlims=None, db_order=None,
-                   method_order=None, rename=dict(), reference_method=None):
+                   method_order=None, rename=dict(), reference_method=None, linear=False):
         if not isinstance(filepath, pd.DataFrame):
             scores = pd.read_csv(filepath, index_col=0)
         else:
@@ -1023,65 +1043,37 @@ class PlotHelper(object):
             value = 'total_WCT'
         else:
             raise ValueError(f'Unknown argument {which}')
-        fig, _ = PlotHelper._plot(scores, value, how='log',
+        fig, axes = PlotHelper._plot(scores, value, how='log',
                                     xticks_dict=xticks_dict,
                                     xlims=xlims,
                                     method_order=method_order,
                                     db_order=db_order, rename=rename,
                                     reference_method=reference_method,
-                                    figsize=(19, 5.25))
+                                    figsize=(18, 5.25))
+
+        # Add brackets
+        ax = axes[0]
+        fs = 18
+        lw = 1.3
+        dh = 1./9
+        l_tail = 0.03
+        pos_arrow = -0.4 if linear else -0.26
+        # Here is the label and arrow code of interest
+        ax.annotate('Constant\nimputation\n\n', xy=(pos_arrow, 6*dh), xytext=(pos_arrow-l_tail, 6*dh), xycoords='axes fraction', 
+                    fontsize=fs, ha='center', va='center',
+                    bbox=None,#dict(boxstyle='square', fc='white'),
+                    arrowprops=dict(arrowstyle=f'-[, widthB={70/fs}, lengthB=0.5', lw=lw),
+                    rotation=90,
+                    )
+
+        ax.annotate('Conditional\nimputation\n\n', xy=(pos_arrow, 2*dh), xytext=(pos_arrow-l_tail, 2*dh), xycoords='axes fraction', 
+                    fontsize=fs, ha='center', va='center',
+                    bbox=None,#dict(boxstyle='square', fc='white'),
+                    arrowprops=dict(arrowstyle=f'-[, widthB={70/fs}, lengthB=0.5', lw=lw),
+                    rotation=90,
+                    )
+
         return fig
-
-    # @staticmethod
-    # def plot_MIA_linear_diff(filepath, db_order, rename=dict()):
-    #     df = pd.read_csv(filepath, index_col=0)
-
-    #     # Select methods of interest
-    #     # df = df.loc[df['method'].isin(['MIA', 'Linear+Iter', 'Linear+Iter+mask'])]
-
-    #     # Compute the difference of scores between MIA and Linear model
-    #     dfgb = df.groupby(['method'])
-
-    #     MIA = dfgb.get_group('MIA').set_index(['size', 'db', 'task', 'trial', 'fold'])
-    #     Linear = dfgb.get_group('Linear+Iter').set_index(['size', 'db', 'task', 'trial', 'fold'])
-    #     Linear_mask = dfgb.get_group('Linear+Iter+mask').set_index(['size', 'db', 'task', 'trial', 'fold'])
-
-    #     # Diff between MIA and Linear+Iterative
-    #     diff1 = MIA.copy()
-    #     diff1['method'] = 'Linear\n - MIA'
-
-    #     # Diff between MIA and Linear+Iterative+mask
-    #     diff2 = MIA.copy()
-    #     diff2['method'] = 'Linear+mask\n - MIA'
-
-    #     scores_diff1 = Linear['score'] - MIA['score']
-    #     scores_normalized1 = scores_diff1.divide(MIA['score'])
-
-    #     scores_diff2 = Linear_mask['score'] - MIA['score']
-    #     scores_normalized2 = scores_diff2.divide(MIA['score'])
-
-    #     diff1['score'] = scores_diff1
-    #     diff1.reset_index(inplace=True)
-
-    #     diff2['score'] = scores_diff2
-    #     diff2.reset_index(inplace=True)
-
-    #     diff = pd.concat([diff1, diff2], axis=0)
-
-    #     diff.to_csv('sandbox/diff2.csv')
-
-    #     fig, axes = PlotHelper._plot(diff, 'score', how='abs',
-    #                                    rename=rename,
-    #                                    db_order=db_order,
-    #                                    xlabel='absolute_score',
-    #                                    xticks_dict={
-    #                                        0: '0',
-    #                                        -0.1: '-0.1',
-    #                                    },
-    #                                    xlims=(-0.11, 0.04)
-    #                                    )
-
-    #     return fig
 
     @staticmethod
     def plot_MIA_linear(filepath, db_order, method_order, rename=dict()):
@@ -1111,8 +1103,8 @@ class PlotHelper(object):
                                        },
                                        xlims=(-0.04, 0.14),
                                        #    figsize=(17, 3.25),
-                                       figsize=(17, 5.25),
-                                       legend_bbox=(4.22, 1.075),
+                                       figsize=(18, 5.25),
+                                       legend_bbox=(4.30, 1.075),
                                        )
 
         df_ranks = get_ranks_tab(scores, method_order=method_order, db_order=db_order, average_sizes=True)
@@ -1128,10 +1120,32 @@ class PlotHelper(object):
                        rowLabels=rowLabels,
                        colLabels=['Mean\nrank'],
                     #    bbox=[1.37, 0, .2, .735],
-                       bbox=[1.41, -0.11, .15, .87],
+                       bbox=[1.41, -0.11, .19, .87],
                        colWidths=[0.2],
                        )
         table.set_fontsize(13)
+
+        # Add brackets
+        ax = axes[0]
+        fs = 18
+        lw = 1.3
+        dh = 1./9
+        l_tail = 0.03
+        pos_arrow = -0.45
+        # Here is the label and arrow code of interest
+        ax.annotate('Constant\nimputation\n\n', xy=(pos_arrow, 6*dh), xytext=(pos_arrow-l_tail, 6*dh), xycoords='axes fraction', 
+                    fontsize=fs, ha='center', va='center',
+                    bbox=None,#dict(boxstyle='square', fc='white'),
+                    arrowprops=dict(arrowstyle=f'-[, widthB={70/fs}, lengthB=0.5', lw=lw),
+                    rotation=90,
+                    )
+
+        ax.annotate('Conditional\nimputation\n\n', xy=(pos_arrow, 2*dh), xytext=(pos_arrow-l_tail, 2*dh), xycoords='axes fraction', 
+                    fontsize=fs, ha='center', va='center',
+                    bbox=None,#dict(boxstyle='square', fc='white'),
+                    arrowprops=dict(arrowstyle=f'-[, widthB={70/fs}, lengthB=0.5', lw=lw),
+                    rotation=90,
+                    )
 
         plt.subplots_adjust(right=.88, left=.09)
 
