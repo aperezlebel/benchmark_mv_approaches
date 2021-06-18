@@ -526,7 +526,7 @@ def run_prop(args, graphics_folder):
 
     plt.savefig(join(fig_folder, f'{fig_name}.pdf'), bbox_inches='tight')
     plt.tight_layout(pad=0.3)
-    plt.show()
+    # plt.show()
 
 
 def compute_correlation(_X):

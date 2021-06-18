@@ -567,11 +567,13 @@ def figure3(indicators, plot=True, db_name=None, table=None):
 
 def plot_feature_types(props, ax=None):
     matplotlib.rcParams.update({
-        # 'font.size': 14,
+        'font.size': 12,
         # 'axes.titlesize': 10,
-        'axes.labelsize': 10,
+        'axes.labelsize': 11,
         'xtick.labelsize': 8,
-        'ytick.labelsize': 8,
+        'ytick.labelsize': 11,
+        'legend.fontsize': 11,
+        'legend.title_fontsize': 12,
     })
 
     if ax is None:
@@ -586,7 +588,8 @@ def plot_feature_types(props, ax=None):
     props['categorical+ordinal'] = props['categorical'] + props['ordinal']
     props['continuous+ordinal'] = props['continuous'] + props['ordinal']
 
-    c1, c2, c3 = sns.color_palette('deep', n_colors=3)
+    c1, c2, c3 = sns.color_palette(['tab:grey', 'tab:olive', 'tab:cyan'])
+    # c1, c2, c3 = sns.color_palette('deep', n_colors=3)
     g1 = sns.barplot(y='tag', x='n', data=props, orient='h', hue='T', color=c1, palette=[c1], ax=ax)
     g2 = sns.barplot(y='tag', x='categorical+ordinal', data=props, orient='h', hue='T', color=c3, palette=[c3], ax=ax)
     g3 = sns.barplot(y='tag', x='categorical', data=props, orient='h', hue='T', color=c2, palette=[c2], ax=ax)
@@ -595,7 +598,7 @@ def plot_feature_types(props, ax=None):
               labels=['Categorical', 'Ordinal', 'Numerical'],
               title='Feature type', fancybox=True, shadow=False,
               loc='upper center', bbox_to_anchor=(0.215, 1.17), ncol=3)
-    ax.set_xlabel('Features')
+    ax.set_xlabel('Number of features')
     ax.set_ylabel('')
 
     props.set_index(['db', 'task', 'T'], inplace=True)
