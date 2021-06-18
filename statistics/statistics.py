@@ -360,18 +360,68 @@ def every_mv_distribution():
             handles_dict[db] = handles[1]
 
             task = task.replace('_', '\\_')
+            task = task.replace('pvals', 'screening')
             ax.set_title(task)
 
-    axes[-1, 0].set_xlabel('Features')
-    axes[-1, 0].set_ylabel('Proportion')
-    axes[-1, -1].legend(handles_dict.values(), handles_dict.keys(),
-    fancybox=True, shadow=True, loc='center', title='Missing values')
+    # axes[-1, -1].legend(handles_dict.values(), handles_dict.keys(),
+    #     fancybox=True, shadow=True, loc='center', title='Missing values')
     # p_dummy, = plt.plot([0], marker='None', linestyle='None', label='dummy-tophead')
     # handles_dict[''] = handles[0]
     # handles = [p_dummy]*5+list(handles_dict.values())
     # labels = ['Missing'] + ['']*3 + ['Not missing'] + list(handles_dict.keys())
     # axes[-1, -1].legend(handles, labels, ncol=2,
     # fancybox=True, shadow=True, loc='center',)
+
+    fig.tight_layout()
+
+    db_titles = {
+        0: 'Traumabase',
+        2: 'UKBB',
+        4: 'MIMIC',
+        5: 'NHIS',
+    }
+
+    db_titles2 = {
+        1: 'Traumabase',
+        3: 'UKBB',
+        4: 'MIMIC',
+        5: 'NHIS',
+    }
+
+    ax = axes[0]
+    fs = 14
+    lw = 1.3
+    dh = 1./9
+    l_tail = 0.03
+    pos_arrow = -0.45
+
+    for i, db in db_titles2.items():
+        # Here is the label and arrow code of interest
+        # axes[i, 0].annotate(db, xy=(-0.4, 0.5), xycoords='axes fraction',
+        #             fontsize=fs, ha='center', va='center',
+        #             bbox=None,#dict(boxstyle='square', fc='white'),
+        #             # arrowprops=dict(arrowstyle=f'-[, widthB={70/fs}, lengthB=0.5', lw=lw),
+        #             rotation=90,
+        #             )
+        axes[i, -1].annotate(db, xy=(0.5, 0.5), xycoords='axes fraction',
+                    fontsize=fs, ha='center', va='center',
+                    bbox=dict(boxstyle='square', fc='white'),
+                    # arrowprops=dict(arrowstyle=f'-[, widthB={70/fs}, lengthB=0.5', lw=lw),
+                    rotation=0,
+                    )
+
+    # x, y = np.array([[0, 1], ])
+    dh = 1./6
+    # for i in range(0,7):
+    for i in [1.05, 2.02, 3.96]:
+        y = i*dh
+        line = matplotlib.lines.Line2D([0, 1], [y, y], lw=1, ls=':', color='black',
+            alpha=1, transform=fig.transFigure)
+    # axes[1, 0].add_line(line)
+        fig.add_artist(line)
+
+    axes[-1, 0].set_xlabel('Features')
+    axes[-1, 0].set_ylabel('Proportion')
 
     return fig, axes
 
@@ -400,7 +450,7 @@ def run_mv(args, graphics_folder):
 
         plt.savefig(join(fig_folder, f'{fig_name}.pdf'), bbox_inches='tight')
         plt.tight_layout()
-        plt.show()
+        # plt.show()
 
         return
 
@@ -656,7 +706,7 @@ def run_cor(args, graphics_folder, absolute=False, csv=False, prop_only=True):
     df_cor.rename({'Traumabase': '\\rotsmash{Traumabase}'}, axis=0, inplace=True)
 
     # Processing for dumping
-    df_cor.index.rename(['Database', 'Task', 'N features'], inplace=True)
+    df_cor.index.rename(['Database', 'Task', '\\# features'], inplace=True)
     df_cor.index = df_cor.index.set_levels(df_cor.index.levels[1].str.replace('pvals', 'screening'), level=1)
     df_cor.index = df_cor.index.set_levels(df_cor.index.levels[1].str.replace('_', r'\_'), level=1)
 
