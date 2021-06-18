@@ -14,7 +14,7 @@ from custom.const import get_fig_folder
 from .plot_statistics import figure1, figure2, figure2bis, figure3, plot_feature_wise_v2, plot_feature_types
 from database import dbs, _load_feature_types
 from database.constants import BINARY, CONTINUE_R, CATEGORICAL
-from database.constants import is_categorical, is_continuous, is_ordinal
+from database.constants import is_categorical, is_continuous, is_ordinal, is_continue
 from .tests import tasks_to_drop
 from custom.const import get_tab_folder
 
@@ -628,9 +628,9 @@ def run_cor(args, graphics_folder, absolute=False, csv=False, prop_only=True):
 
     df_cor_mean = df_cor.mean()
     df_cor_mean = pd.DataFrame(df_cor_mean).T
-    df_cor_mean.index = pd.MultiIndex.from_tuples([('AVG', '')])
+    df_cor_mean.index = pd.MultiIndex.from_tuples([('Average', '')])
     df_cor = pd.concat([df_cor, df_cor_mean], axis=0)
-    df_n_selected.loc[('AVG', ''), 'n_selected'] = float(df_n_selected.mean())
+    df_n_selected.loc[('Average', ''), 'n_selected'] = float(df_n_selected.mean())
 
     def to_int(x):  # Convert to int and robust to NaN
         try:
@@ -650,7 +650,7 @@ def run_cor(args, graphics_folder, absolute=False, csv=False, prop_only=True):
     df_cor.set_index('n_selected', append=True, inplace=True)
 
     db_order_renamed = [db_rename.get(db, db) for db in db_order]
-    df_cor = df_cor.reindex(db_order_renamed+['AVG'], level=0, axis=0)
+    df_cor = df_cor.reindex(db_order_renamed+['Average'], level=0, axis=0)
 
     # Rotate Traumabase
     df_cor.rename({'Traumabase': '\\rotsmash{Traumabase}'}, axis=0, inplace=True)
@@ -668,6 +668,17 @@ def run_cor(args, graphics_folder, absolute=False, csv=False, prop_only=True):
     else:
         df_cor.columns.rename(['', 'Threshold'], inplace=True)
         df_cor.rename({'N_mean': r'$\bar{n}$', 'prop': r'$\bar{p}$'}, axis=1, inplace=True)
+    
+    smallskip = '0.15in'
+    bigskip = '0.2in'
+    index_rename = {}
+    for i, v in enumerate(pd.unique(df_cor.index.get_level_values(0))):
+        if i == 0:
+            continue
+        skip = bigskip if v == 'Average' else smallskip
+        index_rename[v] = f'\\rule{{0pt}}{{{skip}}}{v}'
+
+    df_cor.rename(index_rename, axis=0, level=0, inplace=True)
 
     tab_folder = get_tab_folder(graphics_folder)
     tab_name = 'correlation_abs' if absolute else 'correlation'

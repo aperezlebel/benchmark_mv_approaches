@@ -336,11 +336,14 @@ def run_wilcoxon_mia(graphics_folder, csv=False, greater=True):
 
     W_test = W_test.reindex(method_order1 + method_order2)
 
+    skip = '0.2in'
+
     W_test.rename({
         'Med': 'Median',
         'Med+mask': 'Median+mask',
         'Iter': 'Iterative',
         'Iter+mask': 'Iterative+mask',
+        'Linear+Mean': f'\\rule{{0pt}}{{{skip}}}Linear+Mean'
     }, axis=0, inplace=True)
 
     def pvalue_formatter(x, alpha, n_bonferroni):
@@ -831,7 +834,7 @@ def run_scores(graphics_folder, linear, csv=False):
         if size == 2500:
             continue
         skip = bigskip if size == 'Average' else smallskip
-        index_rename[size] = f'\\rule{{0pt}}{{{skip}}} {size}'
+        index_rename[size] = f'\\rule{{0pt}}{{{skip}}}{size}'
 
     scores.rename(index_rename, axis=0, level=0, inplace=True)
     ranks.rename(index_rename, axis=0, level=0, inplace=True)

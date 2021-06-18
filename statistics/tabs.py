@@ -10,20 +10,21 @@ from custom.const import get_tab_folder
 
 def run_desc(graphics_folder):
     path = os.path.abspath('scores/scores.csv')
-    scores = pd.read_csv(path, index_col=0)
+    df = pd.read_csv(path, index_col=0)
 
     # Drop tasks
-    scores = scores.set_index(['db', 'task'])
-    for db, task in tasks_to_drop.items():
-        # print(scores.shape)
-        scores = scores.drop((db, task), axis=0)
-    scores = scores.reset_index()
+    # scores = scores.set_index(['db', 'task'])
+    # for db, task in tasks_to_drop.items():
+    #     # print(scores.shape)
+    #     scores = scores.drop((db, task), axis=0)
+    # scores = scores.reset_index()
     # exit()
 
-    df = PlotHelper.get_task_description(scores)
+    # Drop tasks
+    for db, task in tasks_to_drop.items():
+        df.drop(index=df[(df['db'] == db) & (df['task'] == task)].index, inplace=True)
 
-    print(df)
-    exit()
+    df = PlotHelper.get_task_description(df)
 
     print(list(df.columns))
     time_columns = {
@@ -78,7 +79,7 @@ def run_desc(graphics_folder):
     for db, task in tasks_to_drop.items():
         df = df.drop((db, task), axis=0)
         print(df.shape)
-    exit()
+        
     df = df.reset_index()
     df = df.set_index(['Database', 'Task'])
 
@@ -90,6 +91,8 @@ def run_desc(graphics_folder):
     df.rename(db_rename, axis=0, inplace=True)
     # Rotate Traumabase
     df.rename({'Traumabase': '\\rotsmash{Traumabase}'}, axis=0, inplace=True)
+
+    df.rename({'n': 'Number of samples', 'p': 'Number of features'}, axis=1, inplace=True)
 
     # Custom escape content of table
     df['Target'] = df['Target'].map(lambda x: str(x).replace('_', r'\_'))
@@ -123,6 +126,15 @@ def run_desc(graphics_folder):
     df.rename(columns=rename, level=0, inplace=True)
     # df = df.transpose()
     print(df)
+
+    skip = '0.3in'
+    index_rename = {}
+    for i, v in enumerate(pd.unique(df.index.get_level_values(0))):
+        if i == 0:
+            continue
+        index_rename[v] = f'\\rule{{0pt}}{{{skip}}}{v}'
+
+    df.rename(index_rename, axis=0, level=0, inplace=True)
 
     n = len(df.columns)
     column_format = 'l'*df.index.nlevels+'l'*(n-2)+'X'*2
