@@ -609,9 +609,10 @@ class PlotHelper(object):
 
         matplotlib.rcParams.update({
             'font.size': 10,
-            'legend.fontsize': 10,
-            'axes.titlesize': 17,
-            'axes.labelsize': 15,
+            'legend.fontsize': 12,
+            'legend.title_fontsize': 14,
+            'axes.titlesize': 18,
+            'axes.labelsize': 18,
             'xtick.labelsize': 12,
             'ytick.labelsize': 18,
             # 'mathtext.fontset': 'stixsans',
@@ -755,7 +756,7 @@ class PlotHelper(object):
                                  )
 
             if legend_bbox:
-                g2.legend(loc='upper left', bbox_to_anchor=legend_bbox, ncol=1)
+                g2.legend(loc='upper left', bbox_to_anchor=legend_bbox, ncol=1, title='Database')
 
             # Scatter plot for invalid data points
             if n_dbs_invalid > 0:
@@ -973,11 +974,11 @@ class PlotHelper(object):
                                        db_order=db_order, rename=rename,
                                        reference_method=reference_method,
                                        figsize=(18, 5.25),
-                                       legend_bbox=(4.22, 1.015))
+                                       legend_bbox=(4.22, 1.075))
 
         df_ranks = get_ranks_tab(scores, method_order=method_order, db_order=db_order, average_sizes=True)
 
-        global_avg_ranks = df_ranks[('AVG', 'All')].loc['AVG']
+        global_avg_ranks = df_ranks[('Average', 'All')].loc['Average']
         cellText = np.transpose([list(global_avg_ranks.astype(str))])
         rowLabels = list(global_avg_ranks.index)
         rowLabels = [PlotHelper.rename_str(rename, s) for s in rowLabels]
@@ -1098,12 +1099,12 @@ class PlotHelper(object):
                                        xlims=(-0.04, 0.14),
                                        #    figsize=(17, 3.25),
                                        figsize=(17, 5.25),
-                                       legend_bbox=(4.22, 1.015),
+                                       legend_bbox=(4.22, 1.075),
                                        )
 
         df_ranks = get_ranks_tab(scores, method_order=method_order, db_order=db_order, average_sizes=True)
 
-        global_avg_ranks = df_ranks[('AVG', 'All')].loc['AVG']
+        global_avg_ranks = df_ranks[('Average', 'All')].loc['Average']
         cellText = np.transpose([list(global_avg_ranks.astype(str))])
         rowLabels = list(global_avg_ranks.index)
         rowLabels = [PlotHelper.rename_str(rename, s) for s in rowLabels]

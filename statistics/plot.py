@@ -1,5 +1,6 @@
 from os.path import join
 import pandas as pd
+import matplotlib
 import matplotlib.pyplot as plt
 
 from prediction.PlotHelper import PlotHelper
@@ -92,6 +93,15 @@ tasks_to_drop = {
 
 
 def run_boxplot(graphics_folder, linear):
+    # matplotlib.rcParams.update({
+    #     # 'font.size': 40,
+    #     # 'axes.titlesize': 10,
+    #     # 'axes.labelsize': 11,
+    #     # 'xtick.labelsize': 8,
+    #     # 'ytick.labelsize': 11,
+    #     # 'legend.fontsize': 11,
+    #     # 'legend.title_fontsize': 12,
+    # })
     filepath = 'scores/scores.csv'
     scores = pd.read_csv(filepath, index_col=0)
 
