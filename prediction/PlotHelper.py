@@ -979,16 +979,29 @@ class PlotHelper(object):
         df_ranks = get_ranks_tab(scores, method_order=method_order, db_order=db_order, average_sizes=True)
 
         global_avg_ranks = df_ranks[('Average', 'All')].loc['Average']
+        argmin = global_avg_ranks.argmin()
+        global_avg_ranks.iloc[argmin] = f"\\textbf{{{global_avg_ranks.iloc[argmin]}}}"
         cellText = np.transpose([list(global_avg_ranks.astype(str))])
         rowLabels = list(global_avg_ranks.index)
         rowLabels = [PlotHelper.rename_str(rename, s) for s in rowLabels]
 
-        axes[-1].table(cellText=cellText, loc='right',
+        table = axes[-1].table(cellText=cellText, loc='right',
                        rowLabels=rowLabels,
                        colLabels=['Mean\nrank'],
-                       bbox=[1.3, 0, .2, .735],
+                       bbox=[1.32, -0.11, .2, .87],
+                    #    bbox=[1.3, 0, .2, .735],
                        colWidths=[0.2],
                        )
+        table.set_fontsize(13)
+
+        # cells = table.get_celld()
+        # print(list(cells.keys()))
+        # # exit()
+        # h = 10
+        # for i in range(cellText.shape[0]+1):
+        #     cells[i, 0].set_height(h)
+        #     if i > 0:
+        #         cells[i, -1].set_height(h)
 
         plt.subplots_adjust(right=.88)
 
@@ -1105,16 +1118,20 @@ class PlotHelper(object):
         df_ranks = get_ranks_tab(scores, method_order=method_order, db_order=db_order, average_sizes=True)
 
         global_avg_ranks = df_ranks[('Average', 'All')].loc['Average']
+        argmin = global_avg_ranks.argmin()
+        global_avg_ranks.iloc[argmin] = f"\\textbf{{{global_avg_ranks.iloc[argmin]}}}"
         cellText = np.transpose([list(global_avg_ranks.astype(str))])
         rowLabels = list(global_avg_ranks.index)
         rowLabels = [PlotHelper.rename_str(rename, s) for s in rowLabels]
 
-        axes[-1].table(cellText=cellText, loc='right',
+        table = axes[-1].table(cellText=cellText, loc='right',
                        rowLabels=rowLabels,
                        colLabels=['Mean\nrank'],
-                       bbox=[1.37, 0, .2, .735],
+                    #    bbox=[1.37, 0, .2, .735],
+                       bbox=[1.41, -0.11, .15, .87],
                        colWidths=[0.2],
                        )
+        table.set_fontsize(13)
 
         plt.subplots_adjust(right=.88, left=.09)
 
