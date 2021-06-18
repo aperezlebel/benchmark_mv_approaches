@@ -830,6 +830,7 @@ def run_scores(graphics_folder, linear, csv=False):
 
     smallskip = '0.15in'
     bigskip = '0.3in'
+    medskip = '0.23in'
     index_rename = {}
     
     for size in [2500, 10000, 25000, 100000, 'Average']:
@@ -843,7 +844,7 @@ def run_scores(graphics_folder, linear, csv=False):
     ranks.rename(index_rename, axis=0, level=0, inplace=True)
 
     n_latex_columns = len(ranks.columns)+2
-    column_format = 'l'*(n_latex_columns-5)+f'@{{\\hskip {smallskip}}}'+'l'*5
+    column_format = 'l'*(n_latex_columns-5)+f'@{{\\hskip {smallskip}}}'+'l'*4+f'@{{\\hskip {medskip}}}'+'l'
 
     # ranks.rename({v:f'\\smash{{{v}}}' for v in ranks.columns.get_level_values(0)}, axis=1, level=0, inplace=True)
 
