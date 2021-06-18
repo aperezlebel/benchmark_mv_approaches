@@ -4,6 +4,7 @@ from os.path import join
 import numpy as np
 import pandas as pd
 from scipy.stats import f, chi2, wilcoxon
+import matplotlib
 import matplotlib.pyplot as plt
 # from adjustText import adjust_text
 
@@ -531,14 +532,20 @@ def run_wilcoxon(graphics_folder, linear=False, csv=False, greater=True):
     
 
 def run_friedman(graphics_folder, linear=False, csv=False):
+    fontsize_subtitle = 13
     path = os.path.abspath('scores/scores.csv')
     df = pd.read_csv(path, index_col=0)
 
+    # # Drop tasks
+    # df = df.set_index(['db', 'task'])
+    # for db, task in tasks_to_drop.items():
+    #     df = df.drop((db, task), axis=0)
+    # df = df.reset_index()
+
     # Drop tasks
-    df = df.set_index(['db', 'task'])
     for db, task in tasks_to_drop.items():
-        df = df.drop((db, task), axis=0)
-    df = df.reset_index()
+        df.drop(index=df[(df['db'] == db) & (df['task'] == task)].index, inplace=True)
+    
 
     df['task'] = df['task'].str.replace('_pvals', '_screening')
 
@@ -568,27 +575,6 @@ def run_friedman(graphics_folder, linear=False, csv=False):
             'KNN+mask',
         ]
 
-
-        # method_order = [
-        #     'MIA',
-        #     'Mean',
-        #     'Mean+mask',
-        #     'Med',
-        #     'Med+mask',
-        #     'Iter',
-        #     'Iter+mask',
-        #     'KNN',
-        #     'KNN+mask',
-        #     'Linear+Mean',
-        #     'Linear+Mean+mask',
-        #     'Linear+Med',
-        #     'Linear+Med+mask',
-        #     'Linear+Iter',
-        #     'Linear+Iter+mask',
-        #     'Linear+KNN',
-        #     'Linear+KNN+mask',
-        # ]
-
     db_order = [
         'TB',
         'UKBB',
@@ -599,13 +585,13 @@ def run_friedman(graphics_folder, linear=False, csv=False):
     df = get_ranks_tab(df, method_order=method_order, db_order=db_order, average_sizes=False)
     sizes = df.index.get_level_values(0).unique()
 
-    ranks_by_db = df.drop('AVG', level=0, axis=1)
+    ranks_by_db = df.drop('Average', level=0, axis=1)
 
     rows = []
     for size in sizes:
         print(f'Size={size}: ', end='\t')
 
-        ranks = df.loc[size, ('AVG', 'All')]
+        ranks = df.loc[size, ('Average', 'All')]
         N = (~ranks_by_db.loc[size].isna().all(axis=0)).sum()
 
         XF2, XF2_pval, FF, FF_pval, CD = friedman_statistic(ranks, N)
@@ -617,7 +603,10 @@ def run_friedman(graphics_folder, linear=False, csv=False):
         if np.isnan(x):
             return x
         else:
-            return f'{x:.2g}'
+            if abs(x) < 0.1:
+                return f'{x:.1e}'
+            else:
+                return f'{x:.2g}'
 
     df_statistic = df_statistic.applymap(myround)
 
@@ -628,13 +617,23 @@ def run_friedman(graphics_folder, linear=False, csv=False):
         df.rename({'MIA': 'Boosted trees+MIA'}, axis=0, inplace=True)
         print(df)
 
+    else:
+        rename = {
+            'Med': 'Median',
+            'Med+mask': 'Median+mask',
+            'Iter': 'Iterative',
+            'Iter+mask': 'Iterative+mask',
+        }
+        df.rename(rename, axis=0, level=1, inplace=True)
+
     for i, ax in enumerate(axes.reshape(-1)):
         size = sizes[i]
-        ranks = df.loc[size, ('AVG', 'All')]
+        ranks = df.loc[size, ('Average', 'All')]
         critical_distances = df_statistic['CD'].astype(float)
+        
         plot_ranks(ranks, critical_distances[size], ax)
         N = df_statistic.loc[size, 'N']
-        ax.set_title(f'Size={size}, N={N}')
+        ax.set_title(f'Size={size}, N={N}', {'fontsize': fontsize_subtitle})
 
     fig_folder = get_fig_folder(graphics_folder)
     tab_folder = get_tab_folder(graphics_folder)
@@ -657,12 +656,34 @@ def run_friedman(graphics_folder, linear=False, csv=False):
         'FF': r'$F_F$',
         'FF_pval': r'$F_F$ p-value',
     }, axis=1, inplace=True)
-    df_statistic.to_latex(join(tab_folder, f'{tab_name}.tex'), na_rep='', escape=False)
+
+    def space(x):
+        if pd.isnull(x):
+            return x
+        else:
+            space = '' if float(x) < 0 else r'\hphantom{-}'
+            return f'{space}{x}'
+
+    df_statistic = df_statistic.applymap(space)
+
+    df_statistic.to_latex(join(tab_folder, f'{tab_name}.tex'), na_rep='', escape=False, table_env='tabularx')
 
     return df_statistic
 
 
 def plot_ranks(average_ranks, critical_distance, ax):
+    # matplotlib.rcParams.update({
+    #     'font.size': 12,
+    #     # 'axes.titlesize': 10,
+    #     # 'axes.labelsize': 11,
+    #     # 'xtick.labelsize': 8,
+    #     # 'ytick.labelsize': 11,
+    #     # 'legend.fontsize': 11,
+    #     # 'legend.title_fontsize': 12,
+    # })
+    fontsize_method = 13
+    # fontsize_cd = 10
+
     average_ranks = average_ranks.sort_values()
     min_rank = np.min(average_ranks)
 
@@ -694,7 +715,7 @@ def plot_ranks(average_ranks, critical_distance, ax):
     # for i, y in enumerate(np.linspace(1.5, 8.5, len(average_ranks))):
     y_pos = np.linspace(1.5, 8.5, len(average_ranks))
     for i, (method, rank) in enumerate(average_ranks.iteritems()):
-        t = ax.text(.12, y_pos[i], method, va='center')
+        t = ax.text(.12, y_pos[i], method, va='center', fontsize=fontsize_method)
         texts.append(t)
         ax.plot([0, .12], [rank, y_pos[i]], color='black', ls=':', lw=0.25)
 
