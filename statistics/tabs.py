@@ -30,7 +30,7 @@ def run_desc(graphics_folder):
     time_columns = {
         'Imputation time (s)': 'Time - Imputation (s)',
         'Tuning time (s)': 'Time - Tuning (s)',
-        'Total time (s)': 'TIme - Total (s)',
+        'Total time (s)': 'Time - Total (s)',
     }
 
     df.rename(columns=time_columns, inplace=True)
