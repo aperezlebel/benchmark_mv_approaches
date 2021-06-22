@@ -105,10 +105,10 @@ def run_boxplot(graphics_folder, linear):
     scores = pd.read_csv(filepath, index_col=0)
 
     # Drop tasks
-    scores = scores.set_index(['db', 'task'])
     for db, task in tasks_to_drop.items():
-        scores = scores.drop((db, task), axis=0)
-    scores = scores.reset_index()
+        scores.drop(index=scores[(scores['db'] == db) & (scores['task'] == task)].index, inplace=True)
+    
+    scores['task'] = scores['task'].str.replace('_pvals', '_screening')
 
     if linear:
         fig = PlotHelper.plot_MIA_linear(scores, db_order=db_order, method_order=linear_method_order, rename=rename_on_plot)

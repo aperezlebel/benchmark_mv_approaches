@@ -1,6 +1,6 @@
 """Implement  PlotHelper for train4 results."""
 import os
-from prediction.df_utils import get_ranks_tab
+# from prediction.df_utils import get_ranks_tab
 import yaml
 import pandas as pd
 import numpy as np
