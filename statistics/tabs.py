@@ -81,6 +81,7 @@ def run_desc(graphics_folder):
         print(df.shape)
         
     df = df.reset_index()
+    df['Task'] = df['Task'].str.replace('_pvals', '_screening')
     df = df.set_index(['Database', 'Task'])
 
     df = df.reindex(db_order, level=0, axis=0)

@@ -739,3 +739,28 @@ def run_cor(args, graphics_folder, absolute=False, csv=False, prop_only=True):
 
     if csv:
         df_cor.to_csv(join(tab_folder, f'{tab_name}.csv'))
+
+
+def run_time():
+    path = os.path.abspath('scores/scores.csv')
+    df = pd.read_csv(path, index_col=0)
+
+    # Drop tasks
+    for db, task in tasks_to_drop.items():
+        df.drop(index=df[(df['db'] == db) & (df['task'] == task)].index, inplace=True)
+    
+    df['task'] = df['task'].str.replace('_pvals', '_screening')
+
+    # Sum times
+    df['total_PT'] = df['imputation_PT'].fillna(0) + df['tuning_PT']
+    df['total_WCT'] = df['imputation_WCT'].fillna(0) + df['tuning_WCT']
+    
+    print(list(df.columns))
+
+    total_pt = df['total_PT'].sum()
+    total_wct = df['total_WCT'].sum()
+
+    print(total_pt, total_wct)
+    print(total_pt/3600, total_wct/3600)
+
+    print(total_pt/total_wct)

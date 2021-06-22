@@ -10,13 +10,21 @@ from database import dbs
 
 # Define overall tables
 MIMIC = dbs['MIMIC']
-patients = dd.read_csv(MIMIC.frame_paths['patients']).set_index('ROW_ID')
-diagnoses_icd = dd.read_csv(MIMIC.frame_paths['diagnoses_icd'], assume_missing=True).set_index('ROW_ID')
-patients_diagnosis = patients.merge(diagnoses_icd.drop(['SEQ_NUM'], axis=1), how='left', on='SUBJECT_ID')
+try:
+    patients = dd.read_csv(MIMIC.frame_paths['patients']).set_index('ROW_ID')
+    diagnoses_icd = dd.read_csv(MIMIC.frame_paths['diagnoses_icd'], assume_missing=True).set_index('ROW_ID')
+    patients_diagnosis = patients.merge(diagnoses_icd.drop(['SEQ_NUM'], axis=1), how='left', on='SUBJECT_ID')
 
-# Tasks specific tables
-septic_shock = dd.from_pandas(pd.DataFrame({'ICD9_CODE': ['78552']}), npartitions=1)
-hemo_shock = dd.from_pandas(pd.DataFrame({'ICD9_CODE': ['78559', '99809', '9584']}), npartitions=1)
+    # Tasks specific tables
+    septic_shock = dd.from_pandas(pd.DataFrame({'ICD9_CODE': ['78552']}), npartitions=1)
+    hemo_shock = dd.from_pandas(pd.DataFrame({'ICD9_CODE': ['78559', '99809', '9584']}), npartitions=1)
+
+except FileNotFoundError:
+    patients = None
+    diagnoses_icd = None
+    patients_diagnosis = None
+    septic_shock = None
+    hemo_shock = None
 
 
 # Task 1: Septic shock prediciton

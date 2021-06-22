@@ -9,7 +9,7 @@ import matplotlib.pyplot as plt
 
 from custom.const import local_graphics_folder, remote_graphics_folder
 from .tests import run_friedman, run_wilcoxon, run_scores
-from .statistics import run_mv, run_prop, run_cor
+from .statistics import run_mv, run_prop, run_cor, run_time
 from .plot import run_boxplot
 from .tabs import run_desc
 
@@ -72,6 +72,7 @@ def run(argv=None):
 
     p = subparsers.add_parser('boxplot', parents=[parent_a, parent_l])
     p = subparsers.add_parser('desc', parents=[parent_a])
+    p = subparsers.add_parser('time', parents=[parent_a])
 
     args = parser.parse_args(argv)
 
@@ -104,6 +105,9 @@ def run(argv=None):
 
     elif args.action == 'desc':
         run_desc(graphics_folder)
+
+    elif args.action == 'time':
+        run_time()
 
     else:
         raise ValueError(f'Not known action {args.action}.')
