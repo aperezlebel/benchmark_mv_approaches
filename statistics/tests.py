@@ -669,6 +669,7 @@ def run_friedman(graphics_folder, linear=False, csv=False):
             return f'{space}{x}'
 
     df_statistic = df_statistic.applymap(space)
+    df_statistic.rename({v: f'\hphantom{{-}}{v}' for v in df_statistic.columns}, axis=1, inplace=True)
 
     df_statistic.to_latex(join(tab_folder, f'{tab_name}.tex'), na_rep='', escape=False, table_env='tabularx')
 
