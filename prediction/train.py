@@ -1,8 +1,12 @@
 """Pipeline to train model, find best parameters, give results."""
+import os
+from os.path import join, relpath
 import logging
 from sklearn.pipeline import Pipeline
 from sklearn.model_selection import ShuffleSplit, StratifiedShuffleSplit
 import time
+import pandas as pd
+from yaml import dump
 
 from .DumpHelper import DumpHelper
 from .TimerStep import TimerStep
@@ -12,7 +16,7 @@ logger = logging.getLogger(__name__)
 logger.addHandler(logging.StreamHandler())  # Print also in console.
 
 
-def train(task, strategy, RS=None, **kwargs):
+def train(task, strategy, RS=None, dump_idx_only=False, **kwargs):
     """Train a model (strategy) on some data (task) and dump results.
 
     Parameters
@@ -29,7 +33,7 @@ def train(task, strategy, RS=None, **kwargs):
             when dumping results.
 
     """
-    if task.is_classif() != strategy.is_classification():
+    if task.is_classif() != strategy.is_classification() and not dump_idx_only:
         raise ValueError('Task and strategy mix classif and regression.')
 
     assert 'T' in kwargs
@@ -83,7 +87,7 @@ def train(task, strategy, RS=None, **kwargs):
             continue
 
         # Choose right splitter depending on classification or regression
-        if strategy.is_classification():
+        if task.is_classif():
             ss = StratifiedShuffleSplit(n_splits=strategy.n_splits,
                                         test_size=n_tot-n,
                                         random_state=RS)
@@ -95,6 +99,24 @@ def train(task, strategy, RS=None, **kwargs):
         for i, (train_idx, test_idx) in enumerate(ss.split(X, y)):
             X_train, X_test = X.iloc[train_idx], X.iloc[test_idx]
             y_train, y_test = y.iloc[train_idx], y.iloc[test_idx]
+
+            if dump_idx_only:
+                print(X_train.index)
+                folder = relpath('ids/')
+                os.makedirs(folder, exist_ok=True)
+                name = task.meta.name.replace('pvals', 'screening')
+                trial = int(T) + 1
+                fold = i+1
+                common = f'{task.meta.db}-{name}-size{n}-trial{trial}-fold{fold}'
+                filepath_idx_train = join(folder, f'{common}-train-idx.csv')
+                filepath_idx_test = join(folder, f'{common}-test-idx.csv')
+                filepath_col_train = join(folder, f'{common}-train-col.csv')
+                filepath_col_test = join(folder, f'{common}-test-col.csv')
+                pd.Series(X_train.index).to_csv(filepath_idx_train, index=False)
+                pd.Series(X_test.index).to_csv(filepath_idx_test, index=False)
+                pd.Series(X_train.columns).to_csv(filepath_col_train, index=False, header=False)
+                pd.Series(X_test.columns).to_csv(filepath_col_test, index=False, header=False)
+                continue
 
             logger.info(f'Fold {i}: Started fitting the estimator')
             estimator.fit(X_train, y_train)

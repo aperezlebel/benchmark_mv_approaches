@@ -21,6 +21,8 @@ parser.add_argument('--T', dest='T', default=0, nargs='?',
                     help='The trial #.')
 parser.add_argument('--n_top_pvals', dest='n_top_pvals', default=100, nargs='?',
                     help='The trial #.')
+parser.add_argument('--idx', dest='dump_idx_only', default=False, const=True,
+                    nargs='?', help='Dump only the idx (no prediction).')
 
 
 def run(argv=None):
@@ -32,6 +34,7 @@ def run(argv=None):
     RS = args.RS
     T = args.T
     n_top_pvals = args.n_top_pvals
+    dump_idx_only = args.dump_idx_only
 
     # Try to convert to int if id passed
     try:
@@ -51,4 +54,4 @@ def run(argv=None):
     if RS:
         RS = int(RS)
 
-    train(task, strategy, RS=RS, T=T)
+    train(task, strategy, RS=RS, T=T, dump_idx_only=dump_idx_only)
