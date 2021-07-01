@@ -29,3 +29,6 @@ def is_ordinal(x):
 
 def is_continue(x):
     return x in [CONTINUE_I, CONTINUE_R, DATE_TIMESTAMP]
+
+def is_continuous(x):
+    return is_continue(x)

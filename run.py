@@ -5,7 +5,7 @@ import os
 import random
 import string
 import matplotlib
-matplotlib.use('MacOSX')
+# matplotlib.use('MacOSX')
 
 
 ################ CONFIGURE LOGGER ################

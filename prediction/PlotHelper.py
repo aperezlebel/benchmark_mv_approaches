@@ -1,5 +1,6 @@
 """Implement  PlotHelper for train4 results."""
 import os
+# from prediction.df_utils import get_ranks_tab
 import yaml
 import pandas as pd
 import numpy as np
@@ -7,11 +8,16 @@ import re
 import os
 from sklearn.metrics import r2_score, roc_auc_score
 import matplotlib
-matplotlib.use('MacOSX')
+# try:
+#     matplotlib.use('MacOSX')
+# except ImportError:
+#     pass
 import matplotlib.pyplot as plt
 import seaborn as sns
 from decimal import Decimal
 import shutil
+
+from prediction.df_utils import assert_equal, aggregate, get_ranks_tab
 
 
 class PlotHelper(object):
@@ -453,11 +459,15 @@ class PlotHelper(object):
 
         df.to_csv(filepath)
 
-    def get_task_description(self, filepath):
+    @staticmethod
+    def get_task_description(filepath):
         """Build and dump a csv that will explain each task once completed."""
-        df = pd.read_csv(filepath)
+        if not isinstance(filepath, pd.DataFrame):
+            df = pd.read_csv(filepath, index_col=0)
+        else:
+            df = filepath
 
-        df = self.aggregate(df, 'score')
+        df = aggregate(df, 'score')
 
         print(df)
 
@@ -466,11 +476,11 @@ class PlotHelper(object):
             'score': 'mean',
             # 'n_trials': 'sum',
             # 'n_folds': 'sum',
-            'scorer': PlotHelper.assert_equal,  # first and assert equal
-            'selection': PlotHelper.assert_equal,
-            'n': PlotHelper.assert_equal,
-            'p': PlotHelper.assert_equal,
-            'type': PlotHelper.assert_equal,
+            'scorer': assert_equal,  # first and assert equal
+            'selection': assert_equal,
+            'n': assert_equal,
+            'p': assert_equal,
+            'type': assert_equal,
             'imputation_WCT': 'mean',
             'tuning_WCT': 'mean',
             'imputation_PT': 'mean',
@@ -543,61 +553,6 @@ class PlotHelper(object):
         return df
 
     @staticmethod
-    def assert_equal(s):
-        """Check if all value of the series are equal and return the value."""
-        if not s.empty:
-            return 0
-
-        if not (s[0] == s).all():
-            raise ValueError(
-                f'Values differ but supposed to be constant. Col: {s.name}.'
-            )
-        return s[0]
-
-    @staticmethod
-    def aggregate(df, value):
-        # Agregate accross folds by averaging
-        df['n_folds'] = 1
-        dfgb = df.groupby(['size', 'db', 'task', 'method', 'trial'])
-        df = dfgb.agg({
-            value: 'mean',
-            'n_folds': 'sum',
-            'scorer': PlotHelper.assert_equal,  # first and assert equal
-            'selection': PlotHelper.assert_equal,
-            'n': PlotHelper.assert_equal,
-            'p': PlotHelper.assert_equal,
-            'type': PlotHelper.assert_equal,
-            'imputation_WCT': 'mean',
-            'tuning_WCT': 'mean',
-            'imputation_PT': 'mean',
-            'tuning_PT': 'mean',
-        })
-
-        # Agregate accross trials by averaging
-        df = df.reset_index()
-        df['n_trials'] = 1  # Add a count column to keep track of # of trials
-        dfgb = df.groupby(['size', 'db', 'task', 'method'])
-        df = dfgb.agg({
-            value: 'mean',
-            'n_trials': 'sum',
-            'n_folds': 'sum',
-            'scorer': PlotHelper.assert_equal,  # first and assert equal
-            'selection': PlotHelper.assert_equal,
-            'n': PlotHelper.assert_equal,
-            'p': 'mean',  #PlotHelper.assert_equal,
-            'type': PlotHelper.assert_equal,
-            'imputation_WCT': 'mean',
-            'tuning_WCT': 'mean',
-            'imputation_PT': 'mean',
-            'tuning_PT': 'mean',
-        })
-
-        # Reset index to addlevel of the multi index to the columns of the df
-        df = df.reset_index()
-
-        return df
-
-    @staticmethod
     def _plot(filepath, value, how, xticks_dict=None, xlims=None, db_order=None,
               method_order=None, rename=dict(), reference_method=None,
               figsize=None, legend_bbox=None, xlabel=None):
@@ -632,7 +587,7 @@ class PlotHelper(object):
         methods = list(df['method'].unique())
         n_methods = len(methods)
 
-        df = PlotHelper.aggregate(df, value)
+        df = aggregate(df, value)
 
         # Compute and add relative value
         df = PlotHelper._add_relative_value(df, value, how,
@@ -654,9 +609,10 @@ class PlotHelper(object):
 
         matplotlib.rcParams.update({
             'font.size': 10,
-            'legend.fontsize': 10,
-            'axes.titlesize': 17,
-            'axes.labelsize': 15,
+            'legend.fontsize': 12,
+            'legend.title_fontsize': 14,
+            'axes.titlesize': 18,
+            'axes.labelsize': 18,
             'xtick.labelsize': 12,
             'ytick.labelsize': 18,
             # 'mathtext.fontset': 'stixsans',
@@ -800,7 +756,7 @@ class PlotHelper(object):
                                  )
 
             if legend_bbox:
-                g2.legend(loc='upper left', bbox_to_anchor=legend_bbox, ncol=1)
+                g2.legend(loc='upper left', bbox_to_anchor=legend_bbox, ncol=1, title='Database')
 
             # Scatter plot for invalid data points
             if n_dbs_invalid > 0:
@@ -815,9 +771,16 @@ class PlotHelper(object):
                                      )
             # g3.legend(title='title')
 
+            if not legend_bbox and i < len(sizes)-1:
+                twinx.get_legend().remove()
+
+            elif legend_bbox and i > 0:
+                twinx.get_legend().remove()
+                
+
             if i > 0:  # if not the first axis
                 ax.yaxis.set_visible(False)
-                twinx.get_legend().remove()
+                # twinx.get_legend().remove()
             else:
                 # Get yticks labels and rename them according to given dict
                 labels = [item.get_text() for item in ax.get_yticklabels()]
@@ -939,28 +902,126 @@ class PlotHelper(object):
         return df_pt
 
     @staticmethod
+    def ranks(filepath, method_order=None):
+        if not isinstance(filepath, pd.DataFrame):
+            df = pd.read_csv(filepath, index_col=0)
+        else:
+            df = filepath.copy()
+
+        # Check method order
+        methods = list(df['method'].unique())
+        if method_order is None:
+            method_order = methods
+        elif set(method_order).issubset(set(methods)):
+            # Keep only the rows having methods in method_order
+            df = df[df['method'].isin(method_order)]
+        else:
+            raise ValueError(f'Method order missmatch existing ones {methods}')
+
+        # Compute ranks on each fold, trial
+        dfgb = df.groupby(['size', 'db', 'task', 'trial', 'fold'])
+        df['rank'] = dfgb['score'].rank(method='dense', ascending=False)
+
+        # Average accross folds and trials
+        mean_scores = aggregate(df, 'score')
+        mean_ranks = aggregate(df, 'rank')
+
+        dfgb = mean_scores.groupby(['size', 'db', 'task'])
+        mean_scores['rank'] = dfgb['score'].rank(method='dense', ascending=False)
+
+        mean_scores = mean_scores.set_index(['size', 'db', 'task', 'method'])
+        mean_ranks = mean_ranks.set_index(['size', 'db', 'task', 'method'])
+
+        rank_of_mean_scores = mean_scores['rank']
+        mean_scores = mean_scores['score']
+        mean_ranks = mean_ranks['rank']
+
+        rank_of_mean_scores = rank_of_mean_scores.reset_index()
+        mean_scores = mean_scores.reset_index()
+        mean_ranks = mean_ranks.reset_index()
+
+        # print(mean_scores)
+        # print(rank_of_mean_scores)
+        # print(mean_ranks)
+
+        # Average on dataset size
+        dfgb = mean_scores.groupby(['db', 'task', 'method'])
+        mean_scores_on_sizes = dfgb.agg({'score': 'mean'})
+
+        dfgb = rank_of_mean_scores.groupby(['db', 'task', 'method'])
+        mean_rank_of_mean_scores_on_sizes = dfgb.agg({'rank': 'mean'})
+
+        dfgb = mean_ranks.groupby(['db', 'task', 'method'])
+        mean_ranks_on_sizes = dfgb.agg({'rank': 'mean'})
+
+        dfgb = mean_scores_on_sizes.groupby(['db', 'task'])
+        rank_of_mean_scores_on_sizes = dfgb['score'].rank(method='dense', ascending=False)
+
+        print(mean_scores_on_sizes)
+        print(rank_of_mean_scores_on_sizes)
+        print(mean_rank_of_mean_scores_on_sizes)
+        print(mean_ranks_on_sizes)
+
+        ranks_on_sizes = mean_ranks_on_sizes.copy().rename({'rank': 'mean_ranks'}, axis=1)
+        ranks_on_sizes['rank_of_mean_scores'] = rank_of_mean_scores_on_sizes
+        ranks_on_sizes['mean_rank_of_mean_scores'] = mean_rank_of_mean_scores_on_sizes
+
+        print(ranks_on_sizes)
+
+    @staticmethod
     def plot_scores(filepath, db_order=None, method_order=None, rename=dict(),
                     reference_method=None,):
-        fig, axes = PlotHelper._plot(filepath, 'score', how='no-norm',
+        if not isinstance(filepath, pd.DataFrame):
+            scores = pd.read_csv(filepath, index_col=0)
+        else:
+            scores = filepath
+
+        fig, axes = PlotHelper._plot(scores, 'score', how='no-norm',
                                        method_order=method_order,
                                        db_order=db_order, rename=rename,
                                        reference_method=reference_method,
-                                       figsize=(17, 5.25),
-                                       legend_bbox=(4.22, 1.015))
+                                       figsize=(18, 5.25),
+                                       legend_bbox=(4.22, 1.075))
 
-        df_ranks = PlotHelper.mean_rank(filepath, method_order=method_order)
+        df_ranks = get_ranks_tab(scores, method_order=method_order, db_order=db_order, average_sizes=True)
 
-        global_avg_ranks = df_ranks[('Global', 'AVG')]
+        global_avg_ranks = df_ranks[('Average', 'All')].loc['Average']
+        argmin = global_avg_ranks.argmin()
+        global_avg_ranks.iloc[argmin] = f"\\textbf{{{global_avg_ranks.iloc[argmin]}}}"
         cellText = np.transpose([list(global_avg_ranks.astype(str))])
         rowLabels = list(global_avg_ranks.index)
         rowLabels = [PlotHelper.rename_str(rename, s) for s in rowLabels]
 
-        axes[-1].table(cellText=cellText, loc='right',
+        table = axes[-1].table(cellText=cellText, loc='right',
                        rowLabels=rowLabels,
                        colLabels=['Mean\nrank'],
-                       bbox=[1.3, 0, .2, .735],
+                       bbox=[1.32, -0.11, .19, .87],
+                    #    bbox=[1.3, 0, .2, .735],
                        colWidths=[0.2],
                        )
+        table.set_fontsize(13)
+
+        # Add brackets
+        ax = axes[0]
+        fs = 18
+        lw = 1.3
+        dh = 1./9
+        l_tail = 0.03
+        pos_arrow = -0.3
+        # Here is the label and arrow code of interest
+        ax.annotate('Constant\nimputation\n\n', xy=(pos_arrow, 6*dh), xytext=(pos_arrow-l_tail, 6*dh), xycoords='axes fraction', 
+                    fontsize=fs, ha='center', va='center',
+                    bbox=None,#dict(boxstyle='square', fc='white'),
+                    arrowprops=dict(arrowstyle=f'-[, widthB={70/fs}, lengthB=0.5', lw=lw),
+                    rotation=90,
+                    )
+
+        ax.annotate('Conditional\nimputation\n\n', xy=(pos_arrow, 2*dh), xytext=(pos_arrow-l_tail, 2*dh), xycoords='axes fraction', 
+                    fontsize=fs, ha='center', va='center',
+                    bbox=None,#dict(boxstyle='square', fc='white'),
+                    arrowprops=dict(arrowstyle=f'-[, widthB={70/fs}, lengthB=0.5', lw=lw),
+                    rotation=90,
+                    )
 
         plt.subplots_adjust(right=.88)
 
@@ -968,83 +1029,62 @@ class PlotHelper(object):
 
     @staticmethod
     def plot_times(filepath, which, xticks_dict=None, xlims=None, db_order=None,
-                   method_order=None, rename=dict(), reference_method=None):
-        df = pd.read_csv(filepath, index_col=0)
+                   method_order=None, rename=dict(), reference_method=None, linear=False):
+        if not isinstance(filepath, pd.DataFrame):
+            scores = pd.read_csv(filepath, index_col=0)
+        else:
+            scores = filepath
+
         if which == 'PT':
-            df['total_PT'] = df['imputation_PT'].fillna(0) + df['tuning_PT']
+            scores['total_PT'] = scores['imputation_PT'].fillna(0) + scores['tuning_PT']
             value = 'total_PT'
         elif which == 'WCT':
-            df['total_WCT'] = df['imputation_WCT'].fillna(0) + df['tuning_WCT']
+            scores['total_WCT'] = scores['imputation_WCT'].fillna(0) + scores['tuning_WCT']
             value = 'total_WCT'
         else:
             raise ValueError(f'Unknown argument {which}')
-        fig, _ = PlotHelper._plot(df, value, how='log',
+        fig, axes = PlotHelper._plot(scores, value, how='log',
                                     xticks_dict=xticks_dict,
                                     xlims=xlims,
                                     method_order=method_order,
                                     db_order=db_order, rename=rename,
                                     reference_method=reference_method,
-                                    figsize=None)
+                                    figsize=(18, 5.25))
+
+        # Add brackets
+        ax = axes[0]
+        fs = 18
+        lw = 1.3
+        dh = 1./9
+        l_tail = 0.03
+        pos_arrow = -0.4 if linear else -0.26
+        # Here is the label and arrow code of interest
+        ax.annotate('Constant\nimputation\n\n', xy=(pos_arrow, 6*dh), xytext=(pos_arrow-l_tail, 6*dh), xycoords='axes fraction', 
+                    fontsize=fs, ha='center', va='center',
+                    bbox=None,#dict(boxstyle='square', fc='white'),
+                    arrowprops=dict(arrowstyle=f'-[, widthB={70/fs}, lengthB=0.5', lw=lw),
+                    rotation=90,
+                    )
+
+        ax.annotate('Conditional\nimputation\n\n', xy=(pos_arrow, 2*dh), xytext=(pos_arrow-l_tail, 2*dh), xycoords='axes fraction', 
+                    fontsize=fs, ha='center', va='center',
+                    bbox=None,#dict(boxstyle='square', fc='white'),
+                    arrowprops=dict(arrowstyle=f'-[, widthB={70/fs}, lengthB=0.5', lw=lw),
+                    rotation=90,
+                    )
+
         return fig
-
-    # @staticmethod
-    # def plot_MIA_linear_diff(filepath, db_order, rename=dict()):
-    #     df = pd.read_csv(filepath, index_col=0)
-
-    #     # Select methods of interest
-    #     # df = df.loc[df['method'].isin(['MIA', 'Linear+Iter', 'Linear+Iter+mask'])]
-
-    #     # Compute the difference of scores between MIA and Linear model
-    #     dfgb = df.groupby(['method'])
-
-    #     MIA = dfgb.get_group('MIA').set_index(['size', 'db', 'task', 'trial', 'fold'])
-    #     Linear = dfgb.get_group('Linear+Iter').set_index(['size', 'db', 'task', 'trial', 'fold'])
-    #     Linear_mask = dfgb.get_group('Linear+Iter+mask').set_index(['size', 'db', 'task', 'trial', 'fold'])
-
-    #     # Diff between MIA and Linear+Iterative
-    #     diff1 = MIA.copy()
-    #     diff1['method'] = 'Linear\n - MIA'
-
-    #     # Diff between MIA and Linear+Iterative+mask
-    #     diff2 = MIA.copy()
-    #     diff2['method'] = 'Linear+mask\n - MIA'
-
-    #     scores_diff1 = Linear['score'] - MIA['score']
-    #     scores_normalized1 = scores_diff1.divide(MIA['score'])
-
-    #     scores_diff2 = Linear_mask['score'] - MIA['score']
-    #     scores_normalized2 = scores_diff2.divide(MIA['score'])
-
-    #     diff1['score'] = scores_diff1
-    #     diff1.reset_index(inplace=True)
-
-    #     diff2['score'] = scores_diff2
-    #     diff2.reset_index(inplace=True)
-
-    #     diff = pd.concat([diff1, diff2], axis=0)
-
-    #     diff.to_csv('sandbox/diff2.csv')
-
-    #     fig, axes = PlotHelper._plot(diff, 'score', how='abs',
-    #                                    rename=rename,
-    #                                    db_order=db_order,
-    #                                    xlabel='absolute_score',
-    #                                    xticks_dict={
-    #                                        0: '0',
-    #                                        -0.1: '-0.1',
-    #                                    },
-    #                                    xlims=(-0.11, 0.04)
-    #                                    )
-
-    #     return fig
 
     @staticmethod
     def plot_MIA_linear(filepath, db_order, method_order, rename=dict()):
-        df = pd.read_csv(filepath, index_col=0)
+        if not isinstance(filepath, pd.DataFrame):
+            scores = pd.read_csv(filepath, index_col=0)
+        else:
+            scores = filepath
         # Select methods of interest
-        df = df.loc[df['method'].isin(method_order)]
+        scores = scores.loc[scores['method'].isin(method_order)]
 
-        fig, axes = PlotHelper._plot(df, 'score', how='no-norm',
+        fig, axes = PlotHelper._plot(scores, 'score', how='no-norm',
                                        rename=rename,
                                        db_order=db_order,
                                        method_order=method_order,
@@ -1063,23 +1103,49 @@ class PlotHelper(object):
                                        },
                                        xlims=(-0.04, 0.14),
                                        #    figsize=(17, 3.25),
-                                       figsize=(17, 5.25),
-                                       legend_bbox=(4.22, 1.015),
+                                       figsize=(18, 5.25),
+                                       legend_bbox=(4.30, 1.075),
                                        )
 
-        df_ranks = PlotHelper.mean_rank(filepath, method_order=method_order)
+        df_ranks = get_ranks_tab(scores, method_order=method_order, db_order=db_order, average_sizes=True)
 
-        global_avg_ranks = df_ranks[('Global', 'AVG')]
+        global_avg_ranks = df_ranks[('Average', 'All')].loc['Average']
+        argmin = global_avg_ranks.argmin()
+        global_avg_ranks.iloc[argmin] = f"\\textbf{{{global_avg_ranks.iloc[argmin]}}}"
         cellText = np.transpose([list(global_avg_ranks.astype(str))])
         rowLabels = list(global_avg_ranks.index)
         rowLabels = [PlotHelper.rename_str(rename, s) for s in rowLabels]
 
-        axes[-1].table(cellText=cellText, loc='right',
+        table = axes[-1].table(cellText=cellText, loc='right',
                        rowLabels=rowLabels,
                        colLabels=['Mean\nrank'],
-                       bbox=[1.37, 0, .2, .735],
+                    #    bbox=[1.37, 0, .2, .735],
+                       bbox=[1.41, -0.11, .19, .87],
                        colWidths=[0.2],
                        )
+        table.set_fontsize(13)
+
+        # Add brackets
+        ax = axes[0]
+        fs = 18
+        lw = 1.3
+        dh = 1./9
+        l_tail = 0.03
+        pos_arrow = -0.45
+        # Here is the label and arrow code of interest
+        ax.annotate('Constant\nimputation\n\n', xy=(pos_arrow, 6*dh), xytext=(pos_arrow-l_tail, 6*dh), xycoords='axes fraction', 
+                    fontsize=fs, ha='center', va='center',
+                    bbox=None,#dict(boxstyle='square', fc='white'),
+                    arrowprops=dict(arrowstyle=f'-[, widthB={70/fs}, lengthB=0.5', lw=lw),
+                    rotation=90,
+                    )
+
+        ax.annotate('Conditional\nimputation\n\n', xy=(pos_arrow, 2*dh), xytext=(pos_arrow-l_tail, 2*dh), xycoords='axes fraction', 
+                    fontsize=fs, ha='center', va='center',
+                    bbox=None,#dict(boxstyle='square', fc='white'),
+                    arrowprops=dict(arrowstyle=f'-[, widthB={70/fs}, lengthB=0.5', lw=lw),
+                    rotation=90,
+                    )
 
         plt.subplots_adjust(right=.88, left=.09)
 

@@ -1,10 +1,17 @@
 import argparse
 import os
+import matplotlib
+try:
+    matplotlib.use('TkAgg')
+except ImportError:
+    pass
 import matplotlib.pyplot as plt
 
-from .tests import run_friedman, run_wilcoxon, run_scores
-from .statistics import run_mv, run_prop, run_cor
 from custom.const import local_graphics_folder, remote_graphics_folder
+from .tests import run_friedman, run_wilcoxon, run_scores
+from .statistics import run_mv, run_prop, run_cor, run_time
+from .plot import run_boxplot
+from .tabs import run_desc
 
 
 plt.rcParams.update({
@@ -37,7 +44,9 @@ def run(argv=None):
         '--csv', dest='csv', default=False, const=True,
         nargs='?', help='Whether to dump into csv as well.')
 
-    subparsers.add_parser('wilcoxon', parents=[parent_a, parent_csv])
+    p = subparsers.add_parser('wilcoxon', parents=[parent_a, parent_l, parent_csv])
+    p.add_argument('--less', type=bool, default=False, const=True, nargs='?',
+                   help='Whether to use greater or less one sided wilcoxon.')
     subparsers.add_parser('friedman', parents=[parent_a, parent_l, parent_csv])
     subparsers.add_parser('scores', parents=[parent_a, parent_l, parent_csv])
     p = subparsers.add_parser('mv', parents=[parent_a])
@@ -61,6 +70,10 @@ def run(argv=None):
     p.add_argument('--abs', type=bool, default=False, const=True, nargs='?',
                    help='Whether to use absolute values of correlation')
 
+    p = subparsers.add_parser('boxplot', parents=[parent_a, parent_l])
+    p = subparsers.add_parser('desc', parents=[parent_a])
+    p = subparsers.add_parser('time', parents=[parent_a])
+
     args = parser.parse_args(argv)
 
     graphics_folder = local_graphics_folder
@@ -70,7 +83,7 @@ def run(argv=None):
     print(f'Dump into "{graphics_folder}"')
 
     if args.action == 'wilcoxon':
-        run_wilcoxon(graphics_folder, csv=args.csv)
+        run_wilcoxon(graphics_folder, linear=args.linear, csv=args.csv, greater=not args.less)
 
     elif args.action == 'friedman':
         run_friedman(graphics_folder, linear=args.linear, csv=args.csv)
@@ -86,6 +99,15 @@ def run(argv=None):
 
     elif args.action == 'cor':
         run_cor(args, graphics_folder, csv=args.csv, absolute=args.abs)
+
+    elif args.action == 'boxplot':
+        run_boxplot(graphics_folder, linear=args.linear)
+
+    elif args.action == 'desc':
+        run_desc(graphics_folder)
+
+    elif args.action == 'time':
+        run_time()
 
     else:
         raise ValueError(f'Not known action {args.action}.')

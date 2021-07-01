@@ -14,7 +14,7 @@ from custom.const import get_fig_folder
 from .plot_statistics import figure1, figure2, figure2bis, figure3, plot_feature_wise_v2, plot_feature_types
 from database import dbs, _load_feature_types
 from database.constants import BINARY, CONTINUE_R, CATEGORICAL
-from database.constants import is_categorical, is_continue, is_ordinal
+from database.constants import is_categorical, is_continuous, is_ordinal, is_continue
 from .tests import tasks_to_drop
 from custom.const import get_tab_folder
 
@@ -37,7 +37,7 @@ task_tags = [
     'TB/death_pvals',
     'TB/hemo',
     'TB/hemo_pvals',
-    'TB/platelet',
+    # 'TB/platelet',
     'TB/platelet_pvals',
     'TB/septic_pvals',
     'UKBB/breast_25',
@@ -47,10 +47,9 @@ task_tags = [
     'UKBB/skin_pvals',
     'MIMIC/hemo_pvals',
     'MIMIC/septic_pvals',
-    'NHIS/bmi_pvals',
+    # 'NHIS/bmi_pvals',
     'NHIS/income_pvals',
 ]
-
 
 db_order = [
     'TB',
@@ -58,6 +57,10 @@ db_order = [
     'MIMIC',
     'NHIS',
 ]
+
+db_rename = {
+    'TB': 'Traumabase',
+}
 
 
 def get_indicators_mv(df_mv):
@@ -308,14 +311,14 @@ def every_mv_distribution():
     matplotlib.rcParams.update({
         'font.size': 14,
         'axes.titlesize': 10,
-        'axes.labelsize': 13,
-        'xtick.labelsize': 13,
-        'ytick.labelsize': 13,
+        'axes.labelsize': 8,
+        # 'xtick.labelsize': 13,
+        # 'ytick.labelsize': 13,
     })
     fig, axes = plt.subplots(6, 3, figsize=(6, 9))
 
     L1 = ['TB/death_pvals', 'TB/hemo', 'TB/hemo_pvals']
-    L2 = ['TB/platelet', 'TB/platelet_pvals', 'TB/septic_pvals']
+    L2 = ['TB/platelet_pvals', 'TB/septic_pvals', None]
     # L2 = [None, None, None]
     L3 = [None, None, None]
     L4 = [None, None, None]
@@ -324,9 +327,22 @@ def every_mv_distribution():
     L3 = ['UKBB/breast_25', 'UKBB/breast_pvals', 'UKBB/fluid_pvals']
     L4 = ['UKBB/parkinson_pvals', 'UKBB/skin_pvals', None]
     L5 = ['MIMIC/hemo_pvals', 'MIMIC/septic_pvals', None]
-    L6 = ['NHIS/bmi_pvals', 'NHIS/income_pvals', None]
+    L6 = ['NHIS/income_pvals', None, None]
 
     L = [L1, L2, L3, L4, L5, L6]
+
+    colors = {
+        'TB': 'tab:blue',
+        'UKBB': 'tab:orange',
+        'MIMIC': 'tab:green',
+        'NHIS': 'tab:red',
+        # 'TB': 'blue',
+        # 'UKBB': 'orange',
+        # 'MIMIC': 'green',
+        # 'NHIS': 'red',
+    }
+
+    handles_dict = {}
 
     for i, row in enumerate(tqdm(L)):
         for j, tag in enumerate(row):
@@ -336,12 +352,76 @@ def every_mv_distribution():
                 ax.axis('off')
                 continue
 
+            db, task = tag.split('/')
             indicators = cached_indicators(tag, encode_features=False)
-            _, _, handles = plot_feature_wise_v2(indicators, ax=ax, plot=True)
+            _, _, handles = plot_feature_wise_v2(indicators, ax=ax, plot=True, color=colors[db])
 
-            ax.set_title(f'$\\verb|{tag}|$')
+            db = db.replace('TB', 'Traumabase')
+            handles_dict[db] = handles[1]
 
-    axes[-1, -1].legend(handles, ['Not missing', 'Missing'], fancybox=True, shadow=True, loc='center',)
+            task = task.replace('_', '\\_')
+            task = task.replace('pvals', 'screening')
+            ax.set_title(task)
+
+    # axes[-1, -1].legend(handles_dict.values(), handles_dict.keys(),
+    #     fancybox=True, shadow=True, loc='center', title='Missing values')
+    # p_dummy, = plt.plot([0], marker='None', linestyle='None', label='dummy-tophead')
+    # handles_dict[''] = handles[0]
+    # handles = [p_dummy]*5+list(handles_dict.values())
+    # labels = ['Missing'] + ['']*3 + ['Not missing'] + list(handles_dict.keys())
+    # axes[-1, -1].legend(handles, labels, ncol=2,
+    # fancybox=True, shadow=True, loc='center',)
+
+    fig.tight_layout()
+
+    db_titles = {
+        0: 'Traumabase',
+        2: 'UKBB',
+        4: 'MIMIC',
+        5: 'NHIS',
+    }
+
+    db_titles2 = {
+        1: 'Traumabase',
+        3: 'UKBB',
+        4: 'MIMIC',
+        5: 'NHIS',
+    }
+
+    ax = axes[0]
+    fs = 14
+    lw = 1.3
+    dh = 1./9
+    l_tail = 0.03
+    pos_arrow = -0.45
+
+    for i, db in db_titles2.items():
+        # Here is the label and arrow code of interest
+        # axes[i, 0].annotate(db, xy=(-0.4, 0.5), xycoords='axes fraction',
+        #             fontsize=fs, ha='center', va='center',
+        #             bbox=None,#dict(boxstyle='square', fc='white'),
+        #             # arrowprops=dict(arrowstyle=f'-[, widthB={70/fs}, lengthB=0.5', lw=lw),
+        #             rotation=90,
+        #             )
+        axes[i, -1].annotate(db, xy=(0.5, 0.5), xycoords='axes fraction',
+                    fontsize=fs, ha='center', va='center',
+                    bbox=dict(boxstyle='square', fc='white'),
+                    # arrowprops=dict(arrowstyle=f'-[, widthB={70/fs}, lengthB=0.5', lw=lw),
+                    rotation=0,
+                    )
+
+    # x, y = np.array([[0, 1], ])
+    dh = 1./6
+    # for i in range(0,7):
+    for i in [1.05, 2.02, 3.96]:
+        y = i*dh
+        line = matplotlib.lines.Line2D([0, 1], [y, y], lw=0.5, ls='-', color='black',
+            alpha=1, transform=fig.transFigure)
+    # axes[1, 0].add_line(line)
+        fig.add_artist(line)
+
+    axes[-1, 0].set_xlabel('Features')
+    axes[-1, 0].set_ylabel('Proportion')
 
     return fig, axes
 
@@ -370,7 +450,7 @@ def run_mv(args, graphics_folder):
 
         plt.savefig(join(fig_folder, f'{fig_name}.pdf'), bbox_inches='tight')
         plt.tight_layout()
-        plt.show()
+        # plt.show()
 
         return
 
@@ -450,17 +530,17 @@ def get_prop(task_tag, encode_features=False, T=0):
 
     f_categorical = task_types.map(is_categorical)
     f_ordinal = task_types.map(is_ordinal)
-    f_continue = task_types.map(is_continue)
+    f_continuous = task_types.map(is_continuous)
 
     n_categorical = f_categorical.sum()
     n_ordinal = f_ordinal.sum()
-    n_continue = f_continue.sum()
+    n_continuous = f_continuous.sum()
 
-    print(n_categorical, n_ordinal, n_continue)
+    print(n_categorical, n_ordinal, n_continuous)
 
-    assert n_categorical + n_ordinal + n_continue == len(task_types)
+    assert n_categorical + n_ordinal + n_continuous == len(task_types)
 
-    return n_categorical, n_ordinal, n_continue
+    return n_categorical, n_ordinal, n_continuous
 
 
 def run_prop(args, graphics_folder):
@@ -473,12 +553,12 @@ def run_prop(args, graphics_folder):
         db, task = task_tag.split('/')
 
         for T in Ts:
-            n_categorical, n_ordinal, n_continue = get_prop(task_tag, T=T)
-            rows.append([db, task, T, n_categorical, n_ordinal, n_continue])
+            n_categorical, n_ordinal, n_continuous = get_prop(task_tag, T=T)
+            rows.append([db_rename.get(db, db), task, T, n_categorical, n_ordinal, n_continuous])
 
-    props = pd.DataFrame(rows, columns=['db',  'task', 'T', 'categorical', 'ordinal', 'continue'])
+    props = pd.DataFrame(rows, columns=['db',  'task', 'T', 'categorical', 'ordinal', 'continuous'])
     props['tag'] = props['db'].str.cat('/'+props['task'])
-    props['n'] = props['categorical'] + props['ordinal'] + props['continue']
+    props['n'] = props['categorical'] + props['ordinal'] + props['continuous']
 
     # Drop tasks
     props = props.set_index(['db', 'task'])
@@ -496,7 +576,7 @@ def run_prop(args, graphics_folder):
 
     plt.savefig(join(fig_folder, f'{fig_name}.pdf'), bbox_inches='tight')
     plt.tight_layout(pad=0.3)
-    plt.show()
+    # plt.show()
 
 
 def compute_correlation(_X):
@@ -514,6 +594,7 @@ def compute_correlation(_X):
     R : np.array of shape (k, k)
         Pairwise correlation coefficients
     N : np.array of shape (k, k)
+        Number of values taken for correlation computation of pair of features
         Number of values taken for correlation computation of pair of features
 
     """
@@ -537,8 +618,8 @@ def compute_correlation(_X):
             N[i, j] = n_values
 
     if isinstance(_X, pd.DataFrame):
-            features = _X.index
-            R = pd.DataFrame(R, index=features, columns=features)
+        features = _X.index
+        R = pd.DataFrame(R, index=features, columns=features)
 
     return R, N
 
@@ -569,7 +650,7 @@ def cached_task_correlation(task_tag, encode_features=False, T=0):
     return R, N
 
 
-def run_cor(args, graphics_folder, absolute=False, csv=False):
+def run_cor(args, graphics_folder, absolute=False, csv=False, prop_only=True):
     thresholds = [0.1, 0.2, 0.3]
 
     rows = []
@@ -587,7 +668,7 @@ def run_cor(args, graphics_folder, absolute=False, csv=False):
                 N = (R > threshold).sum(axis=1)
                 N_mean = N.mean()
                 k = R.shape[0]
-                rows.append([db, task, T, threshold, k, N_mean, N_mean/k])
+                rows.append([db_rename.get(db, db), task, T, threshold, k, N_mean, N_mean/k])
 
     df_cor = pd.DataFrame(rows, columns=['db',  'task', 'T', 'threshold', 'n_selected', 'N_mean', 'prop'])
     df_n_selected = df_cor.groupby(['db',  'task']).agg({'n_selected': 'mean'})
@@ -597,9 +678,9 @@ def run_cor(args, graphics_folder, absolute=False, csv=False):
 
     df_cor_mean = df_cor.mean()
     df_cor_mean = pd.DataFrame(df_cor_mean).T
-    df_cor_mean.index = pd.MultiIndex.from_tuples([('AVG', '')])
+    df_cor_mean.index = pd.MultiIndex.from_tuples([('Average', '')])
     df_cor = pd.concat([df_cor, df_cor_mean], axis=0)
-    df_n_selected.loc[('AVG', ''), 'n_selected'] = float(df_n_selected.mean())
+    df_n_selected.loc[('Average', ''), 'n_selected'] = float(df_n_selected.mean())
 
     def to_int(x):  # Convert to int and robust to NaN
         try:
@@ -618,14 +699,36 @@ def run_cor(args, graphics_folder, absolute=False, csv=False):
     df_cor['n_selected'] = df_n_selected.applymap(to_int)
     df_cor.set_index('n_selected', append=True, inplace=True)
 
-    df_cor = df_cor.reindex(db_order+['AVG'], level=0, axis=0)
+    db_order_renamed = [db_rename.get(db, db) for db in db_order]
+    df_cor = df_cor.reindex(db_order_renamed+['Average'], level=0, axis=0)
+
+    # Rotate Traumabase
+    df_cor.rename({'Traumabase': '\\rotsmash{Traumabase}'}, axis=0, inplace=True)
 
     # Processing for dumping
-    df_cor.index.rename(['Database', 'Task', 'N features'], inplace=True)
+    df_cor.index.rename(['Database', 'Task', '\\# features'], inplace=True)
     df_cor.index = df_cor.index.set_levels(df_cor.index.levels[1].str.replace('pvals', 'screening'), level=1)
     df_cor.index = df_cor.index.set_levels(df_cor.index.levels[1].str.replace('_', r'\_'), level=1)
-    df_cor.columns.rename(['', 'Threshold'], inplace=True)
-    df_cor.rename({'N_mean': r'$\bar{n}$', 'prop': r'$\bar{p}$'}, axis=1, inplace=True)
+
+    if prop_only:
+        df_cor.drop(['N_mean'], axis=1, inplace=True)
+        df_cor.rename({'prop': 'Threshold'}, axis=1, inplace=True)
+        df_cor.columns.rename(['', ''], inplace=True)
+
+    else:
+        df_cor.columns.rename(['', 'Threshold'], inplace=True)
+        df_cor.rename({'N_mean': r'$\bar{n}$', 'prop': r'$\bar{p}$'}, axis=1, inplace=True)
+    
+    smallskip = '0.15in'
+    bigskip = '0.2in'
+    index_rename = {}
+    for i, v in enumerate(pd.unique(df_cor.index.get_level_values(0))):
+        if i == 0:
+            continue
+        skip = bigskip if v == 'Average' else smallskip
+        index_rename[v] = f'\\rule{{0pt}}{{{skip}}}{v}'
+
+    df_cor.rename(index_rename, axis=0, level=0, inplace=True)
 
     tab_folder = get_tab_folder(graphics_folder)
     tab_name = 'correlation_abs' if absolute else 'correlation'
@@ -636,3 +739,28 @@ def run_cor(args, graphics_folder, absolute=False, csv=False):
 
     if csv:
         df_cor.to_csv(join(tab_folder, f'{tab_name}.csv'))
+
+
+def run_time():
+    path = os.path.abspath('scores/scores.csv')
+    df = pd.read_csv(path, index_col=0)
+
+    # Drop tasks
+    for db, task in tasks_to_drop.items():
+        df.drop(index=df[(df['db'] == db) & (df['task'] == task)].index, inplace=True)
+    
+    df['task'] = df['task'].str.replace('_pvals', '_screening')
+
+    # Sum times
+    df['total_PT'] = df['imputation_PT'].fillna(0) + df['tuning_PT']
+    df['total_WCT'] = df['imputation_WCT'].fillna(0) + df['tuning_WCT']
+    
+    print(list(df.columns))
+
+    total_pt = df['total_PT'].sum()
+    total_wct = df['total_WCT'].sum()
+
+    print(total_pt, total_wct)
+    print(total_pt/3600, total_wct/3600)
+
+    print(total_pt/total_wct)

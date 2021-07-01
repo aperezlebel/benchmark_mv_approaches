@@ -8,7 +8,7 @@ import matplotlib.ticker as ticker
 from mpl_toolkits.axes_grid.parasite_axes import SubplotHost
 
 
-# Plot functions: each indicator has a differebt way of beaing plotted
+# Plot functions: each indicator has a different way of being plotted
 def plot_global(indicators, plot=False, show=True, ax=None):
     """Plot statistics on the full database."""
     # Get required indicators
@@ -229,7 +229,7 @@ def plot_feature_wise(indicators, plot=False, show=True, ax=None, nf_max=40):
         return fig, ax
 
 
-def plot_feature_wise_v2(indicators, plot=False, show=True, ax=None, nf_max=40):
+def plot_feature_wise_v2(indicators, plot=False, show=True, ax=None, nf_max=40, color='b'):
     """Plot the statistics feature-wise."""
     n_mv_fw = indicators['feature-wise']
 
@@ -258,9 +258,9 @@ def plot_feature_wise_v2(indicators, plot=False, show=True, ax=None, nf_max=40):
         else:
             fig = plt.gcf()
 
-        sns.set_color_codes('muted')
+        sns.set_color_codes('pastel')
         handle_nm, = ax.stackplot(n_mv_fw_l['id'].values, 100, color='lightgray', labels=['Not missing'])
-        handle_m, = ax.stackplot(n_mv_fw_l['id'].values, n_mv_fw_l['F MV'].values, color='b', labels=['Missing'])
+        handle_m, = ax.stackplot(n_mv_fw_l['id'].values, n_mv_fw_l['F MV'].values, color=color, labels=['Missing'])
         # ax.stackplot(n_mv_fw_l['id'].values, n_mv_fw_l['N V'].values, color='lightgray', labels=['Not missing'])
         # ax.stackplot(n_mv_fw_l['id'].values, n_mv_fw_l['N MV'].values, color='b', labels=['Missing'])
 
@@ -567,11 +567,13 @@ def figure3(indicators, plot=True, db_name=None, table=None):
 
 def plot_feature_types(props, ax=None):
     matplotlib.rcParams.update({
-        # 'font.size': 14,
+        'font.size': 12,
         # 'axes.titlesize': 10,
-        'axes.labelsize': 10,
+        'axes.labelsize': 11,
         'xtick.labelsize': 8,
-        'ytick.labelsize': 8,
+        'ytick.labelsize': 11,
+        'legend.fontsize': 11,
+        'legend.title_fontsize': 12,
     })
 
     if ax is None:
@@ -584,18 +586,19 @@ def plot_feature_types(props, ax=None):
 
     # Compute cumsums for plotting
     props['categorical+ordinal'] = props['categorical'] + props['ordinal']
-    props['continue+ordinal'] = props['continue'] + props['ordinal']
+    props['continuous+ordinal'] = props['continuous'] + props['ordinal']
 
-    c1, c2, c3 = sns.color_palette('deep', n_colors=3)
+    c1, c2, c3 = sns.color_palette(['tab:grey', 'tab:olive', 'tab:cyan'])
+    # c1, c2, c3 = sns.color_palette('deep', n_colors=3)
     g1 = sns.barplot(y='tag', x='n', data=props, orient='h', hue='T', color=c1, palette=[c1], ax=ax)
     g2 = sns.barplot(y='tag', x='categorical+ordinal', data=props, orient='h', hue='T', color=c3, palette=[c3], ax=ax)
     g3 = sns.barplot(y='tag', x='categorical', data=props, orient='h', hue='T', color=c2, palette=[c2], ax=ax)
     handles, labels = ax.get_legend_handles_labels()
     ax.legend(handles=[handles[10], handles[5], handles[0]],
-              labels=['Categorical', 'Ordinal', 'Continue'],
+              labels=['Categorical', 'Ordinal', 'Numerical'],
               title='Feature type', fancybox=True, shadow=False,
               loc='upper center', bbox_to_anchor=(0.215, 1.17), ncol=3)
-    ax.set_xlabel('Features')
+    ax.set_xlabel('Number of features')
     ax.set_ylabel('')
 
     props.set_index(['db', 'task', 'T'], inplace=True)
