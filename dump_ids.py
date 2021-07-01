@@ -1,4 +1,6 @@
 import main
+from joblib import Parallel, delayed
+from itertools import product
 
 
 tasks = [
@@ -18,18 +20,25 @@ tasks = [
     'NHIS/income_pvals',
 ]
 
-for task in tasks:
-    for T in [0]:
-        argv = [
-            'run.py',
-            'prediction',
-            task,
-            '0',
-            '--T',
-            T,
-            '--RS',
-            '0',
-            '--idx',
-        ]
 
-        main.run(argv)
+def run(task, T):
+    argv = [
+        'run.py',
+        'prediction',
+        task,
+        '0',
+        '--T',
+        str(T),
+        '--RS',
+        '0',
+        '--idx',
+    ]
+
+    # Only one trial for task having features manually selected (not _pvals)
+    if '_pvals' not in task and T != 0:
+        return
+
+    main.run(argv)
+
+
+Parallel(n_jobs=-1)(delayed(run)(task, T) for task, T in product(tasks, range(5)))
