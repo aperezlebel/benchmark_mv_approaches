@@ -1,4 +1,4 @@
-import main
+import prediction
 from joblib import Parallel, delayed
 from itertools import product
 
@@ -23,7 +23,6 @@ tasks = [
 
 def run(task, T):
     argv = [
-        'run.py',
         'prediction',
         task,
         '0',
@@ -38,7 +37,7 @@ def run(task, T):
     if '_pvals' not in task and T != 0:
         return
 
-    main.run(argv)
+    prediction.run(argv)
 
 
 Parallel(n_jobs=-1)(delayed(run)(task, T) for task, T in product(tasks, range(5)))
