@@ -1,7 +1,6 @@
 """Extract a sub df from a big df."""
 import os
 import pandas as pd
-import argparse
 import logging
 import csv
 
@@ -12,20 +11,10 @@ from database import dbs
 logger = logging.getLogger(__name__)
 logger.addHandler(logging.StreamHandler())  # Print also in console.
 
-# Parser config
-parser = argparse.ArgumentParser(description='Prediction program.')
-parser.add_argument('program')
-parser.add_argument('task_name', nargs='?', default=None)
-parser.add_argument('--RS', dest='RS', default=None, nargs='?',
-                    help='The random state to use.')
-
 dump_folder = 'extracted/'
 
 
-def run(argv=None):
-    """Train the choosen model(s) on the choosen task(s)."""
-    args = parser.parse_args(argv)
-
+def run(args):
     task_name = args.task_name
     task = tasks[task_name]
     db = dbs[task.meta.db]

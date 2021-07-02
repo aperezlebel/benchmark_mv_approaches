@@ -1,5 +1,4 @@
 """Run the Anova feature selection of scikit-learn."""
-import argparse
 import pandas as pd
 import logging
 from sklearn.feature_selection import f_classif, f_regression
@@ -22,25 +21,12 @@ from sklearn.model_selection import ShuffleSplit, StratifiedShuffleSplit
 logger = logging.getLogger(__name__)
 logger.addHandler(logging.StreamHandler())  # Print also in console.
 
-# Parser config
-parser = argparse.ArgumentParser(description='Prediction program.')
-parser.add_argument('program')
-parser.add_argument('task_name', nargs='?', default=None)
-parser.add_argument('--RS', dest='RS', default=0, nargs='?',
-                    help='The random state to use.')
-parser.add_argument('--T', dest='T', default=0, nargs='?',
-                    help='The trial #.')
-parser.add_argument('--TMAX', dest='TMAX', default=5, nargs='?',
-                    help='The max # of trials.')
-
 sep = ','
 encoding = 'ISO-8859-1'
 
 
-def run(argv=None):
+def run(args):
     """Run the feature selection using ANOVA on the chosen task."""
-    args = parser.parse_args(argv)
-
     print('Retrieving task')
     RS = int(args.RS)
     T = int(args.T)
