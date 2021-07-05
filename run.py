@@ -1,9 +1,7 @@
 """Main script. Configure logger, load .env."""
 import argparse
 import logging
-import os
-import random
-import string
+import time
 
 import extraction
 import prediction
@@ -12,42 +10,8 @@ import statistics
 
 # Configure logger
 logs_folder = 'logs/'
-
 logger = logging.getLogger(__name__)
-logger.addHandler(logging.StreamHandler())  # Print also in console.
-
-
-def get_and_increase_count():
-    count_filepath = logs_folder+'count.txt'
-
-    if not os.path.exists(count_filepath):
-        count = 0
-    else:
-        with open(count_filepath, 'r') as file:
-            c = file.read()
-            if c == '':
-                count = 0
-            else:
-                count = int(c) + 1
-
-    # Dump new count
-    os.makedirs(logs_folder, exist_ok=True)
-    with open(count_filepath, 'w') as file:
-        file.write(str(count))
-
-    return count
-
-
-count = get_and_increase_count()
-
-
-def get_log_filepath(filename):
-    slug = ''.join(random.choices(string.ascii_uppercase + string.digits, k=3))
-    return f'{logs_folder}{count}_{slug}_{filename}'
-
-
-log_filepath = get_log_filepath('prediction.log')
-
+log_filepath = f'{logs_folder}{int(1e6*time.time())}_prediction.log'
 logging.basicConfig(
     filename=log_filepath,
     filemode='w',
@@ -60,12 +24,12 @@ logging.basicConfig(
 parser = argparse.ArgumentParser(description='main program')
 subparsers = parser.add_subparsers(dest='action')
 
-# Prediction script
+# Script 1: prediction
 p = subparsers.add_parser('predict')
 p.set_defaults(func=prediction.run)
 p.add_argument('task_name', nargs='?', default=None)
 p.add_argument('strategy_name', nargs='?', default=None)
-p.add_argument('--RS', dest='RS', default=None, nargs='?',
+p.add_argument('--RS', dest='RS', default=0, nargs='?',
                help='The random state to use.')
 p.add_argument('--T', dest='T', default=0, nargs='?',
                help='The trial #.')
@@ -74,7 +38,7 @@ p.add_argument('--n_top_pvals', dest='n_top_pvals', default=100,
 p.add_argument('--idx', dest='dump_idx_only', default=False, const=True,
                nargs='?', help='Dump only the idx (no prediction).')
 
-# Select features
+# Script 2: select features
 p = subparsers.add_parser('select')
 p.set_defaults(func=selection.run)
 p.add_argument('task_name', nargs='?', default=None)
@@ -85,14 +49,14 @@ p.add_argument('--T', dest='T', default=0, nargs='?',
 p.add_argument('--TMAX', dest='TMAX', default=5, nargs='?',
                help='The max # of trials.')
 
-# Extract
+# Script 3: extract
 p = subparsers.add_parser('extract')
 p.set_defaults(func=extraction.run)
 p.add_argument('task_name', nargs='?', default=None)
-p.add_argument('--RS', dest='RS', default=None, nargs='?',
+p.add_argument('--RS', dest='RS', default=0, nargs='?',
                help='The random state to use.')
 
-# Statistics
+# Script 4: statistics
 p = subparsers.add_parser('stats')
 p.set_defaults(func=statistics.run)
 subp = p.add_subparsers(dest='action')
