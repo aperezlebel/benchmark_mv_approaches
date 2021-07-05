@@ -1,19 +1,17 @@
 """Pipeline to train model, find best parameters, give results."""
-import os
-from os.path import join, relpath
 import logging
-from sklearn.pipeline import Pipeline
-from sklearn.model_selection import ShuffleSplit, StratifiedShuffleSplit
+import os
 import time
+from os.path import join, relpath
+
 import pandas as pd
-from yaml import dump
+from sklearn.model_selection import ShuffleSplit, StratifiedShuffleSplit
+from sklearn.pipeline import Pipeline
 
 from .DumpHelper import DumpHelper
 from .TimerStep import TimerStep
 
-
 logger = logging.getLogger(__name__)
-logger.addHandler(logging.StreamHandler())  # Print also in console.
 
 
 def train(task, strategy, RS=None, dump_idx_only=False, T=0):
@@ -96,7 +94,7 @@ def train(task, strategy, RS=None, dump_idx_only=False, T=0):
 
             # Used to save the IDs of the sub-sampled dataset.
             if dump_idx_only:
-                print(f'Dumped IDs of {task.meta.tag}, size={n}, trial={T}, fold={i}')
+                logger.info(f'Dumped IDs of {task.meta.tag}, size={n}, trial={T}, fold={i}')
                 folder = relpath('ids/')
                 os.makedirs(folder, exist_ok=True)
                 name = task.meta.name.replace('pvals', 'screening')

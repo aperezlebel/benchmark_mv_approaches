@@ -1,15 +1,11 @@
 """Implement the Strategy class."""
 import logging
+
 import sklearn
-import numpy as np
-from dataclasses import dataclass, field
-from typing import Any, Callable
-from sklearn.base import BaseEstimator, RegressorMixin, ClassifierMixin
+from sklearn.base import ClassifierMixin, RegressorMixin
 from sklearn.pipeline import Pipeline
 
-
 logger = logging.getLogger(__name__)
-logger.addHandler(logging.StreamHandler())  # Print also in console.
 
 
 class Strategy():

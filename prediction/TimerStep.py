@@ -1,9 +1,5 @@
 """Implement the TimerStep class."""
-import logging
 import time
-
-logger = logging.getLogger(__name__)
-logger.addHandler(logging.StreamHandler())  # Print also in console.
 
 
 class TimerStep:

@@ -1,25 +1,22 @@
 """Run the Anova feature selection of scikit-learn."""
-import pandas as pd
-import logging
-from sklearn.feature_selection import f_classif, f_regression
-from joblib import Parallel, delayed
-import numpy as np
 import csv
-import os
-from sklearn.preprocessing import OneHotEncoder
 import functools
+import logging
+import os
 
-from missing_values import get_missing_values
-from df_utils import fill_df
-from prediction.tasks import tasks
+import numpy as np
+import pandas as pd
 from database import dbs
-from database.constants import CATEGORICAL, CONTINUE_R, CONTINUE_I, BINARY, ORDINAL
+from database.constants import (BINARY, CATEGORICAL, CONTINUE_I, CONTINUE_R,
+                                ORDINAL)
+from joblib import Parallel, delayed
+from prediction.tasks import tasks
 from prediction.tasks.transform import Transform
+from sklearn.feature_selection import f_classif, f_regression
 from sklearn.model_selection import ShuffleSplit, StratifiedShuffleSplit
-
+from sklearn.preprocessing import OneHotEncoder
 
 logger = logging.getLogger(__name__)
-logger.addHandler(logging.StreamHandler())  # Print also in console.
 
 sep = ','
 encoding = 'ISO-8859-1'

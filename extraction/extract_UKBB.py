@@ -1,11 +1,7 @@
 """Filter featrues for UKBB from ukb40663.csv."""
-import pandas as pd
-import logging
 import csv
 
-
-logger = logging.getLogger(__name__)
-logger.addHandler(logging.StreamHandler())  # Print also in console.
+import pandas as pd
 
 dump_folder = 'extracted/'
 sep = ','
