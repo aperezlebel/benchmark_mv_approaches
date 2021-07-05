@@ -8,6 +8,8 @@ import prediction
 import selection
 import statistics
 import pvals
+import whatsavailable
+import whosmissing
 
 
 if __name__ == '__main__':
@@ -30,9 +32,9 @@ if __name__ == '__main__':
     parser = argparse.ArgumentParser(description='main program')
     subparsers = parser.add_subparsers(dest='action')
 
-
-    # Script 1: select features
-    p = subparsers.add_parser('select')
+    # Script 1: Compute pvals for feature selection with ANOVA
+    p = subparsers.add_parser('select', description='Compute p-values for '
+                              'feature selection with ANOVA')
     p.set_defaults(func=selection.run)
     p.add_argument('task_name', nargs='?', default=None)
     p.add_argument('--RS', dest='RS', default=0, nargs='?',
@@ -43,14 +45,17 @@ if __name__ == '__main__':
                    help='The max # of trials.')
 
     # Script 2: Filter p-values
-    p = subparsers.add_parser('filter')
+    p = subparsers.add_parser('filter', description='Filter all p-values.')
     p.set_defaults(func=pvals.filter)
 
     # Script 3: prediction
-    p = subparsers.add_parser('predict')
+    p = subparsers.add_parser('predict', description='Launch experiment for '
+                              '1 task, 1 method and 1 trial.')
     p.set_defaults(func=prediction.run)
-    p.add_argument('task_name', nargs='?', default=None)
-    p.add_argument('strategy_name', nargs='?', default=None)
+    p.add_argument('task_name', nargs='?', default=None, help='Name of the '
+                   'task.')
+    p.add_argument('strategy_name', nargs='?', default=None, help='Name or '
+                   'id of the method. Run python main.py info for ids.')
     p.add_argument('--RS', dest='RS', default=0, nargs='?',
                    help='The random state to use.')
     p.add_argument('--T', dest='T', default=0, nargs='?',
@@ -117,6 +122,18 @@ if __name__ == '__main__':
     p = subp.add_parser('boxplot', parents=[parent_a, parent_l])
     p = subp.add_parser('desc', parents=[parent_a])
     p = subp.add_parser('time', parents=[parent_a])
+
+    # Script 6: Get information
+    p = subparsers.add_parser('info', description='Get informations.')
+    subp = p.add_subparsers(dest='action', required=True)
+    p = subp.add_parser('available', description='What task/method is available.')
+    p.add_argument('-t', dest='task', type=bool, default=False, const=True,
+                   nargs='?', help='Get task info.')
+    p.add_argument('-m', dest='method', type=bool, default=False, const=True,
+                   nargs='?', help='Get method info.')
+    p.set_defaults(func=whatsavailable.run)
+    p = subp.add_parser('missing', description='Who is missing in scores.')
+    p.set_defaults(func=whosmissing.run)
 
     args = parser.parse_args()
 
