@@ -186,8 +186,10 @@ def run(args):
 
         logger.info(f'"{name}" ignored ')
 
-    res = Parallel(n_jobs=-1, require='sharedmem')(delayed(handler)
-                                                   (r, y) for r in tqdm(X_t, total=n_features))
+    res = Parallel(
+        n_jobs=-1,
+        require='sharedmem'
+    )(delayed(handler)(r, y) for r in tqdm(X_t, total=n_features))
 
     res = [r for r in res if r is not None]
 
