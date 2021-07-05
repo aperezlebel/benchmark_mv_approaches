@@ -52,10 +52,10 @@ if __name__ == '__main__':
     p = subparsers.add_parser('predict', description='Launch experiment for '
                               '1 task, 1 method and 1 trial.')
     p.set_defaults(func=prediction.run)
-    p.add_argument('task_name', nargs='?', default=None, help='Name of the '
+    p.add_argument('task_name', default=None, help='Name of the '
                    'task.')
-    p.add_argument('strategy_name', nargs='?', default=None, help='Name or '
-                   'id of the method. Run python main.py info for ids.')
+    p.add_argument('strategy_name', default=None, help='Name or id of the '
+                   'method. See `python main.py info available` for ids.')
     p.add_argument('--RS', dest='RS', default=0, nargs='?',
                    help='The random state to use.')
     p.add_argument('--T', dest='T', default=0, nargs='?',
