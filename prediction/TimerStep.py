@@ -36,14 +36,12 @@ class TimerStep:
             return self.transform_pts[-1]
 
     def fit(self, X, y):
-        logger.info(f'{self.name}: fit called on shape {X.shape}')
         self.fit_timestamps.append(time.time())
         self.fit_pts.append(time.process_time())
 
         return self
 
     def transform(self, X):
-        logger.info(f'{self.name}: transform called on shape {X.shape}')
         self.transform_timestamps.append(time.time())
         self.transform_pts.append(time.process_time())
 

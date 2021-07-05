@@ -16,7 +16,7 @@ logger = logging.getLogger(__name__)
 logger.addHandler(logging.StreamHandler())  # Print also in console.
 
 
-def train(task, strategy, RS=None, dump_idx_only=False, **kwargs):
+def train(task, strategy, RS=None, dump_idx_only=False, T=0):
     """Train a model (strategy) on some data (task) and dump results.
 
     Parameters
@@ -27,17 +27,14 @@ def train(task, strategy, RS=None, dump_idx_only=False, **kwargs):
         Define the method (imputation + model) to use.
     RS : int
         Define a random state.
-    **kwargs : dict
-        T expected: trial number for the ANOVA selection step, from 1 to 5
-            if 5 trials for the ANOVA selection. Used only for names of folder
-            when dumping results.
+    T : int
+        Trial number for the ANOVA selection step, from 1 to 5 if 5 trials for
+        the ANOVA selection.
+        Used only for names of folder when dumping results.
 
     """
     if task.is_classif() != strategy.is_classification() and not dump_idx_only:
         raise ValueError('Task and strategy mix classif and regression.')
-
-    assert 'T' in kwargs
-    T = kwargs['T']  # Trial number (ANOVA), only used for dumping names here
 
     X, y = task.X, task.y  # Expensive data retrieval is hidden here
 
@@ -51,9 +48,6 @@ def train(task, strategy, RS=None, dump_idx_only=False, **kwargs):
         strategy.reset_RS(RS)  # Must be done before init DumpHelper
 
     dh = DumpHelper(task, strategy, RS=RS, T=T)  # Used to dump results
-
-    if RS is None:
-        RS = 42
 
     # Create timer steps used in the pipeline to time training time
     timer_start = TimerStep('start')
@@ -100,13 +94,14 @@ def train(task, strategy, RS=None, dump_idx_only=False, **kwargs):
             X_train, X_test = X.iloc[train_idx], X.iloc[test_idx]
             y_train, y_test = y.iloc[train_idx], y.iloc[test_idx]
 
+            # Used to save the IDs of the sub-sampled dataset.
             if dump_idx_only:
-                print(X_train.index)
+                print(f'Dumped IDs of {task.meta.tag}, size={n}, trial={T}, fold={i}')
                 folder = relpath('ids/')
                 os.makedirs(folder, exist_ok=True)
                 name = task.meta.name.replace('pvals', 'screening')
                 trial = int(T) + 1
-                fold = i+1
+                fold = i + 1
                 common = f'{task.meta.db}-{name}-size{n}-trial{trial}-fold{fold}'
                 filepath_idx_train = join(folder, f'{common}-train-idx.csv')
                 filepath_idx_test = join(folder, f'{common}-test-idx.csv')
@@ -116,7 +111,7 @@ def train(task, strategy, RS=None, dump_idx_only=False, **kwargs):
                 pd.Series(X_test.index).to_csv(filepath_idx_test, index=False)
                 pd.Series(X_train.columns).to_csv(filepath_col_train, index=False, header=False)
                 pd.Series(X_test.columns).to_csv(filepath_col_test, index=False, header=False)
-                continue
+                continue  # when dumping IDs, we skip prediction
 
             logger.info(f'Fold {i}: Started fitting the estimator')
             estimator.fit(X_train, y_train)
