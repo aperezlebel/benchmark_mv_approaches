@@ -243,7 +243,7 @@ def run_wilcoxon_mia(graphics_folder, csv=False, greater=True):
     # Drop tasks
     for db, task in tasks_to_drop.items():
         df.drop(index=df[(df['db'] == db) & (df['task'] == task)].index, inplace=True)
-    
+
 
     df['task'] = df['task'].str.replace('_pvals', '_screening')
 
@@ -376,16 +376,9 @@ def run_wilcoxon_linear(graphics_folder, csv=False, greater=True):
 
     which = 'greater' if greater else 'less'
 
-    # # Drop tasks
-    # df = df.set_index(['db', 'task'])
-    # for db, task in tasks_to_drop.items():
-    #     df = df.drop((db, task), axis=0)
-    # df = df.reset_index()
-
     # Drop tasks
     for db, task in tasks_to_drop.items():
         df.drop(index=df[(df['db'] == db) & (df['task'] == task)].index, inplace=True)
-    
 
     df['task'] = df['task'].str.replace('_pvals', '_screening')
 
@@ -426,12 +419,9 @@ def run_wilcoxon_linear(graphics_folder, csv=False, greater=True):
 
     rows = []
     for size in sizes:
-        # print(f'Size={size}: ', end='\t')
 
         scores = df.loc[size]
-        # if size < 100000:
-        #     continue
-        # print(scores)
+
         for method1, method2 in zip(method_order1, method_order2):
             try:
                 scores1 = scores.loc[method1]
@@ -453,14 +443,9 @@ def run_wilcoxon_linear(graphics_folder, csv=False, greater=True):
 
                 w_double = wilcoxon(x=x, y=y, alternative='two-sided')
                 w_onesided = wilcoxon(x=x, y=y, alternative=which)
-                w_onesided2 = wilcoxon(x-y, alternative=which)
-                print(f'{method1} - {method2}')
-                print(x-y)
-                print(which, w_onesided)
-                print(which, w_onesided2)
 
             except KeyError:
-                w_double_= (np.nan, np.nan)
+                w_double = (np.nan, np.nan)
                 w_onesided = (np.nan, np.nan)
 
             rows.append([size, method1, w_double[0], w_double[1], w_onesided[0], w_onesided[1]])
@@ -473,12 +458,6 @@ def run_wilcoxon_linear(graphics_folder, csv=False, greater=True):
         f'{which}_stat',
         f'{which}_pval',
         ]).set_index(['size', 'imputer'])
-
-    # W_test = W_test.reindex(method_order)
-
-    # W_test['two-sided_pval'] = [f'{w:.1g}' for w in W_test['two-sided_pval']]
-    # W_test['greater_pval'] = [f'{w:.1g}' for w in W_test['greater_pval']]
-
 
     W_test.drop(['two-sided_pval', 'two-sided_stat'], axis=1, inplace=True)
 
@@ -532,7 +511,7 @@ def run_wilcoxon(graphics_folder, linear=False, csv=False, greater=True):
         run_wilcoxon_linear(graphics_folder, csv=csv, greater=greater)
     else:
         run_wilcoxon_mia(graphics_folder, csv=csv, greater=greater)
-    
+
 
 def run_friedman(graphics_folder, linear=False, csv=False):
     fontsize_subtitle = 13
@@ -548,7 +527,7 @@ def run_friedman(graphics_folder, linear=False, csv=False):
     # Drop tasks
     for db, task in tasks_to_drop.items():
         df.drop(index=df[(df['db'] == db) & (df['task'] == task)].index, inplace=True)
-    
+
 
     df['task'] = df['task'].str.replace('_pvals', '_screening')
 
@@ -634,7 +613,7 @@ def run_friedman(graphics_folder, linear=False, csv=False):
         size = sizes[i]
         ranks = df.loc[size, ('Average', 'All')]
         critical_distances = df_statistic['CD'].astype(float)
-        
+
         plot_ranks(ranks, critical_distances[size], ax)
         N = df_statistic.loc[size, 'N']
         ax.set_title(f'Size={size}, N={N}', {'fontsize': fontsize_subtitle})
@@ -740,7 +719,7 @@ def run_scores(graphics_folder, linear, csv=False):
     # Drop tasks
     for db, task in tasks_to_drop.items():
         df.drop(index=df[(df['db'] == db) & (df['task'] == task)].index, inplace=True)
-    
+
     df['task'] = df['task'].str.replace('_pvals', '_screening')
 
     if linear:
@@ -802,7 +781,7 @@ def run_scores(graphics_folder, linear, csv=False):
     best_ranks_by_task = ranks.loc['Average'].astype(float).idxmin(axis=0, skipna=True)
     for (db, task), best_method in best_ranks_by_task.iteritems():
         ranks.loc[('Average', best_method), (db, task)] = f"\\textbf{{{ranks.loc[('Average', best_method), (db, task)]}}}"
-    
+
     best_ranks_by_size = ranks['Average'].drop('Average', axis=0, level=0).astype(float).groupby(['Size']).idxmin(axis=0, skipna=True)
     for db in best_ranks_by_size.columns:
         for size, value in best_ranks_by_size[db].iteritems():
@@ -833,7 +812,7 @@ def run_scores(graphics_folder, linear, csv=False):
     bigskip = '0.3in'
     medskip = '0.23in'
     index_rename = {}
-    
+
     for size in [2500, 10000, 25000, 100000, 'Average']:
         scores.loc[(size, 'Reference score')] = scores.loc[(size, 'Reference score')].apply(boldify)
         if size == 2500:

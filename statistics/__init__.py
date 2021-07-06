@@ -27,7 +27,7 @@ plt.rcParams.update({
 
 def run(args):
     graphics_folder = local_graphics_folder
-    if args.article:
+    if hasattr(args, 'article') and args.article:
         graphics_folder = remote_graphics_folder
     os.makedirs(graphics_folder, exist_ok=True)
     print(f'Dump into "{graphics_folder}"')
