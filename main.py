@@ -113,7 +113,7 @@ if __name__ == '__main__':
     p.set_defaults(func=statistics.run)
     subp = p.add_subparsers(dest='action', required=True)
 
-    p = subp.add_parser('mv')
+    p = subp.add_parser('mv', help='Missing values distributions.')
     p.add_argument('tag', default=None, nargs='?', help='The task tag')
     p.add_argument('--hide', dest='hide', default=False, const=True,
                    nargs='?', help='Whether to plot the stats or print')
@@ -128,7 +128,8 @@ if __name__ == '__main__':
 
     p = subp.add_parser('ftypes', help='Feature types')
 
-    p = subp.add_parser('cor', parents=[parent_csv])
+    p = subp.add_parser('fcor', parents=[parent_csv],
+                        help='Feature correlations.')
     p.add_argument('--t', type=float, default=0.1,
                    help='Threshold for correlation')
     p.add_argument('--abs', type=bool, default=False, const=True, nargs='?',

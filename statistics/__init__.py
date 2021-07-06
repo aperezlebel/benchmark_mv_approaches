@@ -47,7 +47,7 @@ def run(args):
     elif args.action == 'ftypes':
         run_prop(args, graphics_folder)
 
-    elif args.action == 'cor':
+    elif args.action == 'fcor':
         run_cor(args, graphics_folder, csv=args.csv, absolute=args.abs)
 
     elif args.action == 'boxplot':
