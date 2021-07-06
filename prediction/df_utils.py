@@ -76,7 +76,8 @@ def get_scores_tab(scores_raw, method_order=None, db_order=None, relative=False,
     if db_order is not None:
         df = df.reindex(db_order, level=0, axis=1)
 
-    avg_by_size = df.groupby(level=0).mean()
+    avg_by_size = df.mean(level=0)
+    # avg_by_size = df.groupby(level=0).mean()
     avg_by_size.loc['Average'] = avg_by_size.mean(skipna=True)
     avg_by_size['method'] = 'Reference score'
     avg_by_size.set_index('method', append=True, inplace=True)
@@ -154,6 +155,7 @@ def get_ranks_tab(scores_raw, method_order=None, db_order=None, average_sizes=Tr
         df = df.reindex(db_order, level=0, axis=1)
 
     if average_sizes:
+        # avg_on_sizes = df.groupby(level=1).mean()
         avg_on_sizes = df.mean(level=1)
         avg_on_sizes['size'] = 'Average'
         avg_on_sizes = avg_on_sizes.reset_index().set_index(['size', 'method'])
@@ -163,7 +165,8 @@ def get_ranks_tab(scores_raw, method_order=None, db_order=None, average_sizes=Tr
     else:
         df_with_avg_dbs = df
 
-    avg_on_dbs = df_with_avg_dbs.groupby(axis=1, level=0).mean()
+    # avg_on_dbs = df_with_avg_dbs.groupby(axis=1, level=0).mean()
+    avg_on_dbs = df_with_avg_dbs.mean(axis=1, level=0)
     avg_on_dbs['All'] = avg_on_dbs.mean(axis=1)
 
     avg_on_dbs.columns = pd.MultiIndex.from_product([['Average'], avg_on_dbs.columns])

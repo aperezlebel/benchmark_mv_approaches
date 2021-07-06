@@ -89,13 +89,16 @@ if __name__ == '__main__':
                             nargs='?',
                             help='Whether to dump into csv as well.')
 
-    p = subp.add_parser('wilcoxon', parents=[parent_l, parent_csv])
+    p = subp.add_parser('wilcoxon', parents=[parent_l, parent_csv],
+                        description='Wilcoxon test.')
     p.add_argument('--less', type=bool, default=False, const=True, nargs='?',
                    help='Whether to use greater or less one sided wilcoxon.')
 
-    subp.add_parser('friedman', parents=[parent_l, parent_csv])
+    subp.add_parser('friedman', parents=[parent_l, parent_csv],
+                    description='Friedman & Nemenyi tests + crit. difference.')
 
-    subp.add_parser('scores', parents=[parent_l, parent_csv])
+    subp.add_parser('scores', parents=[parent_l, parent_csv],
+                    description='Compute scores and ranks.')
 
     p = subp.add_parser('boxplot', parents=[parent_l])
     p = subp.add_parser('desc')
