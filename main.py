@@ -108,31 +108,12 @@ if __name__ == '__main__':
     p = subp.add_parser('time', description='Total time of fit.')
 
     # Script 4: statistics
-    p = subparsers.add_parser('stats')
+    p = subparsers.add_parser('datastats', description='Build figures and '
+                              'tables of the paper on data statistics.')
     p.set_defaults(func=statistics.run)
-    subp = p.add_subparsers(dest='action')
-    parent_l = argparse.ArgumentParser(add_help=False)
-    parent_l.add_argument(
-        '--l', dest='linear', default=False, const=True,
-        nargs='?', help='Whether to use linear methods')
-    parent_a = argparse.ArgumentParser(add_help=False)
-    parent_a.add_argument(
-        '--a', dest='article', default=False, const=True,
-        nargs='?', help='Whether to dump into article folder.')
-    parent_csv = argparse.ArgumentParser(add_help=False)
-    parent_csv.add_argument(
-        '--csv', dest='csv', default=False, const=True,
-        nargs='?', help='Whether to dump into csv as well.')
+    subp = p.add_subparsers(dest='action', required=True)
 
-    p = subp.add_parser('wilcoxon', parents=[parent_a, parent_l, parent_csv])
-    p.add_argument('--less', type=bool, default=False, const=True, nargs='?',
-                   help='Whether to use greater or less one sided wilcoxon.')
-
-    subp.add_parser('friedman', parents=[parent_a, parent_l, parent_csv])
-
-    subp.add_parser('scores', parents=[parent_a, parent_l, parent_csv])
-
-    p = subp.add_parser('mv', parents=[parent_a])
+    p = subp.add_parser('mv')
     p.add_argument('tag', default=None, nargs='?', help='The task tag')
     p.add_argument('--hide', dest='hide', default=False, const=True,
                    nargs='?', help='Whether to plot the stats or print')
@@ -145,23 +126,20 @@ if __name__ == '__main__':
     p.add_argument('--fig3', dest='fig3', default=False, const=True,
                    nargs='?', help='Whether to plot the figure3')
 
-    p = subp.add_parser('prop', parents=[parent_a])
+    p = subp.add_parser('prop')
     p.add_argument('tag', default=None, nargs='?', help='The task tag')
 
-    p = subp.add_parser('cor', parents=[parent_a, parent_csv])
+    p = subp.add_parser('cor', parents=[parent_csv])
     p.add_argument('--t', type=float, default=0.1,
                    help='Threshold for correlation')
     p.add_argument('--abs', type=bool, default=False, const=True, nargs='?',
                    help='Whether to use absolute values of correlation')
 
-    p = subp.add_parser('boxplot', parents=[parent_a, parent_l])
-    p = subp.add_parser('desc', parents=[parent_a])
-    p = subp.add_parser('time', parents=[parent_a])
-
     # Script 6: Get information
     p = subparsers.add_parser('info', description='Get informations.')
     subp = p.add_subparsers(dest='action', required=True)
-    p = subp.add_parser('available', description='What task/method is available.')
+    p = subp.add_parser('available',
+                        description='What task/method is available.')
     p.add_argument('-t', dest='task', type=bool, default=False, const=True,
                    nargs='?', help='Get task info.')
     p.add_argument('-m', dest='method', type=bool, default=False, const=True,

@@ -450,7 +450,6 @@ def run_mv(args, graphics_folder):
 
         plt.savefig(join(fig_folder, f'{fig_name}.pdf'), bbox_inches='tight')
         plt.tight_layout()
-        # plt.show()
 
         return
 

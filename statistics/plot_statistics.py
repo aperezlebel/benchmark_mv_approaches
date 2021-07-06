@@ -505,7 +505,7 @@ def figure1(indicators, plot=True, db_name=None, table=None):
     fig1, axes1 = plt.subplots(3, 1, figsize=(12, 6))
     fig1.tight_layout(pad=2)
     if all((db_name, table)):
-        fig1.suptitle(f'Overview of missing values in {db_name} (table "{table}")',
+        fig1.suptitle(f'Overview of missing values in {db_name} (table "$\\verb|{table}|$")',
                       fontsize='xx-large')
 
     matplotlib.rcParams.update({'font.size': 13})
@@ -526,7 +526,7 @@ def figure2(indicators, plot=True, db_name=None, table=None):
     fig2, _ = plot_feature_wise(indicators, plot=plot)
     if all((db_name, table)):
         fig2.suptitle(f'Proportion of missing values in each feature'
-                      f'\nof {db_name} (table "{table}")',
+                      f'\nof {db_name} (table "$\\verb|{table}|$")',
                       fontsize='x-large')
 
 
@@ -558,7 +558,7 @@ def figure3(indicators, plot=True, db_name=None, table=None):
     fig3.tight_layout(pad=5, h_pad=7, rect=(0.05, 0, 1, .92))
     if all((db_name, table)):
         fig3.suptitle(f'Effect of removing features containing missing values'
-                      f'\non {db_name} (table "{table}")',
+                      f'\non {db_name} (table "$\\verb|{table}|$")',
                       fontsize='x-large')
 
     plot_rm_rows(indicators, plot=plot, ax=axes3[0])
@@ -589,7 +589,6 @@ def plot_feature_types(props, ax=None):
     props['continuous+ordinal'] = props['continuous'] + props['ordinal']
 
     c1, c2, c3 = sns.color_palette(['tab:grey', 'tab:olive', 'tab:cyan'])
-    # c1, c2, c3 = sns.color_palette('deep', n_colors=3)
     g1 = sns.barplot(y='tag', x='n', data=props, orient='h', hue='T', color=c1, palette=[c1], ax=ax)
     g2 = sns.barplot(y='tag', x='categorical+ordinal', data=props, orient='h', hue='T', color=c3, palette=[c3], ax=ax)
     g3 = sns.barplot(y='tag', x='categorical', data=props, orient='h', hue='T', color=c2, palette=[c2], ax=ax)
