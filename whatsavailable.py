@@ -1,6 +1,4 @@
 """Helper to knwo what strategies and tasks are availables."""
-import sys
-
 from prediction.tasks import tasks
 from prediction.strategies import strategies
 
@@ -19,12 +17,11 @@ def tasks_available():
     print()
 
 
-if 'strategies' in sys.argv:
-    strategies_available()
-elif 'tasks' in sys.argv:
-    tasks_available()
-elif len(sys.argv) == 1:
-    strategies_available()
-    tasks_available()
-else:
-    raise ValueError('Unrecognized argument(s).')
+def run(args):
+    if args.method:
+        strategies_available()
+    if args.task:
+        tasks_available()
+    if not args.method and not args.task:
+        strategies_available()
+        tasks_available()

@@ -1,138 +1,157 @@
 """Pipeline to train model, find best parameters, give results."""
-
-# from sklearn.experimental import enable_hist_gradient_boosting
 import logging
+import os
+import time
+from os.path import join, relpath
+
 import pandas as pd
-import numpy as np
-from copy import deepcopy
-from sklearn.inspection import permutation_importance
-from sklearn.model_selection import learning_curve
+from sklearn.model_selection import ShuffleSplit, StratifiedShuffleSplit
+from sklearn.pipeline import Pipeline
 
 from .DumpHelper import DumpHelper
-
+from .TimerStep import TimerStep
 
 logger = logging.getLogger(__name__)
 
 
-def impute(df, imputer):
-    """Impute missing values given an already fitted imputer.
+def train(task, strategy, RS=None, dump_idx_only=False, T=0):
+    """Train a model (strategy) on some data (task) and dump results.
 
     Parameters
     ----------
-    df : pd.DataFrame
-        Data frame with missing values to impute
-    imputer : sklearn imputer (instance of _BaseImputer)
-        The already fitted imputer.
-
-    Returns
-    -------
-    pd.DataFrame
-        Data frame with imputed missing values. Extra columns might have
-        been added depending on the imputer.
-
-    """
-    # Columns containing only missing values are discarded by the imputer
-    discared_columns = df.columns[np.isnan(imputer.statistics_)]
-
-    data_imputed = imputer.transform(df)
-
-    # Manage the case where an indicator was used to add binary columns for MV
-    indicator = imputer.indicator_
-    # If any, get feature ids for which an indicator column has been created
-    features_with_mv = indicator.features_ if indicator is not None else []
-    # If any, create names for these extra features.
-    extra_columns = [f'indicator_{df.columns[id]}' for id in features_with_mv]
-
-    base_columns = [c for c in df.columns if c not in discared_columns]
-
-    columns = base_columns+extra_columns
-
-    return pd.DataFrame(data_imputed, index=df.index, columns=columns)
-
-
-def train(task, strategy):
-    """Train a model following a strategy on prediction task.
-
-    Parameters:
-    -----------
     task : Task object
-        Contain the dataframe and the task metadata.
+        Define a prediction task. Used to retrieve the data of the wanted task.
     strategy : Strategy object
-        Describe the estimator and the strategy to train and find the best
-        parameters.
-
-    Returns:
-    --------
-    dict
-        Stores the results of the training.
+        Define the method (imputation + model) to use.
+    RS : int
+        Define a random state.
+    T : int
+        Trial number for the ANOVA selection step, from 1 to 5 if 5 trials for
+        the ANOVA selection.
+        Used only for names of folder when dumping results.
 
     """
+    if task.is_classif() != strategy.is_classification() and not dump_idx_only:
+        raise ValueError('Task and strategy mix classif and regression.')
+
+    X, y = task.X, task.y  # Expensive data retrieval is hidden here
+
     logger.info(f'Started task "{task.meta.tag}" '
                 f'using "{strategy.name}" strategy on "{task.meta.db}".')
-    dh = DumpHelper(task, strategy)  # Used to dump results
+    logger.info(f'X shape: {X.shape}')
+    logger.info(f'y shape: {y.shape}')
 
-    X, y = task.X, task.y
+    if RS is not None:
+        logger.info(f'Resetting strategy RS to {RS}')
+        strategy.reset_RS(RS)  # Must be done before init DumpHelper
 
-    # Non nested CV
-    # X_train, X_test, y_train, y_test = strategy.split(X, y)
+    dh = DumpHelper(task, strategy, RS=RS, T=T)  # Used to dump results
 
-    # Nested CV
-    Estimators = []
+    # Create timer steps used in the pipeline to time training time
+    timer_start = TimerStep('start')
+    timer_mid = TimerStep('mid')
 
-    for i, (train_index, test_index) in enumerate(strategy.outer_cv.split(X)):
-        logger.info(f'Started fold {i}.')
+    # Create pipeline with imputation and hyper-parameters tuning
+    if strategy.imputer is not None:  # Has an imputation step
+        logger.info('Creating pipeline with imputer.')
+        steps = [
+            ('timer_start', timer_start),
+            ('imputer', strategy.imputer),  # Imputation step
+            ('timer_mid', timer_mid),
+            ('searchCV_estimator', strategy.search),  # HP tuning step
+        ]
+    else:
+        logger.info('Creating pipeline without imputer.')
+        steps = [
+            ('timer_mid', timer_mid),
+            ('searchCV_estimator', strategy.search),  # HP tuning step
+        ]
 
-        X_train, X_test = X.iloc[train_index], X.iloc[test_index]
-        y_train, y_test = y.iloc[train_index], y.iloc[test_index]
+    estimator = Pipeline(steps)
 
-        # Imputation
-        if strategy.imputer is not None:
-            logger.info('Fitting imputation.')
-            strategy.imputer.fit(X_train)
-            logger.info('Imputing X_train.')
-            X_train = impute(X_train, strategy.imputer)
-            logger.info('Imputing X_test.')
-            X_test = impute(X_test, strategy.imputer)
+    logger.info('Before size loop')
+    # Size of the train set
+    for n in strategy.train_set_steps:
+        logger.info(f'Size {n}')
+        n_tot = X.shape[0]
+        if n_tot - n < strategy.min_test_set*n_tot:
+            # Size of the test set too small, skipping
+            continue
+
+        # Choose right splitter depending on classification or regression
+        if task.is_classif():
+            ss = StratifiedShuffleSplit(n_splits=strategy.n_splits,
+                                        test_size=n_tot-n,
+                                        random_state=RS)
         else:
-            logger.info('Skipping imputation.')
+            ss = ShuffleSplit(n_splits=strategy.n_splits, test_size=n_tot-n,
+                              random_state=RS)
 
-        # Hyper-parameters search
-        logger.info('Searching best hyper-parameters.')
-        estimator = deepcopy(strategy.search)
-        estimator.fit(X_train, y_train)
-        Estimators.append(estimator)
+        # Repetedly draw train and test sets
+        for i, (train_idx, test_idx) in enumerate(ss.split(X, y)):
+            X_train, X_test = X.iloc[train_idx], X.iloc[test_idx]
+            y_train, y_test = y.iloc[train_idx], y.iloc[test_idx]
 
-        logger.info('Predicting on X_test using best fitted estimator.')
-        y_pred = estimator.predict(X_test)
+            # Used to save the IDs of the sub-sampled dataset.
+            if dump_idx_only:
+                logger.info(f'Dumped IDs of {task.meta.tag}, size={n}, trial={T}, fold={i}')
+                folder = relpath('ids/')
+                os.makedirs(folder, exist_ok=True)
+                name = task.meta.name.replace('pvals', 'screening')
+                trial = int(T) + 1
+                fold = i + 1
+                common = f'{task.meta.db}-{name}-size{n}-trial{trial}-fold{fold}'
+                filepath_idx_train = join(folder, f'{common}-train-idx.csv')
+                filepath_idx_test = join(folder, f'{common}-test-idx.csv')
+                filepath_col_train = join(folder, f'{common}-train-col.csv')
+                filepath_col_test = join(folder, f'{common}-test-col.csv')
+                pd.Series(X_train.index).to_csv(filepath_idx_train, index=False)
+                pd.Series(X_test.index).to_csv(filepath_idx_test, index=False)
+                pd.Series(X_train.columns).to_csv(filepath_col_train, index=False, header=False)
+                pd.Series(X_test.columns).to_csv(filepath_col_test, index=False, header=False)
+                continue  # when dumping IDs, we skip prediction
 
-        if strategy.compute_importance:  # Compute feature importance
-            logger.info('Computing feature importance using permutations.')
-            importance = permutation_importance(estimator, X_test, y_test, **strategy.importance_params)
-            dh.dump_importance(importance, fold=i)
-        else:
-            logger.info('Skipping feature importance.')
+            logger.info(f'Fold {i}: Started fitting the estimator')
+            estimator.fit(X_train, y_train)
+            logger.info('Ended fitting the estimator')
 
-        dh.dump_best_params(estimator.best_params_, fold=i)
-        dh.dump_prediction(y_pred, y_test, fold=i)
-        dh.dump_cv_results(estimator.cv_results_, fold=i)
+            # Retrieve fit times from timestamps
+            end_ts = time.time()  # Wall-clock time
+            start_ts = timer_start.last_fit_timestamp
+            mid_ts = timer_mid.last_fit_timestamp
 
-        if strategy.is_classification():
-            logger.info('Computing y_score for ROC.')
-            y_score = estimator.decision_function(X_test)
-            dh.dump_roc(y_score, y_test, fold=i)
+            end_pt = time.process_time()  # Process time (!= Wall-clock time)
+            start_pt = timer_start.last_fit_pt
+            mid_pt = timer_mid.last_fit_pt
 
-        # Learning curve
-        if strategy.learning_curve:
-            logger.info('Computing learning curve.')
-            curve = learning_curve(estimator, X_train, y_train,
-                                   cv=strategy.inner_cv, return_times=True,
-                                   **strategy.learning_curve_params)
-            dh.dump_learning_curve({
-                'train_sizes_abs': curve[0],
-                'train_scores': curve[1],
-                'test_scores': curve[2],
-                'fit_times': curve[3],
-                'score_times': curve[4],
-            }, fold=i)
+            imputation_time = round(mid_ts - start_ts, 6) if start_ts else None
+            tuning_time = round(end_ts - mid_ts, 6)
+            imputation_pt = round(mid_pt - start_pt, 6) if start_pt else None
+            tuning_pt = round(end_pt - mid_pt, 6)
 
-    return Estimators
+            # Dump fit times
+            dh.dump_times(imputation_time, tuning_time,
+                          imputation_pt, tuning_pt,
+                          fold=i, tag=str(n))
+
+            # Predict
+            if strategy.is_classification() and strategy.roc:  # ROC asked
+                # Compute probas for retrieving ROC curve
+                probas = estimator.predict_proba(X_test)
+                logger.info('Started predict_proba')
+                # y_pred = np.argmax(probas, axis=1)
+                dh.dump_probas(y_test, probas, fold=i, tag=str(n))
+                y_pred = estimator.predict(X_test)
+            else:
+                # No need for probas, only predictions
+                if not strategy.is_classification():
+                    logger.info('ROC: not a classification.')
+                elif not strategy.roc:
+                    logger.info('ROC: not wanted.')
+
+                logger.info('Started predict')
+                y_pred = estimator.predict(X_test)
+
+            # Dump results
+            logger.info(f'Fold {i}: Ended predict.')
+            dh.dump_prediction(y_pred, y_test, fold=i, tag=str(n))

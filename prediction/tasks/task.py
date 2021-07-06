@@ -5,8 +5,7 @@ from dataclasses import dataclass, field
 from typing import Set
 import logging
 
-from missing_values import get_missing_values
-from df_utils import fill_df
+from df_utils import fill_df, get_missing_values
 from database import dbs, _load_feature_types
 from .transform import Transform
 from encode import ordinal_encode
@@ -120,6 +119,12 @@ class Task(object):
             self._load_y()
 
         return self._y[self._f_y[0]]
+
+    @property
+    def mv(self):
+        """Return the missing values table."""
+        db = dbs[self.meta.db]
+        return get_missing_values(self.X, db.heuristic)
 
     def is_classif(self):
         """Tell if the task is a classification or a regression."""

@@ -7,3 +7,5 @@ pyyaml
 cython
 dask
 sqlalchemy
+seaborn
+tqdm

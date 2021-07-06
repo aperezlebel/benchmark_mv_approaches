@@ -125,7 +125,6 @@ def bmi_task(**kwargs):
             pvals = pvals[~pvals.index.str.match(regex)]
         pvals = pvals.sort_values()[:n_top_pvals]
         bmi_top_pvals = list(pvals.index.astype(str))
-        print(bmi_top_pvals)
 
         bmi_pvals_keep_transform = Transform(
             output_features=bmi_top_pvals

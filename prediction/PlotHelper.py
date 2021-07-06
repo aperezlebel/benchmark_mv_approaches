@@ -1,567 +1,1147 @@
-"""Class for plot results from saved csv."""
-import pandas as pd
-import numpy as np
+"""Implement  PlotHelper for train4 results."""
+import os
+import re
+import shutil
+from decimal import Decimal
+
+import matplotlib
 import matplotlib.pyplot as plt
-from sklearn.metrics import roc_curve, auc, classification_report, confusion_matrix
+import numpy as np
+import pandas as pd
 import seaborn as sns
 import yaml
-import os
+from sklearn.metrics import r2_score, roc_auc_score
 
-from .DumpHelper import get_RS_tag
-
-
-default_results_folder = 'results/'
+from prediction.df_utils import aggregate, assert_equal, get_ranks_tab
 
 
-def dict_equals(dict1, dict2, exclude=None):
-    return True
+class PlotHelper(object):
+    """Plot the train4 results."""
 
-
-class PlotHelper:
-
-    def __init__(self, task, results_folder=default_results_folder, rename=dict()):
-        if isinstance(task, str):
-            db, task_name = task.split('/')
-        else:
-            db, task_name = task.meta.db, task.meta.name
-
-        self.db = db
-        self.task_tag = task
-        self.task_name = task_name
-        self.results_folder = results_folder
-        self.task_folder = f'{results_folder}{db}/{task_name}/'
-
+    def __init__(self, root_folder, rename={}, reference_method=None):
+        """Init."""
+        # Stepe 1: Check and register root_path
+        root_folder = root_folder.rstrip('/')  # Remove trailing '/'
+        self.root_folder = root_folder
         self._rename = rename
+        self._reference_method = reference_method
 
-        self._load_infos()
+        if not os.path.isdir(self.root_folder):
+            raise ValueError(f'No dir at specified path: {self.root_folder}')
 
-    def _load_infos(self):
-        self.task_infos = self._load_yaml(self.task_folder+'task_infos.yml')
-        self.features = np.array(self._load_yaml(self.task_folder+'features.yml'))
+        # Step 2: Get the relative path of all subdirs in the structure
+        walk = os.walk(self.root_folder)
 
-    def _path_from_strat(self, strat):
-        name = strat if isinstance(strat, str) else strat.name
-        return f'{self.task_folder}{name}/'
+        abs_dirpaths = []
+        abs_filepaths = []
+        for root, dirnames, filenames in walk:
+            if dirnames:
+                for dirname in dirnames:
+                    abs_dirpaths.append(f'{root}/{dirname}')
+            if filenames:
+                for filename in filenames:
+                    abs_filepaths.append(f'{root}/{filename}')
 
-    def _load_yaml(self, filepath):
-        with open(filepath, 'r') as file:
-            data = yaml.safe_load(file)
-        return data
+        rel_dir_paths = [os.path.relpath(p, root_folder) for p in abs_dirpaths]
+        rel_file_paths = [os.path.relpath(p, root_folder) for p in abs_filepaths]
 
-    def _load_yaml_from_filename(self, strat, filename):
-        strat_path = self._path_from_strat(strat)
-        return self._load_yaml(strat_path+filename)
+        # Step 3.1: Convert relative paths to nested python dictionnary (dirs)
+        nested_dir_dict = {}
 
-    def _is_classification(self, strat):
-        strat_infos = self._load_yaml_from_filename(strat, 'strat_infos.yml')
-        return strat_infos['classification']
+        for rel_dir_path in rel_dir_paths:
+            d = nested_dir_dict
+            for x in rel_dir_path.split('/'):
+                d = d.setdefault(x, {})
 
-    def n_folds(self, strat):
-        strat_infos = self._load_yaml_from_filename(strat, 'strat_infos.yml')
-        return strat_infos['outer_cv_params']['n_splits']
+        # Step 3.2: Convert relative paths to nested python dictionnary (files)
+        nested_file_dict = {}
 
-    def n_inner_splits(self, strat):
-        strat_infos = self._load_yaml_from_filename(strat, 'strat_infos.yml')
-        return strat_infos['inner_cv_params']['n_splits']
+        for rel_file_path in rel_file_paths:
+            d = nested_file_dict
+            for x in rel_file_path.split('/'):
+                d = d.setdefault(x, {})
 
-    def rename(self, string):
-        def rename_aux(string):
-            return self._rename.get(string, string)
+        # Step 4: Fill the class attributes with the nested dicts
+        self._nested_dir_dict = nested_dir_dict
+        self._nested_file_dict = nested_file_dict
 
-        if isinstance(string, list):
-            return [rename_aux(s) for s in string]
+        # Step 5: Compute scores for reference method
+        if self._reference_method:
+            self._reference_score = dict()
+            for size in self.existing_sizes():
+                scores_size = self._reference_score.get(size, dict())
+                for db in self.databases():
+                    scores = scores_size.get(db, dict())
+                    for t in self.tasks(db):
+                        score = None
+                        for m in self.availale_methods_by_size(db, t, size):
+                            if self._is_reference_method(m):
+                                score = self.score(db, t, m, size, mean=True)
+                                break
+                        scores[t] = score
+                    scores_size[db] = scores
 
-        return rename_aux(string)
+                self._reference_score[size] = scores_size
 
-    def plot_regression(self, strat, ax=None):
-        strat_path = self._path_from_strat(strat)
+    def databases(self):
+        """Return the databases found in the root folder."""
+        ndd = self._nested_dir_dict
+        return [db for db in ndd.keys() if self.tasks(db)]
 
-        df = pd.read_csv(f'{strat_path}prediction.csv')
+    def tasks(self, db):
+        """Return the tasks related to a given database."""
+        ndd = self._nested_dir_dict
+        return [t for t in ndd[db].keys() if self.methods(db, t)]
 
-        y_true = df['y_true']
-        y_pred = df['y_pred']
+    def methods(self, db, t):
+        """Return the methods used by a given task."""
+        ndd = self._nested_dir_dict
+        return [m for m in ndd[db][t] if self._is_valid_method(db, t, m)]
 
-        if ax is None:
-            plt.figure()
-            plt.title(f'Prediction on {self.task_tag} using\n{self.rename(strat)}')
-            ax = plt.gca()
+    def _is_valid_method(self, db, t, m):
+        # Must contain either Classification or Regression
+        if 'Regression' not in m and 'Classification' not in m:
+            return False
 
-        ax.plot([y_true.min(), y_true.max()],
-                [y_true.min(), y_true.max()],
-                '--r', linewidth=2)
-        ax.scatter(y_true, y_pred, alpha=0.2)
+        path = f'{self.root_folder}/{db}/{t}/{m}/'
+        if not os.path.exists(path):
+            return False
 
-        ax.spines['top'].set_visible(False)
-        ax.spines['right'].set_visible(False)
-        ax.get_xaxis().tick_bottom()
-        ax.get_yaxis().tick_left()
-        ax.spines['left'].set_position(('outward', 10))
-        ax.spines['bottom'].set_position(('outward', 10))
-        ax.set_xlim([y_true.min(), y_true.max()])
-        ax.set_ylim([y_true.min(), y_true.max()])
-        ax.set_xlabel('Measured')
-        ax.set_ylabel('Predicted')
+        _, _, filenames = next(os.walk(path))
 
-    def plot_roc(self, strat, true_class='1'):
-        strat_path = self._path_from_strat(strat)
+        return len(filenames) > 1  # always strat_infos.yml in m folder
 
-        df = pd.read_csv(f'{strat_path}probas.csv')
+    def _is_reference_method(self, m):
+        if not hasattr(self, '_reference_method'):
+            return False
 
-        FPR, TPR = [], []
-        ROC_AUC = []
+        m = self.short_method_name(m)
+        return self.rename(m) == self._reference_method
 
-        df_show = pd.DataFrame()
+    def short_method_name(self, m):
+        """Return the suffix from the method name."""
+        s = m.split('Regression')
+        if len(s) == 1:
+            s = m.split('Classification')
+        if len(s) == 1:
+            raise ValueError(f'Unable to find short method name of {m}')
 
-        if True:#not df.groupby('fold'):
-            # units = None
-            # y_score = df['y_score']
-            # y_true = df['y_true']
+        return s[1]
 
-            # fpr, tpr, _ = roc_curve(y_true, y_score)
-            # roc_auc = auc(fpr, tpr)
+    @staticmethod
+    def rename_str(rename_dict, s):
+        return rename_dict.get(s, s)
 
-            # df_show = pd.DataFrame({
-            #         'fpr': fpr,#np.round(fpr, decimals=2),
-            #         'tpr': tpr,
-            #         'auc': roc_auc
-            #     })
+    def rename(self, s):
+        """Rename a string."""
+        return self.rename_str(self._rename, s)
 
-            units = None
-            probas = df[f'proba_{true_class}']
-            y_true = df['y_true']
+    def existing_methods(self):
+        """Return the existing methods used by the tasks in the root_folder."""
+        methods = set()
 
-            fpr, tpr, _ = roc_curve(y_true, probas)
-            roc_auc = auc(fpr, tpr)
+        for db in self.databases():
+            for t in self.tasks(db):
+                for m in self.methods(db, t):
+                    s = m.split('Regression')
+                    if len(s) == 1:
+                        s = m.split('Classification')
+                    suffix = s[1]
+                    methods.add(suffix)
 
-            df_show = pd.DataFrame({
-                    'fpr': fpr,#np.round(fpr, decimals=2),
-                    'tpr': tpr,
-                    'auc': roc_auc
-                })
+        return methods
+
+    def existing_sizes(self):
+        """Return the existing training sizes found in the root_folder."""
+        sizes = set()
+        nfd = self._nested_file_dict
+
+        for db in self.databases():
+            for t in self.tasks(db):
+                for m in self.methods(db, t):
+                    for filename in nfd[db][t][m].keys():
+                        s = filename.split('_prediction.csv')
+                        if len(s) > 1:  # Pattern found
+                            size = s[0]  # size is the first part
+                            sizes.add(size)
+
+        sizes = list(sizes)
+        sizes.sort(key=int)
+
+        return sizes
+
+    def score(self, db, t, m, size, true_class='1', mean=False):
+        """Compute score of a given db, task, method, size.
+
+        Parameters
+        ----------
+        db : str
+            Name of db folder.
+        t : str
+            Name of task folder.
+        m : str
+            Name of method folder.
+        size : str
+            Size of the train set to load.
+        true_class : str
+            Name of the true class (if classification).
+        mean : bool
+            Whether to compute the mean of the score or return all scores.
+
+        Return
+        ------
+        scores : dict or float
+            If mean is False: return dict of scores of each fold.
+            Else, return a float, mean of scores on all folds.
+
+        """
+        print(f'Compute score of {db}/{t}/{m}/{size}')
+        method_path = f'{self.root_folder}/{db}/{t}/{m}/'
+        strat_infos_path = method_path+'strat_infos.yml'
+
+        if not os.path.exists(strat_infos_path):
+            raise ValueError(f'Path {strat_infos_path} doesn\'t exist.')
+
+        with open(strat_infos_path, 'r') as file:
+            strat_infos = yaml.safe_load(file)
+
+        is_classif = strat_infos['classification']
+
+        if is_classif:
+            scorer = roc_auc_score
+            scorer_name = 'roc_auc_score'
+            df_path = f'{method_path}{size}_probas.csv'
+            y_true_col = 'y_true'
+            y_col = f'proba_{true_class}'
         else:
-            pass
-            # units = 'fold'
-            # for fold, df_gb in df.groupby('fold'):
-            #     y_score = df_gb['y_score']
-            #     y_true = df_gb['y_true']
+            scorer = r2_score
+            scorer_name = 'r2_score'
+            df_path = f'{method_path}{size}_prediction.csv'
+            y_true_col = 'y_true'
+            y_col = 'y_pred'
 
-            #     print(y_score.shape)
-
-            #     fpr, tpr, _ = roc_curve(y_true, y_score)
-            #     roc_auc = auc(fpr, tpr)
-
-            #     df_show = pd.concat([
-            #         df_show,
-            #         pd.DataFrame({
-            #             'fold': fold,
-            #             'fpr': fpr,#np.round(fpr, decimals=2),
-            #             'tpr': tpr,
-            #             'auc': roc_auc
-            #         })
-            #     ])
-
-            #     print(df_show)
-
-                # FPR.append(fpr.reshape((-1, 1)))
-                # TPR.append(tpr.reshape((-1, 1)))
-                # ROC_AUC.append(roc_auc)
-
-                # print(fpr.shape)
-
-        # print(FPR[0].shape)
-        # exit()
-        # FPR = np.concatenate(FPR, axis=1)
-        # TPR = np.concatenate(TPR, axis=1)
-        # ROC_AUC = np.array(ROC_AUC)
-
-        print(df_show)
-        sns.lineplot(x='fpr', y='tpr', data=df_show, ci='sd', units=units, estimator=None)# estimator='median')
-        return
-        # exit()
-
-
-        # y_score, y_true = df['y_score'], df['y_true']
-
-        # fpr, tpr, _ = roc_curve(y_true, y_score)
-        # roc_auc = auc(fpr, tpr)
-
-        plt.figure()
-        lw = 2
-        for i in range(FPR.shape[0]):
-            fpr, tpr = FPR[i, :], TPR[i, :]
-            plt.plot(fpr, tpr, color='darkorange',
-                    lw=lw, label='ROC curve (area = %0.3f)' % ROC_AUC[i])
-
-        plt.plot([0, 1], [0, 1], color='navy', lw=lw, linestyle='--')
-        plt.xlim([0.0, 1.0])
-        plt.ylim([0.0, 1.05])
-        plt.xlabel('False Positive Rate')
-        plt.ylabel('True Positive Rate')
-        plt.title('Receiver operating characteristic')
-        plt.legend(loc="lower right")
-
-    def classification_report(self, strat, output_dict=False):
-        strat_path = self._path_from_strat(strat)
-
-        df = pd.read_csv(f'{strat_path}prediction.csv')
-
-        y_true = df['y_true']
-        y_pred = df['y_pred']
-
-        return classification_report(y_true, y_pred, output_dict=output_dict)
-
-
-    def confusion_matrix(self, strat, labels=None):
-        strat_path = self._path_from_strat(strat)
-
-        df = pd.read_csv(f'{strat_path}prediction.csv')
-
-        y_true = df['y_true']
-        y_pred = df['y_pred']
-
-        matrix = confusion_matrix(y_true, y_pred, labels=labels)
-
-        return matrix
-
-    def plot_confusion_matrix(self, strat, labels=None):
-        matrix = self.confusion_matrix(strat, labels=labels)
-
-        plt.figure(figsize=(6, 4))
-        if labels is None:
-            labels = 'auto'
-        sns.heatmap(matrix, cmap='Greens', annot=True, xticklabels=labels, yticklabels=labels)
-
-    def best_params(self, strat):
-        return self._load_yaml_from_filename(strat, 'best_params.yml')
-
-    def cv_results(self, strat):
-        return self._load_yaml_from_filename(strat, 'cv_results.yml')
-
-    def plot_full_results(self, strat, labels=None):
-
-        if self._is_classification(strat):
-            self.plot_roc(strat)
-            self.plot_confusion_matrix(strat)
-            print(self.classification_report(strat))
-
-        else:
-            self.plot_regression(strat)
-
-        print(self.best_params(strat))
-        print(self.cv_results(strat))
-
-    def _scores(self, strat, scorer, fold=None):
-        strat_path = self._path_from_strat(strat)
+        try:
+            df = pd.read_csv(df_path)
+        except pd.errors.EmptyDataError:
+            if mean:
+                return None, None
+            return dict()
+        except FileNotFoundError:
+            if mean:
+                return None, None
+            return dict(), None
 
         scores = dict()
 
-        try:
-            df = pd.read_csv(f'{strat_path}prediction.csv')
-        except FileNotFoundError:
-            return scores
+        for fold, df_gb in df.groupby('fold'):
+            y_true = df_gb[y_true_col]
+            y = df_gb[y_col]
 
-        # for _fold, df_gb in df.groupby('fold'):
-        #     y_true = df_gb['y_true']
-        #     y_pred = df_gb['y_pred']
-        #     scores[_fold] = scorer(y_true, y_pred)
-        #     print(scores[_fold])
+            score = scorer(y_true, y)
+            scores[fold] = score
 
-        scores[None] = scorer(df['y_true'], df['y_pred'])
+        if mean:
+            scores = np.mean(list(scores.values()))
 
-        return scores
+        return scores, scorer_name
 
-    def plot_scores(self, strat, scorers, ax=None):
-        if not isinstance(scorers, list):
-            scorers = [scorers]
+    def times(self, db, t, m, size):
+        """Compute time of a given db, task, method, size.
 
-        scores = [self._scores(strat, scorer) for scorer in scorers]
-
-        scores_labels = self.rename([scorer.__name__ for scorer in scorers])
-        scores_values = [list(s.values()) for s in scores]
-
-        if ax is None:
-            plt.figure()
-            ax = plt.gca()
-
-        bplot = ax.boxplot(scores_values, labels=scores_labels,
-                           vert=False, patch_artist=True)
-        for patch, color in zip(bplot['boxes'],
-                                ['C0', 'C1', 'C2', 'C3', 'C4']):
-            patch.set_facecolor(color)
-
-    def plot_scores_accross_strats(self, scorer, strats=None, ax=None):
-        if strats is None:  # Get all strats of the given folder
-            strats = next(os.walk(self.task_folder))[1]
-
-        if not isinstance(strats, list):
-            strats = [strats]
-
-        strats = strats[:]
-        strats.reverse()
-
-        if ax is None:
-            plt.figure()
-            plt.title(f'Scores on {self.task_tag}')
-            ax = plt.gca()
-
-        scores = [self._scores(strat, scorer) for strat in strats]
-
-        scores_labels = self.rename(strats)
-        scores_values = [list(s.values()) for s in scores]
-        # meanlineprops = dict(linestyle='--', linewidth=2.5, color='purple')
-        # medianprops = dict(linestyle='--', linewidth=2.5, color='firebrick')
-        bplot = ax.boxplot(scores_values, labels=scores_labels,
-                           vert=False, patch_artist=True, medianprops={'color': 'black'})
-        if isinstance(scorer, str):
-            scorer_name = scorer
-        else:
-            scorer_name = scorer.__name__
-
-        ax.set_xlabel(scorer_name)
-        ax.set_ylabel('Strategy')
-        colors = ['C0', 'C1', 'C2', 'C3', 'C4']
-        colors.reverse()
-        for patch, color in zip(bplot['boxes'],
-                                colors):
-            patch.set_facecolor(color)
-
-    def plot_importances(self, strat, tol=5e-3):
-        """Boxplot feature importances. Importance below tol are ignored."""
-        data = self._load_yaml_from_filename(strat, 'importance.yml')
-
-        if not data:
-            raise ValueError('Missing feature importances.')
-
-        # Retrieve the importances mean of each fold
-        importances = [imp['importances_mean'] for imp in data.values()]
-        importances = np.array(importances)
-
-        # Sort according to mean
-        importances_mean = np.mean(importances, axis=0)
-        sorted_idx = importances_mean.argsort()
-
-        # Keep only the significant ones (> tol)
-        selected_idx = importances_mean[sorted_idx] > tol
-        sorted_idx = sorted_idx[selected_idx]
-
-        plt.boxplot(importances[:, sorted_idx], vert=False,
-                    labels=self.features[sorted_idx])
-        plt.title(f'Feature importances above {tol}')
-
-    def retrieve_strat_folders(self, strat_name, RS, check=True):
-        """
         Parameters
         ----------
-        strat_name : str
-            Name of the strategy
-        RS : int or list of int
-            Only the folders storing a strategy matching strat_name and having
-            a random state matching the ones given in RS are retrieved.
+        db : str
+            Name of db folder.
+        t : str
+            Name of task folder.
+        m : str
+            Name of method folder.
+        size : str
+            Size of the train set to load.
 
-        Returns
-        -------
-        list of str
-            The name of the folders containing the strategy for the given
-            random states.
+        Return
+        ------
+        imputation_times : dict
+            Dict of imputation time of each fold.
+        tuning_times : dict
+            Dict of tuning time of each fold.
+
 
         """
-        if RS is None:
-            return [strat_name]
+        print(f'Compute time of {db}/{t}/{m}/{size}')
+        df_path = f'{self.root_folder}/{db}/{t}/{m}/{size}_times.csv'
+        try:
+            df = pd.read_csv(df_path)
+        except pd.errors.EmptyDataError:
+            return None, None
 
-        if not isinstance(RS, list):
-            RS = [RS]
+        cols = df.columns
+        imputation_wct = dict()
+        tuning_wct = dict()
+        imputation_pt = dict()
+        tuning_pt = dict()
 
-        if RS == []:
-            return []
+        for fold, df_gb in df.groupby('fold'):
 
-        strats = [f'{get_RS_tag(rs)}{strat_name}' for rs in RS]
+            if 'imputation_PT' in cols and 'imputation_WCT' in cols:
+                imputation_wct[fold] = float(df_gb['imputation_WCT'])
+                tuning_wct[fold] = float(df_gb['tuning_WCT'])
+                imputation_pt[fold] = float(df_gb['imputation_PT'])
+                tuning_pt[fold] = float(df_gb['tuning_PT'])
 
-        if not check:
-            return strats
-
-        # Check if those folders exists
-        for s in strats:
-            path = self._path_from_strat(s)
-            if not os.path.exists(path):
-                raise ValueError(f'{path} not found.')
-
-        # Check if have same strat infos
-
-        data1 = None
-        data2 = self._load_yaml_from_filename(strats[0], 'strat_infos.yml')
-
-        for i in range(1, len(strats)-1):
-            data1 = data2
-            data2 = self._load_yaml_from_filename(strats[i], 'strat_infos.yml')
-
-            if not dict_equals(data1, data2, exclude='random_state'):
-                raise ValueError(f'{strats[i-1]} and {strats[i]} have'
-                                 f'different infos in strats_infos.yml')
-
-        return strats
-
-    def plot_learning_curve_one(self, strat, axes=None, color=None,
-                                marker=None, line='-', RS=None):
-        train_scores = []
-        test_scores = []
-        fit_times = []
-
-        if strat:
-            for s in self.retrieve_strat_folders(strat, RS):
-                data = self._load_yaml_from_filename(s, 'learning_curve.yml')
-                strat_infos = self._load_yaml_from_filename(s, 'strat_infos.yml')
-
-                scoring = self.rename(strat_infos['learning_curve_params']['scoring'])
-
-                if not data:
-                    raise ValueError('No data found for learning curve.')
-
-                for curve_data in data.values():
-                    train_scores.append(np.array(curve_data['train_scores']))
-                    test_scores.append(np.array(curve_data['test_scores']))
-                    fit_times.append(np.array(curve_data['fit_times']))
-
-            # Concatenate scores from different outter and inner folds
-            train_scores = np.concatenate(train_scores, axis=1)
-            test_scores = np.concatenate(test_scores, axis=1)
-            fit_times = np.concatenate(fit_times, axis=1)
-
-            train_sizes = np.array(curve_data['train_sizes_abs'])
-
-            train_scores_mean = np.mean(train_scores, axis=1)
-            train_scores_std = np.std(train_scores, axis=1)
-            test_scores_mean = np.mean(test_scores, axis=1)
-            test_scores_std = np.std(test_scores, axis=1)
-            fit_times_mean = np.mean(fit_times, axis=1)
-            fit_times_std = np.std(fit_times, axis=1)
-
-        if axes is None:
-            _, axes = plt.subplots(1, 3, figsize=(20, 5))
-
-        axes[0].set_xlabel("Training examples")
-
-        if not strat:
-            axes[0].set_ylim(0, 1)
-            axes[0].set_xlim(0, 20000)
-
-            axes[1].set_ylim(0, 100)
-            axes[1].set_xlim(0, 20000)
-
-            axes[2].set_ylim(0, 1)
-            axes[2].set_xlim(0, 100)
-
-        if strat:
-            axes[0].set_ylabel(f"Score ({scoring})")
-        else:
-            axes[0].set_ylabel(f"Score")
-
-        # Plot learning curve
-        axes[0].grid()
-        # axes[0].fill_between(train_sizes, train_scores_mean - train_scores_std,
-        #                      train_scores_mean + train_scores_std, alpha=0.1,
-        #                      color=color)
-        if strat:
-            axes[0].fill_between(train_sizes, test_scores_mean - test_scores_std,
-                                test_scores_mean + test_scores_std, alpha=0.1,
-                                color=color)
-            # axes[0].plot(train_sizes, train_scores_mean, 'd-', color=color,
-            #              label=f"T {strat}")
-            axes[0].plot(train_sizes, test_scores_mean, f'{marker}{line}', color=color,
-                        label=self.rename(strat))
-
-        if strat:
-            axes[0].legend(title='Gradient boosted trees', loc="best")
-
-        axes[0].set_title(f"Prediction performance", x=0.5, y=0.94)
-        # axes[0].title("my title", x=0.5, y=0.6)
-        # axes[0].text(.5, .95, f'Prediction performance: {scoring}',
-        #              horizontalalignment='center', transform=axes[0].transAxes)
-
-        # Plot n_samples vs fit_times
-        axes[1].grid()
-
-        if strat:
-            axes[1].plot(train_sizes, fit_times_mean, f'{marker}{line}', color=color)
-            axes[1].fill_between(train_sizes, fit_times_mean - fit_times_std,
-                                fit_times_mean + fit_times_std, alpha=0.1, color=color)
-
-        axes[1].set_xlabel("Training examples")
-        axes[1].set_ylabel("Fit time (seconds)")
-        # axes[1].set_title("Scalability of the model")
-        axes[1].set_title("Computational cost of the models", x=0.5, y=0.94)
-        # axes[1].set_title("Scalability of the model", x=0.5, y=0.94)
-        # axes[]
-
-        # Plot fit_time vs score
-        axes[2].grid()
-
-        if strat:
-            axes[2].plot(fit_times_mean, test_scores_mean, f"{marker}{line}", color=color)
-            axes[2].fill_between(fit_times_mean, test_scores_mean - test_scores_std,
-                                test_scores_mean + test_scores_std, alpha=0.1, color=color)
-
-        axes[2].set_xlabel("Fit time (seconds)")
-
-        if strat:
-            axes[2].set_ylabel(f"Score ({scoring})")
-        else:
-            axes[2].set_ylabel(f"Score")
-
-        # axes[2].set_title(f"Performance of the model: {scoring}")
-        axes[2].set_title("Cost to benefit: time versus prediction performance", x=0.5, y=0.94)
-        # axes[2].set_title(f"Performance of the model: {scoring}", x=0.5, y=0.94)
-        # axes[]
-
-        # fig = plt.gcf()
-        # plt.suptitle("Title centered above all subplots")
-        # fig.tight_layout()
-
-        # plt.subplots_adjust(top=0.94)
-
-        return plt
-
-    def plot_learning_curve(self, strats, axes=None, truncate=(0., 0.), RS=None):
-        if axes is None:
-            fig, axes = plt.subplots(1, 3, figsize=(20, 5))
-            # fig, axes = plt.subplots(nrows=1, ncols=3, figsize=(12, 6))
-            # fig.tight_layout(rect=[0, 0.03, 1, 0.8])
-            # fig.suptitle(f'Prediction of {self.rename(self.task_name)} '
-            #              f'on {self.rename(self.db)}', y=1)
-
-            # fig.tight_layout(rect=[0, 0.03, 1, 0.9])
-
-            axes[1].annotate(f'Prediction of {self.rename(self.task_name)} '
-                             f'on {self.rename(self.db)}', (0.5, 0.93),
-                             xycoords='figure fraction', ha='center',
-                             fontsize=13
-                             )
-
-        if not isinstance(strats, list):
-            strats = [strats]
-
-        colors = [f'C{i}' for i in range(10)]
-        markers = ['o', '*', '.', 'x', '+', 'X', 'P', 'v', '^', '<', '>']
-        for strat, c, m in zip(strats, colors, markers):
-            if isinstance(strat, tuple) and len(strat) == 2:
-                strat, strat_masked = strat
-                if strat is not None:
-                    self.plot_learning_curve_one(strat, axes=axes, color=c, marker=m, line='-', RS=RS)
-                if strat_masked is not None:
-                    self.plot_learning_curve_one(strat_masked, axes=axes, color=c, marker=m, line='--', RS=RS)
             else:
-                self.plot_learning_curve_one(strat, axes=axes, color=c, marker=m, RS=RS)
+                assert len(df_gb['imputation']) == 1
+                assert len(df_gb['tuning']) == 1
+                imputation_wct[fold] = float(df_gb['imputation'])
+                tuning_wct[fold] = float(df_gb['tuning'])
 
-        ylim0_inf, ylim0_sup = axes[0].get_ylim()
-        delta0 = ylim0_sup-ylim0_inf
-        ylim2_inf, ylim2_sup = axes[2].get_ylim()
-        delta2 = ylim2_sup-ylim2_inf
+        return {
+            'imputation_WCT': imputation_wct,
+            'tuning_WCT': tuning_wct,
+            'imputation_PT': imputation_pt,
+            'tuning_PT': tuning_pt
+        }
+
+    def absolute_scores(self, db, t, methods, size, mean=True):
+        """Get absolute scores of given methods for (db, task, size).
+
+        Size and methods must exist (not check performed).
+        """
+        return {m: self.score(db, t, m, size, mean=mean) for m in methods}
+
+    def availale_methods_by_size(self, db, t, size):
+        """Get the methods available for a given size."""
+        methods = self.methods(db, t)
+        nfd = self._nested_file_dict
+        available_methods = set()
+
+        for m in methods:
+            for filename in nfd[db][t][m]:
+                if f'{size}_' in filename:
+                    available_methods.add(m)
+
+        return available_methods
+
+    @staticmethod
+    def _y(m, db, n_m, n_db):
+        """Get y-axis position given # db and # m and n_db and n_m."""
+        assert 0 <= m < n_m
+        assert 0 <= db < n_db
+        return n_m - m - (db+1)/(n_db+1)
+
+    @staticmethod
+    def _add_relative_value(df, value, how, reference_method=None):
+        assert value in df.columns
+        dfgb = df.groupby(['size', 'db', 'task'])
+
+        def rel_value(df):
+            if reference_method is None:  # use mean
+                ref_value = df[value].mean()
+            else:
+                methods = df['method']
+                ref_value = float(df.loc[methods == reference_method, value])
+                df['reference'] = reference_method
+                df[f'referece_{value}'] = ref_value
+
+            if how == 'mean':
+                normalization = df[value].mean()
+            elif how == 'std':
+                normalization = df[value].std()
+            elif how == 'no-norm':
+                normalization = 1
+            elif how == 'abs':
+                ref_value = 0
+                normalization = 1
+            elif how == 'log':
+                normalization = ref_value
+                ref_value = 0
+
+            df[f'relative_{value}'] = (df[value] - ref_value)/normalization
+
+            return df
+
+        return dfgb.apply(rel_value)
+
+    def _export(self, db, id):
+        sizes = self.existing_sizes()
+        dump_dir = f'sandbox/compare_{id}/{db}/'
+        if os.path.isdir(dump_dir):
+            shutil.rmtree(dump_dir)
+        os.makedirs(dump_dir, exist_ok=True)
+
+        for t in self.tasks(db):
+            for size in sizes:
+                methods = self.availale_methods_by_size(db, t, size)
+                for m in methods:
+                    subpath = f'{db}/{t}/{m}/{size}_prediction.csv'
+                    df_path = f'{self.root_folder}/{subpath}'
+                    print(df_path)
+                    r_subpath = subpath.replace('/', '_')
+                    shutil.copyfile(df_path, dump_dir+r_subpath)
+
+    def dump(self, filepath):
+        """Scan results in result_folder and compute scores."""
+        existing_sizes = self.existing_sizes()
+        rows = []
+        for i, size in enumerate(existing_sizes):
+            for db in self.databases():
+                for t in self.tasks(db):
+                    methods = self.availale_methods_by_size(db, t, size)
+                    abs_scores = self.absolute_scores(db, t, methods, size,
+                                                      mean=False)
+                    for m, (scores, scorer) in abs_scores.items():
+                        times = self.times(db, t, m, size)
+
+                        method_path = f'{self.root_folder}/{db}/{t}/{m}/'
+
+                        # Load strat info
+                        strat_infos_path = method_path+'strat_infos.yml'
+                        if not os.path.exists(strat_infos_path):
+                            raise ValueError(f'Path {strat_infos_path} doesn\'t exist.')
+                        with open(strat_infos_path, 'r') as file:
+                            strat_infos = yaml.safe_load(file)
+                        is_classif = strat_infos['classification']
+                        task_type = 'Classification' if is_classif else 'Regression'
+
+                        # Load task info
+                        task_infos_path = method_path+'task_infos.yml'
+                        if not os.path.exists(task_infos_path):
+                            raise ValueError(f'Path {task_infos_path} doesn\'t exist.')
+                        with open(task_infos_path, 'r') as file:
+                            task_infos = yaml.safe_load(file)
+                        X_shape = task_infos['X.shape']
+                        # Convert representation of tuple (str) to tuple
+                        X_shape = X_shape.replace('(', '')
+                        X_shape = X_shape.replace(')', '')
+                        X_shape = X_shape.replace(' ', '')
+                        n, p = X_shape.split(',')
+
+                        for fold, s in scores.items():
+                            if s is None:
+                                print(f'Skipping {db}/{t}/{m}')
+                                continue
+                            if 'Regression' in m:
+                                tag = m.split('Regression')[0]
+                            elif 'Classification' in m:
+                                tag = m.split('Classification')[0]
+                            else:
+                                tag = 'Error while retrieving tag'
+                                print(tag)
+                            params = re.search('RS(.+?)_T(.+?)_', tag)
+                            T = params.group(2)
+                            short_m = self.short_method_name(m)
+                            renamed_m = self.rename(short_m)
+                            selection = 'ANOVA' if '_pvals' in t else 'manual'
+                            imp_wct = times['imputation_WCT'][fold]
+                            tun_wct = times['tuning_WCT'][fold]
+                            imp_pt = times['imputation_PT'].get(fold, None)
+                            tun_pt = times['tuning_PT'].get(fold, None)
+
+                            rows.append(
+                                (size, db, t, renamed_m, T, fold, s, scorer, selection, n, p, task_type, imp_wct, tun_wct, imp_pt, tun_pt)
+                            )
+
+        cols = ['size', 'db', 'task', 'method', 'trial', 'fold', 'score', 'scorer', 'selection', 'n', 'p', 'type', 'imputation_WCT', 'tuning_WCT', 'imputation_PT', 'tuning_PT']
+
+        df = pd.DataFrame(rows, columns=cols).astype({
+            'size': int,
+            'trial': int,
+            'fold': int,
+            })
+        df.sort_values(by=['size', 'db', 'task', 'method', 'trial', 'fold'],
+                       inplace=True, ignore_index=True)
+        print(df)
+
+        df.to_csv(filepath)
+
+    @staticmethod
+    def get_task_description(filepath):
+        """Build and dump a csv that will explain each task once completed."""
+        if not isinstance(filepath, pd.DataFrame):
+            df = pd.read_csv(filepath, index_col=0)
+        else:
+            df = filepath
+
+        df = aggregate(df, 'score')
+
+        print(df)
+
+        dfgb = df.groupby(['db', 'task'])
+        df = dfgb.agg({
+            'score': 'mean',
+            # 'n_trials': 'sum',
+            # 'n_folds': 'sum',
+            'scorer': assert_equal,  # first and assert equal
+            'selection': assert_equal,
+            'n': assert_equal,
+            'p': assert_equal,
+            'type': assert_equal,
+            'imputation_WCT': 'mean',
+            'tuning_WCT': 'mean',
+            'imputation_PT': 'mean',
+            'tuning_PT': 'mean',
+        })
+
+        df = df.reset_index()
+
+        # Sum times
+        df['total_PT'] = df['imputation_PT'].fillna(0) + df['tuning_PT']
+        df['total_WCT'] = df['imputation_WCT'].fillna(0) + df['tuning_WCT']
+
+        # Round scores
+        df['imputation_PT'] = df['imputation_PT'].astype(int)
+        df['imputation_WCT'] = df['imputation_WCT'].astype(int)
+        df['tuning_PT'] = df['tuning_PT'].astype(int)
+        df['tuning_WCT'] = df['tuning_WCT'].astype(int)
+        df['score'] = df['score'].round(2)
+        df['total_PT'] = df['total_PT'].astype(int)
+        df['total_WCT'] = df['total_WCT'].astype(int)
+
+        df = df.drop(['imputation_WCT', 'tuning_WCT', 'total_WCT'], axis=1)
+
+        # Rename values in columns
+        df['selection'] = df['selection'].replace({
+            'ANOVA': 'A',
+            'manual': 'M',
+        })
+        df['scorer'] = df['scorer'].replace({
+            'roc_auc_score': 'AUC',
+            'r2_score': 'R2',
+        })
+        df['type'] = df['type'].replace({
+            'Classification': 'C',
+            'Regression': 'R',
+        })
+
+        # Rename columns
+        rename_dict = {
+            'db': 'Database',
+            'imputation_PT': 'Imputation time (s)',
+            'tuning_PT': 'Tuning time (s)',
+            'total_PT': 'Total time (s)',
+            'n': 'n',
+            'p': 'p',
+        }
+
+        # Capitalize
+        for f in df.columns:
+            if f not in rename_dict:
+                rename_dict[f] = f.capitalize()
+
+        df = df.rename(rename_dict, axis=1)
+
+        # Create multi index
+        df = df.set_index(['Database', 'Task'])
+
+        # Read desciptions from file
+        description_filepath = 'scores/descriptions.csv'
+        if os.path.exists(description_filepath):
+            desc = pd.read_csv(description_filepath, index_col=[0, 1])
+            df = pd.concat([df, desc], axis=1)
+        else:
+            desc = pd.DataFrame(
+                {'Target': 'Explain target here.', 'Description': 'Write task description here.'},
+                index=df.index, columns=['Target', 'Description']
+            )
+            desc.to_csv(description_filepath)
+
+        return df
+
+    @staticmethod
+    def _plot(filepath, value, how, xticks_dict=None, xlims=None, db_order=None,
+              method_order=None, rename=dict(), reference_method=None,
+              figsize=None, legend_bbox=None, xlabel=None):
+        """Plot the full available results."""
+        if not isinstance(filepath, pd.DataFrame):
+            df = pd.read_csv(filepath, index_col=0)
+        else:
+            df = filepath
+
+        assert value in df.columns
+
+        sizes = list(df['size'].unique())
+        n_sizes = len(sizes)
+        dbs = list(df['db'].unique())
+        n_dbs = len(dbs)
+        methods = list(df['method'].unique())
+
+        # Check db_order
+        if db_order is None:
+            db_order = dbs
+        elif set(dbs) != set(db_order):
+            raise ValueError(f'Db order missmatch existing ones {dbs}')
+
+        # Check method order
+        if method_order is None:
+            method_order = methods
+        elif set(method_order).issubset(set(methods)):
+            df = df[df['method'].isin(method_order)]
+        else:
+            raise ValueError(f'Method order missmatch existing ones {methods}')
+
+        methods = list(df['method'].unique())
+        n_methods = len(methods)
+
+        df = aggregate(df, value)
+
+        # Compute and add relative value
+        df = PlotHelper._add_relative_value(df, value, how,
+                                              reference_method=reference_method)
+
+        # Add y position for plotting
+        def _add_y(row):
+            method_idx = method_order.index(row['method'])
+            db_idx = db_order.index(row['db'])
+            return PlotHelper._y(method_idx, db_idx, n_methods, n_dbs)
+
+        df['y'] = df.apply(_add_y, axis=1)
+
+        # Add a renamed column for databases for plotting
+        df['Database'] = df.apply(lambda row: PlotHelper.rename_str(rename, row['db']), axis=1)
+
+        # Print df with all its edits
+        print(df)
+
+        matplotlib.rcParams.update({
+            'font.size': 10,
+            'legend.fontsize': 12,
+            'legend.title_fontsize': 14,
+            'axes.titlesize': 18,
+            'axes.labelsize': 18,
+            'xtick.labelsize': 12,
+            'ytick.labelsize': 18,
+            # 'mathtext.fontset': 'stixsans',
+            'font.family': 'STIXGeneral',
+            'text.usetex': True,
+        })
+
+        if figsize is None:
+            figsize = (17, 5.25)
+
+        fig, axes = plt.subplots(nrows=1, ncols=n_sizes, figsize=figsize)
+        plt.subplots_adjust(
+            left=0.075,
+            right=0.95,
+            bottom=0.1,
+            top=0.95,
+            wspace=0.05
+        )
+
+        markers = ['o', '^', 'v', 's']
+        renamed_db_order = [PlotHelper.rename_str(rename, db) for db in db_order]
+        db_markers = {db: markers[i] for i, db in enumerate(renamed_db_order)}
+
+        def round_extrema(min_x, max_x):
+            if how == 'log':
+                return min_x, max_x
+
+            min_delta = min(abs(min_x), abs(max_x))
+            min_delta_tuple = min_delta.as_tuple()
+            n_digits = len(min_delta_tuple.digits)
+            e = min_delta_tuple.exponent
+
+            e_unit = n_digits + e - 1
+            mult = Decimal(str(10**e_unit))
+
+            # Round to first significant digit
+            min_x = mult*np.floor(min_x/mult)
+            max_x = mult*np.ceil(max_x/mult)
+
+            return min_x, max_x
+
+        # Compute the xticks
+        def xticks_params(values, xticks_dict=None):
+            true_min_x = Decimal(str(values.min()))
+            true_max_x = Decimal(str(values.max()))
+
+            if xlims is not None:
+                true_min_x, true_max_x = xlims
+
+            if xticks_dict is None:  # Automatic xticks
+
+                min_x, max_x = round_extrema(true_min_x, true_max_x)
+                max_delta = float(max(abs(min_x), abs(max_x)))
+
+                xticks = list(np.linspace(-max_delta, max_delta, 5))
+                del xticks[0]
+                del xticks[-1]
+                xtick_labels = None
+
+            else:  # Manual xticks
+                assert isinstance(xticks_dict, dict)
+                xticks = list(xticks_dict.keys())
+                xtick_labels = list(xticks_dict.values())
+
+                # min_x = Decimal(min(xticks))
+                # max_x = Decimal(max(xticks))
+
+                min_x = true_min_x
+                max_x = true_max_x
+
+                max_delta = float(max(abs(min_x), abs(max_x)))
+
+            # Set limits
+            if how == 'log':
+                xlim_min = .9*float(true_min_x)
+                xlim_max = 1.1*float(true_max_x)
+
+            else:
+                # Symetric constraint on xlims: use max absolute value
+                # xlim_min = -max_delta
+                # xlim_max = max_delta
+
+                # Asymetric constraint: add margin to max and min
+                margin = max_delta*0.05
+                xlim_min = float(true_min_x) - margin
+                xlim_max = float(true_max_x) + margin
+
+            return xlim_min, xlim_max, xticks, xtick_labels
+
+        # Uncomment this line to use same xlims constraint for all subplots
+        # xlim_min, xlim_max, xticks, xtick_labels = xticks_params(df[f'relative_{value}'], xticks_dict=xticks_dict)
+
+        for i, size in enumerate(sizes):
+            ax = axes[i]
+
+            # Select the rows of interest
+            subdf = df[df['size'] == size]
+
+            # Split in valid and invalid data
+            # idx_valid = subdf.index[(subdf['selection'] == 'manual') | (
+            #     (subdf['selection'] != 'manual') & (subdf['n_trials'] == 5))]
+            idx_valid = subdf.index[subdf['n_folds'] == 25]
+            idx_invalid = subdf.index.difference(idx_valid)
+            df_valid = subdf.loc[idx_valid]
+            df_invalid = subdf.loc[idx_invalid]
+
+            # Update parameters for plotting invalids
+            dbs_having_invalids = list(df_invalid['Database'].unique())
+            n_dbs_invalid = len(dbs_having_invalids)
+            db_invalid_markers = {db: m for db, m in db_markers.items() if db in dbs_having_invalids}
+            renamed_db_order_invalid = [x for x in renamed_db_order if x in dbs_having_invalids]
+
+            twinx = ax.twinx()
+            twinx.set_ylim(0, n_methods)
+            twinx.yaxis.set_visible(False)
+
+            # Add gray layouts in the background every other rows
+            for k in range(0, n_methods, 2):
+                ax.axhspan(k-0.5, k+0.5, color='.93', zorder=0)
+
+            mid = 1 if how == 'log' else 0
+            ax.axvline(mid, ymin=0, ymax=n_methods, color='gray', zorder=0)
+
+            # Build the color palette for the boxplot
+            paired_colors = sns.color_palette('Paired').as_hex()
+            boxplot_palette = sns.color_palette(['#525252']+paired_colors)
+
+            # Boxplot
+            sns.set_palette(boxplot_palette)
+            sns.boxplot(x=f'relative_{value}', y='method', data=df_valid, orient='h',
+                        ax=ax, order=method_order, showfliers=False)
+
+            # Scatter plot for valid data points
+            sns.set_palette(sns.color_palette('colorblind'))
+            g2 = sns.scatterplot(x=f'relative_{value}', y='y', hue='Database',
+                                 data=df_valid, ax=twinx,
+                                 hue_order=renamed_db_order,
+                                 style='Database',
+                                 markers=db_markers,
+                                 s=75,
+                                 )
+
+            if legend_bbox:
+                g2.legend(loc='upper left', bbox_to_anchor=legend_bbox, ncol=1, title='Database')
+
+            # Scatter plot for invalid data points
+            if n_dbs_invalid > 0:
+                sns.set_palette(sns.color_palette(n_dbs_invalid*['lightgray']))
+                g3 = sns.scatterplot(x=f'relative_{value}', y='y', hue='Database',
+                                     data=df_invalid, ax=twinx,
+                                     hue_order=renamed_db_order_invalid,
+                                     style='Database',
+                                     markers=db_invalid_markers,
+                                     s=75,
+                                     legend=False,
+                                     )
+            # g3.legend(title='title')
+
+            if not legend_bbox and i < len(sizes)-1:
+                twinx.get_legend().remove()
+
+            elif legend_bbox and i > 0:
+                twinx.get_legend().remove()
 
 
+            if i > 0:  # if not the first axis
+                ax.yaxis.set_visible(False)
+                # twinx.get_legend().remove()
+            else:
+                # Get yticks labels and rename them according to given dict
+                labels = [item.get_text() for item in ax.get_yticklabels()]
+                r_labels = [PlotHelper.rename_str(rename, l) for l in labels]
+                ax.set_yticklabels(r_labels)
 
-        axes[0].set_ylim((ylim0_inf+truncate[0]*delta0, ylim0_sup-truncate[1]*delta0))
-        axes[2].set_ylim((ylim2_inf+truncate[0]*delta2, ylim2_sup-truncate[1]*delta2))
+            if how == 'log':
+                ax.set_xscale('log')
+                twinx.set_xscale('log')
 
-    def get_strat_infos(self, strat):
-        return self._load_yaml_from_filename(strat, 'strat_infos.yml')
+            # Comment this line to use same xlims constraint for all subplots
+            xlim_min, xlim_max, xticks, xtick_labels = xticks_params(subdf[f'relative_{value}'], xticks_dict=xticks_dict)
 
+            if xtick_labels is not None:
+                ax.set_xticks(xticks, minor=False)
+                ax.set_xticklabels(xtick_labels, minor=False)
+                ax.xaxis.set_minor_locator(matplotlib.ticker.NullLocator())
 
+                twinx.set_xticks(xticks, minor=False)
+                twinx.set_xticklabels(xtick_labels, minor=False)
+                twinx.xaxis.set_minor_locator(matplotlib.ticker.NullLocator())
+
+            else:
+                ax.set_xticks(xticks)
+                twinx.set_xticks(xticks)
+
+            ax.set_xlim(left=xlim_min, right=xlim_max)
+            # twinx.set_xlim(left=xlim_min, right=xlim_max)
+
+            ax.set_title(f'n={size}')
+            if xlabel is None:
+                xlabel = ax.get_xlabel()
+            ax.set_xlabel(PlotHelper.rename_str(rename, xlabel))
+            ax.set_ylabel(None)
+            ax.set_axisbelow(True)
+            ax.grid(True, axis='x')
+
+        return fig, axes
+
+    @staticmethod
+    def mean_rank(filepath, method_order=None):
+        if not isinstance(filepath, pd.DataFrame):
+            df = pd.read_csv(filepath, index_col=0)
+        else:
+            df = filepath
+
+        # Check method order
+        methods = list(df['method'].unique())
+        if method_order is None:
+            method_order = methods
+        elif set(method_order).issubset(set(methods)):
+            # Keep only the rows having methods in method_order
+            df = df[df['method'].isin(method_order)]
+        else:
+            raise ValueError(f'Method order missmatch existing ones {methods}')
+
+        dfgb = df.groupby(['size', 'db', 'task', 'trial', 'fold'])
+        df['rank'] = dfgb['score'].rank(method='dense', ascending=False)
+        print(df)
+
+        # Agregate across foldss by averaging
+        dfgb = df.groupby(['size', 'db', 'task', 'method', 'trial'])
+        df = dfgb.agg({'rank': 'mean', 'selection': 'first'})
+
+        # Agregate across trials by averaging
+        df = df.reset_index()
+        df['n_trials'] = 1  # Add a count column to keep track of # of trials
+        dfgb = df.groupby(['size', 'db', 'task', 'method'])
+        df = dfgb.agg({'rank': 'mean', 'selection': 'first', 'n_trials': 'sum'})
+
+        # We only take into account full results (n_trials == 5)
+        df = df.reset_index()
+        idx_valid = df.index[(df['selection'] == 'manual') | (
+            (df['selection'] != 'manual') & (df['n_trials'] == 5))]
+        df = df.loc[idx_valid]
+
+        # Average across tasks
+        dfgb = df.groupby(['size', 'db', 'method'])
+        df = dfgb.agg({'rank': 'mean'})
+
+        # Reset index to addlevel of the multi index to the columns of the df
+        df = df.reset_index()
+
+        # Compute average by size
+        dfgb = df.groupby(['size', 'method'])
+        df_avg_by_size = dfgb.agg({'rank': 'mean'})
+        df_avg_by_size = df_avg_by_size.reset_index()
+        df_avg_by_size = pd.pivot_table(df_avg_by_size, values='rank', index=['method'], columns=['size'])
+
+        # Compute average on all data
+        dfgb = df.groupby(['method'])
+        df_avg = dfgb.agg({'rank': 'mean'})
+
+        # Create a pivot table of the rank accross methods
+        df_pt = pd.pivot_table(df, values='rank', index=['method'], columns=['size', 'db'])
+
+        df_pt.sort_values(by=['size', 'db'], axis=1, inplace=True)
+
+        # Add average by size columns
+        for size in df['size'].unique():
+            df_pt[(size, 'AVG')] = df_avg_by_size[size]
+
+        df_pt.sort_values(by=['size'], axis=1, inplace=True)
+
+        # Add global order column
+        df_pt[('Global', 'AVG')] = df_avg
+        df_pt[('Global', 'Rank')] = df_avg.rank().astype(int)
+
+        # Round mean ranks
+        df_pt = df_pt.round(2)
+
+        # Reorder the method index
+        if method_order:
+            assert len(set(method_order)) == len(set(df['method'].unique()))
+            df_pt = df_pt.reindex(method_order)
+
+        print(df_pt)
+
+        return df_pt
+
+    @staticmethod
+    def ranks(filepath, method_order=None):
+        if not isinstance(filepath, pd.DataFrame):
+            df = pd.read_csv(filepath, index_col=0)
+        else:
+            df = filepath.copy()
+
+        # Check method order
+        methods = list(df['method'].unique())
+        if method_order is None:
+            method_order = methods
+        elif set(method_order).issubset(set(methods)):
+            # Keep only the rows having methods in method_order
+            df = df[df['method'].isin(method_order)]
+        else:
+            raise ValueError(f'Method order missmatch existing ones {methods}')
+
+        # Compute ranks on each fold, trial
+        dfgb = df.groupby(['size', 'db', 'task', 'trial', 'fold'])
+        df['rank'] = dfgb['score'].rank(method='dense', ascending=False)
+
+        # Average accross folds and trials
+        mean_scores = aggregate(df, 'score')
+        mean_ranks = aggregate(df, 'rank')
+
+        dfgb = mean_scores.groupby(['size', 'db', 'task'])
+        mean_scores['rank'] = dfgb['score'].rank(method='dense', ascending=False)
+
+        mean_scores = mean_scores.set_index(['size', 'db', 'task', 'method'])
+        mean_ranks = mean_ranks.set_index(['size', 'db', 'task', 'method'])
+
+        rank_of_mean_scores = mean_scores['rank']
+        mean_scores = mean_scores['score']
+        mean_ranks = mean_ranks['rank']
+
+        rank_of_mean_scores = rank_of_mean_scores.reset_index()
+        mean_scores = mean_scores.reset_index()
+        mean_ranks = mean_ranks.reset_index()
+
+        # print(mean_scores)
+        # print(rank_of_mean_scores)
+        # print(mean_ranks)
+
+        # Average on dataset size
+        dfgb = mean_scores.groupby(['db', 'task', 'method'])
+        mean_scores_on_sizes = dfgb.agg({'score': 'mean'})
+
+        dfgb = rank_of_mean_scores.groupby(['db', 'task', 'method'])
+        mean_rank_of_mean_scores_on_sizes = dfgb.agg({'rank': 'mean'})
+
+        dfgb = mean_ranks.groupby(['db', 'task', 'method'])
+        mean_ranks_on_sizes = dfgb.agg({'rank': 'mean'})
+
+        dfgb = mean_scores_on_sizes.groupby(['db', 'task'])
+        rank_of_mean_scores_on_sizes = dfgb['score'].rank(method='dense', ascending=False)
+
+        print(mean_scores_on_sizes)
+        print(rank_of_mean_scores_on_sizes)
+        print(mean_rank_of_mean_scores_on_sizes)
+        print(mean_ranks_on_sizes)
+
+        ranks_on_sizes = mean_ranks_on_sizes.copy().rename({'rank': 'mean_ranks'}, axis=1)
+        ranks_on_sizes['rank_of_mean_scores'] = rank_of_mean_scores_on_sizes
+        ranks_on_sizes['mean_rank_of_mean_scores'] = mean_rank_of_mean_scores_on_sizes
+
+        print(ranks_on_sizes)
+
+    @staticmethod
+    def plot_scores(filepath, db_order=None, method_order=None, rename=dict(),
+                    reference_method=None,):
+        if not isinstance(filepath, pd.DataFrame):
+            scores = pd.read_csv(filepath, index_col=0)
+        else:
+            scores = filepath
+
+        fig, axes = PlotHelper._plot(scores, 'score', how='no-norm',
+                                       method_order=method_order,
+                                       db_order=db_order, rename=rename,
+                                       reference_method=reference_method,
+                                       figsize=(18, 5.25),
+                                       legend_bbox=(4.22, 1.075))
+
+        df_ranks = get_ranks_tab(scores, method_order=method_order, db_order=db_order, average_sizes=True)
+
+        global_avg_ranks = df_ranks[('Average', 'All')].loc['Average']
+        argmin = global_avg_ranks.argmin()
+        global_avg_ranks.iloc[argmin] = f"\\textbf{{{global_avg_ranks.iloc[argmin]}}}"
+        cellText = np.transpose([list(global_avg_ranks.astype(str))])
+        rowLabels = list(global_avg_ranks.index)
+        rowLabels = [PlotHelper.rename_str(rename, s) for s in rowLabels]
+
+        table = axes[-1].table(cellText=cellText, loc='right',
+                       rowLabels=rowLabels,
+                       colLabels=['Mean\nrank'],
+                       bbox=[1.32, -0.11, .19, .87],
+                    #    bbox=[1.3, 0, .2, .735],
+                       colWidths=[0.2],
+                       )
+        table.set_fontsize(13)
+
+        # Add brackets
+        ax = axes[0]
+        fs = 18
+        lw = 1.3
+        dh = 1./9
+        l_tail = 0.03
+        pos_arrow = -0.3
+        # Here is the label and arrow code of interest
+        ax.annotate('Constant\nimputation\n\n', xy=(pos_arrow, 6*dh), xytext=(pos_arrow-l_tail, 6*dh), xycoords='axes fraction',
+                    fontsize=fs, ha='center', va='center',
+                    bbox=None,#dict(boxstyle='square', fc='white'),
+                    arrowprops=dict(arrowstyle=f'-[, widthB={70/fs}, lengthB=0.5', lw=lw),
+                    rotation=90,
+                    )
+
+        ax.annotate('Conditional\nimputation\n\n', xy=(pos_arrow, 2*dh), xytext=(pos_arrow-l_tail, 2*dh), xycoords='axes fraction',
+                    fontsize=fs, ha='center', va='center',
+                    bbox=None,#dict(boxstyle='square', fc='white'),
+                    arrowprops=dict(arrowstyle=f'-[, widthB={70/fs}, lengthB=0.5', lw=lw),
+                    rotation=90,
+                    )
+
+        plt.subplots_adjust(right=.88)
+
+        return fig
+
+    @staticmethod
+    def plot_times(filepath, which, xticks_dict=None, xlims=None, db_order=None,
+                   method_order=None, rename=dict(), reference_method=None, linear=False):
+        if not isinstance(filepath, pd.DataFrame):
+            scores = pd.read_csv(filepath, index_col=0)
+        else:
+            scores = filepath
+
+        if which == 'PT':
+            scores['total_PT'] = scores['imputation_PT'].fillna(0) + scores['tuning_PT']
+            value = 'total_PT'
+        elif which == 'WCT':
+            scores['total_WCT'] = scores['imputation_WCT'].fillna(0) + scores['tuning_WCT']
+            value = 'total_WCT'
+        else:
+            raise ValueError(f'Unknown argument {which}')
+        fig, axes = PlotHelper._plot(scores, value, how='log',
+                                    xticks_dict=xticks_dict,
+                                    xlims=xlims,
+                                    method_order=method_order,
+                                    db_order=db_order, rename=rename,
+                                    reference_method=reference_method,
+                                    figsize=(18, 5.25))
+
+        # Add brackets
+        ax = axes[0]
+        fs = 18
+        lw = 1.3
+        dh = 1./9
+        l_tail = 0.03
+        pos_arrow = -0.4 if linear else -0.26
+        # Here is the label and arrow code of interest
+        ax.annotate('Constant\nimputation\n\n', xy=(pos_arrow, 6*dh), xytext=(pos_arrow-l_tail, 6*dh), xycoords='axes fraction',
+                    fontsize=fs, ha='center', va='center',
+                    bbox=None,#dict(boxstyle='square', fc='white'),
+                    arrowprops=dict(arrowstyle=f'-[, widthB={70/fs}, lengthB=0.5', lw=lw),
+                    rotation=90,
+                    )
+
+        ax.annotate('Conditional\nimputation\n\n', xy=(pos_arrow, 2*dh), xytext=(pos_arrow-l_tail, 2*dh), xycoords='axes fraction',
+                    fontsize=fs, ha='center', va='center',
+                    bbox=None,#dict(boxstyle='square', fc='white'),
+                    arrowprops=dict(arrowstyle=f'-[, widthB={70/fs}, lengthB=0.5', lw=lw),
+                    rotation=90,
+                    )
+
+        return fig
+
+    @staticmethod
+    def plot_MIA_linear(filepath, db_order, method_order, rename=dict()):
+        if not isinstance(filepath, pd.DataFrame):
+            scores = pd.read_csv(filepath, index_col=0)
+        else:
+            scores = filepath
+        # Select methods of interest
+        scores = scores.loc[scores['method'].isin(method_order)]
+
+        fig, axes = PlotHelper._plot(scores, 'score', how='no-norm',
+                                       rename=rename,
+                                       db_order=db_order,
+                                       method_order=method_order,
+
+                                       #    xlabel='absolute_score',
+                                       #    xticks_dict={
+                                       #        0: '0',
+                                       #        1: '1',
+                                       #    },
+                                       #    xlims=(0, 1.1)
+                                       xticks_dict={
+                                           #    -0.05: '-0.05',
+                                           0: '0',
+                                           0.05: '0.05',
+                                           .1: '0.1',
+                                       },
+                                       xlims=(-0.04, 0.14),
+                                       #    figsize=(17, 3.25),
+                                       figsize=(18, 5.25),
+                                       legend_bbox=(4.30, 1.075),
+                                       )
+
+        df_ranks = get_ranks_tab(scores, method_order=method_order, db_order=db_order, average_sizes=True)
+
+        global_avg_ranks = df_ranks[('Average', 'All')].loc['Average']
+        argmin = global_avg_ranks.argmin()
+        global_avg_ranks.iloc[argmin] = f"\\textbf{{{global_avg_ranks.iloc[argmin]}}}"
+        cellText = np.transpose([list(global_avg_ranks.astype(str))])
+        rowLabels = list(global_avg_ranks.index)
+        rowLabels = [PlotHelper.rename_str(rename, s) for s in rowLabels]
+
+        table = axes[-1].table(cellText=cellText, loc='right',
+                       rowLabels=rowLabels,
+                       colLabels=['Mean\nrank'],
+                    #    bbox=[1.37, 0, .2, .735],
+                       bbox=[1.41, -0.11, .19, .87],
+                       colWidths=[0.2],
+                       )
+        table.set_fontsize(13)
+
+        # Add brackets
+        ax = axes[0]
+        fs = 18
+        lw = 1.3
+        dh = 1./9
+        l_tail = 0.03
+        pos_arrow = -0.45
+        # Here is the label and arrow code of interest
+        ax.annotate('Constant\nimputation\n\n', xy=(pos_arrow, 6*dh), xytext=(pos_arrow-l_tail, 6*dh), xycoords='axes fraction',
+                    fontsize=fs, ha='center', va='center',
+                    bbox=None,#dict(boxstyle='square', fc='white'),
+                    arrowprops=dict(arrowstyle=f'-[, widthB={70/fs}, lengthB=0.5', lw=lw),
+                    rotation=90,
+                    )
+
+        ax.annotate('Conditional\nimputation\n\n', xy=(pos_arrow, 2*dh), xytext=(pos_arrow-l_tail, 2*dh), xycoords='axes fraction',
+                    fontsize=fs, ha='center', va='center',
+                    bbox=None,#dict(boxstyle='square', fc='white'),
+                    arrowprops=dict(arrowstyle=f'-[, widthB={70/fs}, lengthB=0.5', lw=lw),
+                    rotation=90,
+                    )
+
+        plt.subplots_adjust(right=.88, left=.09)
+
+        return fig

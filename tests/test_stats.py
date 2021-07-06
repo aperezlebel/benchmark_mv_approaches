@@ -1,7 +1,8 @@
 """Test the statistics computation."""
+import numpy as np
 import pandas as pd
 
-from statistics import get_indicators_mv
+from statistics.statistics import get_indicators_mv, compute_correlation
 
 
 mv = pd.DataFrame({
@@ -13,7 +14,7 @@ mv = pd.DataFrame({
 })
 
 
-def test():
+def test_indicators():
     """Test all the indicators on a hand-crafted missing values df."""
     indicators = get_indicators_mv(mv)
 
@@ -129,3 +130,12 @@ def test():
     assert df.at[0, 'f_v_lost_mv1_o'] == 15
     assert df.at[0, 'f_v_lost_mv2_o'] == 25
     assert df.at[0, 'f_v_lost_mv_1a2'] == 10
+
+
+def test_correlation():
+    np.random.seed(0)
+    X = np.random.uniform(-100, 100, size=(10000, 100))
+    R1 = compute_correlation(X.T)
+    R2 = np.corrcoef(X.T)
+
+    assert np.isclose(R1, R2).all()

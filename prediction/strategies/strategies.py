@@ -1,22 +1,20 @@
 """Init strategies to be used for running jobs."""
-import yaml
-import os
-import numpy as np
 import logging
+import os
 from copy import deepcopy
-from sklearn.model_selection import ShuffleSplit, GridSearchCV, \
-    RandomizedSearchCV, KFold, StratifiedShuffleSplit
-from sklearn.experimental import enable_hist_gradient_boosting
-from sklearn.ensemble import HistGradientBoostingClassifier, \
-    HistGradientBoostingRegressor, RandomForestClassifier
-from sklearn.experimental import enable_iterative_imputer
-from sklearn.impute import SimpleImputer, IterativeImputer, KNNImputer
-from sklearn.linear_model import RidgeCV, BayesianRidge
-from scipy.stats import uniform
-from sklearn.utils.fixes import loguniform
+
+import numpy as np
+import yaml
+from sklearn.experimental import (enable_hist_gradient_boosting,
+                                  enable_iterative_imputer)
+from sklearn.ensemble import (HistGradientBoostingClassifier,
+                              HistGradientBoostingRegressor)
+from sklearn.impute import IterativeImputer, KNNImputer, SimpleImputer
+from sklearn.linear_model import LogisticRegressionCV, RidgeCV
+from sklearn.model_selection import (GridSearchCV, KFold, ShuffleSplit,
+                                     StratifiedShuffleSplit)
 
 from .strategy import Strategy
-
 
 logger = logging.getLogger(__name__)
 
@@ -113,34 +111,12 @@ strategies.append(Strategy(
     n_splits=n_splits,
 ))
 
-
 strategies.append(Strategy(
-    name='Classification_RFC',
-    estimator=RandomForestClassifier(n_jobs=1, random_state=RS),
-    inner_cv=StratifiedShuffleSplit(n_splits=n_inner_splits, train_size=0.8, random_state=RS),
-    search=GridSearchCV,
-    param_space={
-        'n_estimators': [50, 100],
-        'max_depth': [3, 6, 9]
-    },
-    search_params={
-        'scoring': 'roc_auc_ovr_weighted',
-        'verbose': 1000,
-        'n_jobs': n_jobs,
-        'return_train_score': True,
-    },
-    # search=RandomizedSearchCV,
-    # param_space={
-    #     'learning_rate': uniform(1e-5, 1),
-    #     'max_iter': range(10, 500)
-    # },
-    # search_params={
-    #     'scoring': 'recall',
-    #     'verbose': 1000,
-    #     'n_jobs': n_jobs,
-    #     'return_train_score': True,
-    #     'n_iter': n_iter
-    # },
+    name='Classification_Logit',
+    estimator=LogisticRegressionCV(random_state=RS, cv=StratifiedShuffleSplit(n_splits=n_inner_splits, train_size=0.8, random_state=RS),),
+    inner_cv=None,
+    search=None,
+    param_space=None,
     outer_cv=KFold(n_splits=n_outer_splits, shuffle=True, random_state=RS),
     compute_importance=compute_importance,
     importance_params={
@@ -157,6 +133,7 @@ strategies.append(Strategy(
     min_test_set=min_test_set,
     n_splits=n_splits,
 ))
+
 
 # A strategy to run a regression
 strategies.append(Strategy(
@@ -202,6 +179,30 @@ strategies.append(Strategy(
     n_splits=n_splits,
 ))
 
+strategies.append(Strategy(
+    name='Regression_Ridge',
+    estimator=RidgeCV(cv=ShuffleSplit(n_splits=n_inner_splits, train_size=0.8, random_state=RS)),
+    inner_cv=None,
+    search=None,
+    param_space=None,
+    search_params=None,
+    outer_cv=KFold(n_splits=n_outer_splits, shuffle=True, random_state=RS),
+    compute_importance=compute_importance,
+    importance_params={
+        'n_jobs': n_jobs,
+        'n_repeats': n_repeats,
+    },
+    learning_curve=learning_curve,
+    learning_curve_params={
+        'scoring': 'r2',
+        'train_sizes': np.linspace(0.1, 1, n_learning_trains)
+    },
+    roc=roc,
+    train_set_steps=train_set_steps,
+    min_test_set=min_test_set,
+    n_splits=n_splits,
+))
+
 
 # Add imputation to the previous strategies
 imputers = {
@@ -214,13 +215,6 @@ imputers = {
     'Iterative+mask': IterativeImputer(add_indicator=True,
                                        max_iter=iterative_imputer_max_iter,
                                        random_state=RS),
-    'IterativeL': IterativeImputer(estimator=BayesianRidge(lambda_init=5),
-                                   max_iter=iterative_imputer_max_iter,
-                                   random_state=RS),
-    'IterativeL+mask': IterativeImputer(estimator=BayesianRidge(lambda_init=5),
-                                        add_indicator=True,
-                                        max_iter=iterative_imputer_max_iter,
-                                        random_state=RS),
     'KNN': KNNImputer(),
     'KNN+mask': KNNImputer(add_indicator=True),
 

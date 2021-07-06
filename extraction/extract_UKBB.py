@@ -1,11 +1,7 @@
 """Filter featrues for UKBB from ukb40663.csv."""
-import pandas as pd
-import logging
 import csv
 
-
-logger = logging.getLogger(__name__)
-logger.addHandler(logging.StreamHandler())  # Print also in console.
+import pandas as pd
 
 dump_folder = 'extracted/'
 sep = ','
@@ -13,8 +9,6 @@ encoding = 'ISO-8859-1'
 
 
 def run_v2(argv=None):
-    """Train the choosen model(s) on the choosen task(s)."""
-
     # Features to keep
     df2 = pd.read_csv('extracted/ukb40663_features_filtered.csv')
     features_to_keep = set(df2['feature_name'])
@@ -34,8 +28,6 @@ def run_v2(argv=None):
 
 
 def run_v1(argv=None):
-    """Train the choosen model(s) on the choosen task(s)."""
-
     # Features to keep
     df2 = pd.read_csv('extracted/ukb40663_features_filtered_v2.csv')
 

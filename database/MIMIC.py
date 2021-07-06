@@ -60,7 +60,7 @@ class MIMIC(Database):
         series_mv = pd.Series(NOT_MISSING, index=series.index,
                               name=series.name)
 
-        # series_mv[series.isna()] = NOT_AVAILABLE
+        series_mv[series.isna()] = NOT_AVAILABLE
 
         # print(series.name, end='\r')
 
