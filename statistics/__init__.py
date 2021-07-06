@@ -1,16 +1,11 @@
 import os
-import matplotlib
-try:
-    matplotlib.use('TkAgg')
-except ImportError:
-    pass
 import matplotlib.pyplot as plt
 
 from custom.const import local_graphics_folder, remote_graphics_folder
-from .tests import run_friedman, run_wilcoxon, run_scores
+from .tests import run_friedman, run_wilcoxon
 from .statistics import run_mv, run_prop, run_cor, run_time
-from .plot import run_boxplot
-from .tabs import run_desc
+from .boxplots import run_boxplot
+from .tabs import run_desc, run_scores
 
 
 plt.rcParams.update({
@@ -21,7 +16,6 @@ plt.rcParams.update({
     'legend.fontsize': 11,
     'legend.title_fontsize': 11,
     'figure.figsize': (8, 4.8),
-    # 'figure.dpi': 600,
 })
 
 
@@ -33,7 +27,8 @@ def run(args):
     print(f'Dump into "{graphics_folder}"')
 
     if args.action == 'wilcoxon':
-        run_wilcoxon(graphics_folder, linear=args.linear, csv=args.csv, greater=not args.less)
+        run_wilcoxon(graphics_folder, linear=args.linear,
+                     csv=args.csv, greater=not args.less)
 
     elif args.action == 'friedman':
         run_friedman(graphics_folder, linear=args.linear, csv=args.csv)

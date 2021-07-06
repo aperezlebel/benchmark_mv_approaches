@@ -49,11 +49,7 @@ if __name__ == '__main__':
     p = subparsers.add_parser('filter', description='Filter all p-values.')
     p.set_defaults(func=pvals.filter)
 
-    # Script : Dump IDs
-    p = subparsers.add_parser('ids', description='Dump all IDs used.')
-    p.set_defaults(func=dump_ids.run)
-
-    # Script 3: prediction
+    # Script 3: Run experiments
     p = subparsers.add_parser('predict', description='Launch experiment for '
                               '1 task, 1 method and 1 trial.')
     p.set_defaults(func=prediction.run)
@@ -70,13 +66,13 @@ if __name__ == '__main__':
     p.add_argument('--idx', dest='dump_idx_only', default=False, const=True,
                    nargs='?', help='Dump only the idx (no prediction).')
 
-    # Script : Aggregate results
+    # Script 4: Aggregate results
     p = subparsers.add_parser('aggregate', description='Aggregate results.')
     p.set_defaults(func=prediction.aggregate_results)
     p.add_argument('root_folder', type=str, help='The root folder where the '
                    'results are stored.')
 
-    # Script : Figures and tables of the paper
+    # Script 5: Figures and tables of the paper
     p = subparsers.add_parser('figs', description='Build figure and tables '
                               'of the paper.')
     p.set_defaults(func=statistics.run)
@@ -107,7 +103,7 @@ if __name__ == '__main__':
 
     p = subp.add_parser('time', description='Total time of fit.')
 
-    # Script 4: statistics
+    # Script 6: Data statistics
     p = subparsers.add_parser('datastats', description='Build figures and '
                               'tables of the paper on data statistics.')
     p.set_defaults(func=statistics.run)
@@ -135,7 +131,7 @@ if __name__ == '__main__':
     p.add_argument('--abs', type=bool, default=False, const=True, nargs='?',
                    help='Whether to use absolute values of correlation')
 
-    # Script 6: Get information
+    # Script 7: Get information
     p = subparsers.add_parser('info', description='Get informations.')
     subp = p.add_subparsers(dest='action', required=True)
     p = subp.add_parser('available',
@@ -147,6 +143,10 @@ if __name__ == '__main__':
     p.set_defaults(func=whatsavailable.run)
     p = subp.add_parser('missing', description='Who is missing in scores.')
     p.set_defaults(func=whosmissing.run)
+
+    # Script 8: Dump IDs
+    p = subparsers.add_parser('ids', description='Dump all IDs used.')
+    p.set_defaults(func=dump_ids.run)
 
     # Start run
     logger.info('Started run')

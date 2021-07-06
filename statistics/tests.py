@@ -4,9 +4,7 @@ from os.path import join
 import numpy as np
 import pandas as pd
 from scipy.stats import f, chi2, wilcoxon
-import matplotlib
 import matplotlib.pyplot as plt
-# from adjustText import adjust_text
 
 from prediction.PlotHelper import PlotHelper
 from prediction.df_utils import get_scores_tab, get_ranks_tab
@@ -635,31 +633,22 @@ def run_friedman(graphics_folder, linear=False, csv=False):
             return f'{space}{x}'
 
     df_statistic = df_statistic.applymap(space)
-    df_statistic.rename({v: f'\hphantom{{-}}{v}' for v in df_statistic.columns}, axis=1, inplace=True)
+    df_statistic.rename(
+        {v: f'\hphantom{{-}}{v}' for v in df_statistic.columns}, axis=1, inplace=True)
 
-    df_statistic.to_latex(join(tab_folder, f'{tab_name}.tex'), na_rep='', escape=False, table_env='tabularx')
+    df_statistic.to_latex(join(
+        tab_folder, f'{tab_name}.tex'), na_rep='', escape=False, table_env='tabularx')
 
     return df_statistic
 
 
 def plot_ranks(average_ranks, critical_distance, ax):
-    # matplotlib.rcParams.update({
-    #     'font.size': 12,
-    #     # 'axes.titlesize': 10,
-    #     # 'axes.labelsize': 11,
-    #     # 'xtick.labelsize': 8,
-    #     # 'ytick.labelsize': 11,
-    #     # 'legend.fontsize': 11,
-    #     # 'legend.title_fontsize': 12,
-    # })
     fontsize_method = 13
-    # fontsize_cd = 10
 
     average_ranks = average_ranks.sort_values()
     min_rank = np.min(average_ranks)
 
     # Move left y-axis and bottim x-axis to centre, passing through (0,0)
-    # ax.spines['left'].set_position(('axes', 0.5))
     ax.spines['left'].set_position('center')
     ax.spines['bottom'].set_color('none')
 
@@ -673,156 +662,21 @@ def plot_ranks(average_ranks, critical_distance, ax):
     ax.set_ylim(1, 9)
     ax.set_xlim(-.3, .3)
     ax.invert_yaxis()
-    # ax.set_position([0, 0, 1, 1])
 
     cd1 = min_rank
     cd2 = min_rank + critical_distance
     colors = ['red' if r < cd2 else 'black' for r in average_ranks]
-    ax.scatter(np.zeros_like(average_ranks), average_ranks, color=colors, marker='.', clip_on=False, zorder=10)
-    ax.plot(-.1*np.ones(2), [cd1, cd2], color='red', marker='_', markeredgewidth=1.5)
-    ax.text(-.12, (cd1+cd2)/2, 'critical distance', rotation=90, ha='center', va='center', color='red', fontsize=12)
-    # ax.annotate('Critical difference', xy=(-.1, (cd1+cd2)/2), textcoords="offset points",
-            # horizontalalignment="right", verticalalignment="bottom")
+    ax.scatter(np.zeros_like(average_ranks), average_ranks,
+               color=colors, marker='.', clip_on=False, zorder=10)
+    ax.plot(-.1*np.ones(2), [cd1, cd2], color='red',
+            marker='_', markeredgewidth=1.5)
+    ax.text(-.12, (cd1+cd2)/2, 'critical distance', rotation=90,
+            ha='center', va='center', color='red', fontsize=12)
 
     texts = []
-    # for i, y in enumerate(np.linspace(1.5, 8.5, len(average_ranks))):
     y_pos = np.linspace(1.5, 8.5, len(average_ranks))
     for i, (method, rank) in enumerate(average_ranks.iteritems()):
-        t = ax.text(.12, y_pos[i], method, va='center', fontsize=fontsize_method)
+        t = ax.text(.12, y_pos[i], method, va='center',
+                    fontsize=fontsize_method)
         texts.append(t)
         ax.plot([0, .12], [rank, y_pos[i]], color='black', ls=':', lw=0.25)
-
-    # adjust_text(texts, ax=ax, autoalign=False, ha='left', va='center')
-
-    # for text in texts:
-    #     x, y = text.get_position()
-    #     text.set_position((.12, y))
-        # text.set_horizontalalignment('left')
-
-def run_scores(graphics_folder, linear, csv=False):
-    path = os.path.abspath('scores/scores.csv')
-    df = pd.read_csv(path, index_col=0)
-
-    # Drop tasks
-    for db, task in tasks_to_drop.items():
-        df.drop(index=df[(df['db'] == db) & (df['task'] == task)].index, inplace=True)
-
-    df['task'] = df['task'].str.replace('_pvals', '_screening')
-
-    if linear:
-        method_order = [
-            'MIA',
-            'Linear+Mean',
-            'Linear+Mean+mask',
-            'Linear+Med',
-            'Linear+Med+mask',
-            'Linear+Iter',
-            'Linear+Iter+mask',
-            'Linear+KNN',
-            'Linear+KNN+mask',
-        ]
-
-    else:
-        method_order = [
-            'MIA',
-            'Mean',
-            'Mean+mask',
-            'Med',
-            'Med+mask',
-            'Iter',
-            'Iter+mask',
-            'KNN',
-            'KNN+mask',
-        ]
-
-    db_order = [
-        'TB',
-        'UKBB',
-        'MIMIC',
-        'NHIS',
-    ]
-
-    scores = get_scores_tab(df, method_order=method_order, db_order=db_order, relative=True)
-    ranks = get_ranks_tab(df, method_order=method_order, db_order=db_order)
-
-    rename = {
-        'Med': 'Median',
-        'Med+mask': 'Median+mask',
-        'Iter': 'Iterative',
-        'Iter+mask': 'Iterative+mask',
-    }
-
-    if linear:
-        rename['MIA'] = 'Boosted trees+MIA'
-    scores.rename(rename, axis=0, inplace=True)
-    ranks.rename(rename, axis=0, inplace=True)
-
-    # Rename DBs
-    scores.rename(db_rename, axis=1, inplace=True)
-    ranks.rename(db_rename, axis=1, inplace=True)
-
-    print(scores)
-    print(ranks)
-
-    # Turn bold the best ranks
-    best_ranks_by_task = ranks.loc['Average'].astype(float).idxmin(axis=0, skipna=True)
-    for (db, task), best_method in best_ranks_by_task.iteritems():
-        ranks.loc[('Average', best_method), (db, task)] = f"\\textbf{{{ranks.loc[('Average', best_method), (db, task)]}}}"
-
-    best_ranks_by_size = ranks['Average'].drop('Average', axis=0, level=0).astype(float).groupby(['Size']).idxmin(axis=0, skipna=True)
-    for db in best_ranks_by_size.columns:
-        for size, value in best_ranks_by_size[db].iteritems():
-            if pd.isnull(value):
-                continue
-            best_method = value[1]
-            ranks.loc[(size, best_method), ('Average', db)] = f"\\textbf{{{ranks.loc[(size, best_method), ('Average', db)]}}}"
-
-    # Preprocessing for latex dump
-    tasks = scores.columns.get_level_values(1)
-    rename = {k: k.replace("_", r"\_") for k in tasks}
-    rename = {k: f'\\rot{{{v}}}' for k, v in rename.items()}
-
-    scores.rename(columns=rename, inplace=True)
-    ranks.rename(columns=rename, inplace=True)
-
-    # Rotate dbs on ranks
-    ranks.rename({v: f'\\rot{{{v}}}' for v in ranks['Average'].columns}, axis=1, level=1, inplace=True)
-
-    # Turn bold the reference scores
-    def boldify(x):
-        if pd.isnull(x):
-            return ''
-        else:
-            return f'\\textbf{{{x}}}'
-
-    smallskip = '0.15in'
-    bigskip = '0.3in'
-    medskip = '0.23in'
-    index_rename = {}
-
-    for size in [2500, 10000, 25000, 100000, 'Average']:
-        scores.loc[(size, 'Reference score')] = scores.loc[(size, 'Reference score')].apply(boldify)
-        if size == 2500:
-            continue
-        skip = bigskip if size == 'Average' else smallskip
-        index_rename[size] = f'\\rule{{0pt}}{{{skip}}}{size}'
-
-    scores.rename(index_rename, axis=0, level=0, inplace=True)
-    ranks.rename(index_rename, axis=0, level=0, inplace=True)
-
-    n_latex_columns = len(ranks.columns)+2
-    column_format = 'l'*(n_latex_columns-5)+f'@{{\\hskip {smallskip}}}'+'l'*4+f'@{{\\hskip {medskip}}}'+'l'
-
-    # ranks.rename({v:f'\\smash{{{v}}}' for v in ranks.columns.get_level_values(0)}, axis=1, level=0, inplace=True)
-
-    tab_folder = get_tab_folder(graphics_folder)
-    tab1_name = 'scores_linear' if linear else 'scores'
-    tab2_name = 'ranks_linear' if linear else 'ranks'
-
-    scores.to_latex(join(tab_folder, f'{tab1_name}.tex'), na_rep='', escape=False, table_env='tabularx') #, column_format='L'*scores.shape[1])
-    ranks.to_latex(join(tab_folder, f'{tab2_name}.tex'), na_rep='', escape=False,
-    table_env='tabularx', column_format=column_format)
-
-    if csv:
-        scores.to_csv(join(tab_folder, f'{tab1_name}.csv'))
-        ranks.to_csv(join(tab_folder, f'{tab2_name}.csv'))
