@@ -102,7 +102,8 @@ if __name__ == '__main__':
 
     p = subp.add_parser('boxplot', parents=[parent_l],
                         description='Plot boxplots scores & times.')
-    p = subp.add_parser('desc')
+
+    p = subp.add_parser('desc', description='Overview table.')
     p = subp.add_parser('time')
 
     # Script 4: statistics
