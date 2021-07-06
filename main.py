@@ -10,6 +10,7 @@ import statistics
 import pvals
 import whatsavailable
 import whosmissing
+import dump_ids
 
 
 if __name__ == '__main__':
@@ -48,6 +49,10 @@ if __name__ == '__main__':
     p = subparsers.add_parser('filter', description='Filter all p-values.')
     p.set_defaults(func=pvals.filter)
 
+    # Script : Dump IDs
+    p = subparsers.add_parser('ids', description='Dump all IDs used.')
+    p.set_defaults(func=dump_ids.run)
+
     # Script 3: prediction
     p = subparsers.add_parser('predict', description='Launch experiment for '
                               '1 task, 1 method and 1 trial.')
@@ -65,12 +70,11 @@ if __name__ == '__main__':
     p.add_argument('--idx', dest='dump_idx_only', default=False, const=True,
                    nargs='?', help='Dump only the idx (no prediction).')
 
-    # # Script 3: extract
-    # p = subparsers.add_parser('extract')
-    # p.set_defaults(func=extraction.run)
-    # p.add_argument('task_name', nargs='?', default=None)
-    # p.add_argument('--RS', dest='RS', default=0, nargs='?',
-    #                help='The random state to use.')
+    # Script : Aggregate results
+    p = subparsers.add_parser('aggregate', description='Aggregate results.')
+    p.set_defaults(func=prediction.aggregate_results)
+    p.add_argument('root_folder', type=str, help='The root folder where the '
+                   'results are stored.')
 
     # Script 4: statistics
     p = subparsers.add_parser('stats')
@@ -134,8 +138,6 @@ if __name__ == '__main__':
     p.set_defaults(func=whatsavailable.run)
     p = subp.add_parser('missing', description='Who is missing in scores.')
     p.set_defaults(func=whosmissing.run)
-
-    args = parser.parse_args()
 
     # Start run
     logger.info('Started run')

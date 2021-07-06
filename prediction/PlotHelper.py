@@ -1,29 +1,24 @@
 """Implement  PlotHelper for train4 results."""
 import os
-# from prediction.df_utils import get_ranks_tab
-import yaml
-import pandas as pd
-import numpy as np
 import re
-import os
-from sklearn.metrics import r2_score, roc_auc_score
-import matplotlib
-# try:
-#     matplotlib.use('MacOSX')
-# except ImportError:
-#     pass
-import matplotlib.pyplot as plt
-import seaborn as sns
-from decimal import Decimal
 import shutil
+from decimal import Decimal
 
-from prediction.df_utils import assert_equal, aggregate, get_ranks_tab
+import matplotlib
+import matplotlib.pyplot as plt
+import numpy as np
+import pandas as pd
+import seaborn as sns
+import yaml
+from sklearn.metrics import r2_score, roc_auc_score
+
+from prediction.df_utils import aggregate, assert_equal, get_ranks_tab
 
 
 class PlotHelper(object):
     """Plot the train4 results."""
 
-    def __init__(self, root_folder, rename, reference_method=None):
+    def __init__(self, root_folder, rename={}, reference_method=None):
         """Init."""
         # Stepe 1: Check and register root_path
         root_folder = root_folder.rstrip('/')  # Remove trailing '/'
@@ -776,7 +771,7 @@ class PlotHelper(object):
 
             elif legend_bbox and i > 0:
                 twinx.get_legend().remove()
-                
+
 
             if i > 0:  # if not the first axis
                 ax.yaxis.set_visible(False)
@@ -1009,14 +1004,14 @@ class PlotHelper(object):
         l_tail = 0.03
         pos_arrow = -0.3
         # Here is the label and arrow code of interest
-        ax.annotate('Constant\nimputation\n\n', xy=(pos_arrow, 6*dh), xytext=(pos_arrow-l_tail, 6*dh), xycoords='axes fraction', 
+        ax.annotate('Constant\nimputation\n\n', xy=(pos_arrow, 6*dh), xytext=(pos_arrow-l_tail, 6*dh), xycoords='axes fraction',
                     fontsize=fs, ha='center', va='center',
                     bbox=None,#dict(boxstyle='square', fc='white'),
                     arrowprops=dict(arrowstyle=f'-[, widthB={70/fs}, lengthB=0.5', lw=lw),
                     rotation=90,
                     )
 
-        ax.annotate('Conditional\nimputation\n\n', xy=(pos_arrow, 2*dh), xytext=(pos_arrow-l_tail, 2*dh), xycoords='axes fraction', 
+        ax.annotate('Conditional\nimputation\n\n', xy=(pos_arrow, 2*dh), xytext=(pos_arrow-l_tail, 2*dh), xycoords='axes fraction',
                     fontsize=fs, ha='center', va='center',
                     bbox=None,#dict(boxstyle='square', fc='white'),
                     arrowprops=dict(arrowstyle=f'-[, widthB={70/fs}, lengthB=0.5', lw=lw),
@@ -1059,14 +1054,14 @@ class PlotHelper(object):
         l_tail = 0.03
         pos_arrow = -0.4 if linear else -0.26
         # Here is the label and arrow code of interest
-        ax.annotate('Constant\nimputation\n\n', xy=(pos_arrow, 6*dh), xytext=(pos_arrow-l_tail, 6*dh), xycoords='axes fraction', 
+        ax.annotate('Constant\nimputation\n\n', xy=(pos_arrow, 6*dh), xytext=(pos_arrow-l_tail, 6*dh), xycoords='axes fraction',
                     fontsize=fs, ha='center', va='center',
                     bbox=None,#dict(boxstyle='square', fc='white'),
                     arrowprops=dict(arrowstyle=f'-[, widthB={70/fs}, lengthB=0.5', lw=lw),
                     rotation=90,
                     )
 
-        ax.annotate('Conditional\nimputation\n\n', xy=(pos_arrow, 2*dh), xytext=(pos_arrow-l_tail, 2*dh), xycoords='axes fraction', 
+        ax.annotate('Conditional\nimputation\n\n', xy=(pos_arrow, 2*dh), xytext=(pos_arrow-l_tail, 2*dh), xycoords='axes fraction',
                     fontsize=fs, ha='center', va='center',
                     bbox=None,#dict(boxstyle='square', fc='white'),
                     arrowprops=dict(arrowstyle=f'-[, widthB={70/fs}, lengthB=0.5', lw=lw),
@@ -1133,14 +1128,14 @@ class PlotHelper(object):
         l_tail = 0.03
         pos_arrow = -0.45
         # Here is the label and arrow code of interest
-        ax.annotate('Constant\nimputation\n\n', xy=(pos_arrow, 6*dh), xytext=(pos_arrow-l_tail, 6*dh), xycoords='axes fraction', 
+        ax.annotate('Constant\nimputation\n\n', xy=(pos_arrow, 6*dh), xytext=(pos_arrow-l_tail, 6*dh), xycoords='axes fraction',
                     fontsize=fs, ha='center', va='center',
                     bbox=None,#dict(boxstyle='square', fc='white'),
                     arrowprops=dict(arrowstyle=f'-[, widthB={70/fs}, lengthB=0.5', lw=lw),
                     rotation=90,
                     )
 
-        ax.annotate('Conditional\nimputation\n\n', xy=(pos_arrow, 2*dh), xytext=(pos_arrow-l_tail, 2*dh), xycoords='axes fraction', 
+        ax.annotate('Conditional\nimputation\n\n', xy=(pos_arrow, 2*dh), xytext=(pos_arrow-l_tail, 2*dh), xycoords='axes fraction',
                     fontsize=fs, ha='center', va='center',
                     bbox=None,#dict(boxstyle='square', fc='white'),
                     arrowprops=dict(arrowstyle=f'-[, widthB={70/fs}, lengthB=0.5', lw=lw),
