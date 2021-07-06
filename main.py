@@ -104,7 +104,8 @@ if __name__ == '__main__':
                         description='Plot boxplots scores & times.')
 
     p = subp.add_parser('desc', description='Overview table.')
-    p = subp.add_parser('time')
+
+    p = subp.add_parser('time', description='Total time of fit.')
 
     # Script 4: statistics
     p = subparsers.add_parser('stats')

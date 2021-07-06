@@ -755,12 +755,11 @@ def run_time():
     df['total_PT'] = df['imputation_PT'].fillna(0) + df['tuning_PT']
     df['total_WCT'] = df['imputation_WCT'].fillna(0) + df['tuning_WCT']
 
-    print(list(df.columns))
-
     total_pt = df['total_PT'].sum()
     total_wct = df['total_WCT'].sum()
 
-    print(total_pt, total_wct)
-    print(total_pt/3600, total_wct/3600)
-
-    print(total_pt/total_wct)
+    print(
+        f'Total number of training time:\n'
+        f'\tCPU time: {int(total_pt/3600)} hours\n'
+        f'\tWall-clock time: {int(total_wct/3600)} hours'
+    )
