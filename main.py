@@ -100,7 +100,8 @@ if __name__ == '__main__':
     subp.add_parser('scores', parents=[parent_l, parent_csv],
                     description='Compute scores and ranks.')
 
-    p = subp.add_parser('boxplot', parents=[parent_l])
+    p = subp.add_parser('boxplot', parents=[parent_l],
+                        description='Plot boxplots scores & times.')
     p = subp.add_parser('desc')
     p = subp.add_parser('time')
 

@@ -1,10 +1,8 @@
 from os.path import join
 import pandas as pd
-import matplotlib
-import matplotlib.pyplot as plt
 
+from custom.const import get_fig_folder
 from prediction.PlotHelper import PlotHelper
-from custom.const import get_fig_folder, get_tab_folder
 
 rename = {
     '': 'MIA',
@@ -92,56 +90,38 @@ tasks_to_drop = {
 
 
 def run_boxplot(graphics_folder, linear):
-    # matplotlib.rcParams.update({
-    #     # 'font.size': 40,
-    #     # 'axes.titlesize': 10,
-    #     # 'axes.labelsize': 11,
-    #     # 'xtick.labelsize': 8,
-    #     # 'ytick.labelsize': 11,
-    #     # 'legend.fontsize': 11,
-    #     # 'legend.title_fontsize': 12,
-    # })
     filepath = 'scores/scores.csv'
     scores = pd.read_csv(filepath, index_col=0)
 
     # Drop tasks
     for db, task in tasks_to_drop.items():
         scores.drop(index=scores[(scores['db'] == db) & (scores['task'] == task)].index, inplace=True)
-    
+
     scores['task'] = scores['task'].str.replace('_pvals', '_screening')
 
     if linear:
         fig = PlotHelper.plot_MIA_linear(scores, db_order=db_order, method_order=linear_method_order, rename=rename_on_plot)
         xticks = {
-            # 0.5: '$\\frac{1}{2}\\times$',
             1/50: '$\\frac{1}{50}\\times$',
             1/10: '$\\frac{1}{10}\\times$',
             1/3: '$\\frac{1}{3}\\times$',
-            # 0.75: '$\\frac{3}{4}\\times$',
             1: '$1\\times$',
-            # 4/3: '$\\frac{4}{3}\\times$',
-            # 10: '$\\frac{10}{1}\\times$',
             3: '$3\\times$',
             10: '$10\\times$',
-            # 2: '$2\\times$'
         }
         fig_time = PlotHelper.plot_times(scores, 'PT', xticks_dict=xticks, xlims=(0.005, 15), method_order=linear_method_order, db_order=db_order, rename=rename_on_plot, linear=linear)
-    
+
     else:
         fig = PlotHelper.plot_scores(scores, method_order=method_order, db_order=db_order, rename=rename_on_plot, reference_method=None)
         xticks = {
-            # 0.5: '$\\frac{1}{2}\\times$',
             2/3: '$\\frac{2}{3}\\times$',
-            # 0.75: '$\\frac{3}{4}\\times$',
             1: '$1\\times$',
-            # 4/3: '$\\frac{4}{3}\\times$',
             3/2: '$\\frac{3}{2}\\times$',
-            # 2: '$2\\times$'
         }
         fig_time = PlotHelper.plot_times(scores, 'PT', xticks_dict=xticks, method_order=method_order, db_order=db_order, rename=rename_on_plot, linear=linear)
 
     fig_folder = get_fig_folder(graphics_folder)
-    
+
     fig_name = 'boxplots_scores_linear' if linear else 'boxplots_scores'
     fig_time_name = 'boxplots_times_linear' if linear else 'boxplots_times'
 
