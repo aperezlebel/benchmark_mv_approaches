@@ -4,6 +4,7 @@ import logging
 from .strategies import strategies
 from .tasks import tasks
 from .train import train
+from .PlotHelper import PlotHelper
 
 
 logger = logging.getLogger(__name__)
@@ -37,3 +38,8 @@ def run(args):
         RS = int(RS)
 
     train(task, strategy, RS=RS, T=T, dump_idx_only=dump_idx_only)
+
+
+def aggregate_results(args):
+    ph = PlotHelper(root_folder='results')
+    ph.dump('scores/test_scores.csv')

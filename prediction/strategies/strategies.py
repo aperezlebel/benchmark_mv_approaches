@@ -1,22 +1,20 @@
 """Init strategies to be used for running jobs."""
-import yaml
-import os
-import numpy as np
 import logging
+import os
 from copy import deepcopy
-from sklearn.model_selection import ShuffleSplit, GridSearchCV, \
-    RandomizedSearchCV, KFold, StratifiedShuffleSplit
-from sklearn.experimental import enable_hist_gradient_boosting
-from sklearn.ensemble import HistGradientBoostingClassifier, \
-    HistGradientBoostingRegressor, RandomForestClassifier
-from sklearn.experimental import enable_iterative_imputer
-from sklearn.impute import SimpleImputer, IterativeImputer, KNNImputer
-from sklearn.linear_model import RidgeCV, BayesianRidge, LogisticRegressionCV
-from scipy.stats import uniform
-from sklearn.utils.fixes import loguniform
+
+import numpy as np
+import yaml
+from sklearn.experimental import (enable_hist_gradient_boosting,
+                                  enable_iterative_imputer)
+from sklearn.ensemble import (HistGradientBoostingClassifier,
+                              HistGradientBoostingRegressor)
+from sklearn.impute import IterativeImputer, KNNImputer, SimpleImputer
+from sklearn.linear_model import LogisticRegressionCV, RidgeCV
+from sklearn.model_selection import (GridSearchCV, KFold, ShuffleSplit,
+                                     StratifiedShuffleSplit)
 
 from .strategy import Strategy
-
 
 logger = logging.getLogger(__name__)
 

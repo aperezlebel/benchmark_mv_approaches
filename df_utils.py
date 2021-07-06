@@ -40,7 +40,6 @@ def fill_df(df, b, value, keys=None):
     def fill(df, b, value):
         return df.mask(b, value)
 
-
     if isinstance(df, dict):
         if keys is None:
             return {k: fill(df[k], b[k], value) for k in df.keys()}

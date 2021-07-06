@@ -1,6 +1,4 @@
 """Helper to knwo what strategies and tasks are availables."""
-import sys
-
 from prediction.tasks import tasks
 from prediction.strategies import strategies
 

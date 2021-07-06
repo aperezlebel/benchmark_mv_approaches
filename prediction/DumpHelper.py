@@ -1,20 +1,22 @@
 """Class to dump task info and fit results into csv/yaml files."""
-import pandas as pd
-import numpy as np
-import os
-import yaml
-import shutil
 import logging
+import os
+import shutil
 from datetime import datetime
 
+import numpy as np
+import pandas as pd
+import yaml
 
 results_folder = 'results/'
 logger = logging.getLogger(__name__)
+
 
 def _dump_yaml(data, filepath):
     data = listify(data)
     with open(filepath, 'w') as file:
         file.write(yaml.dump(data, allow_unicode=True))
+
 
 def _dump_infos(item, filepath):
     """Dump the infos at the given place.
@@ -28,6 +30,7 @@ def _dump_infos(item, filepath):
     """
     data = item.get_infos()
     _dump_yaml(data, filepath)
+
 
 def listify(d):
     """Convert all numpy arrays contained in the dict to lists.
@@ -220,7 +223,6 @@ class DumpHelper:
 
     def dump_best_params(self, best_params, fold=None):
         self._dump(best_params, 'best_params.yml', fold=fold)
-
 
     def dump_cv_results(self, cv_results, fold=None):
         self._dump(cv_results, 'cv_results.yml', fold=fold)

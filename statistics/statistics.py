@@ -1,23 +1,23 @@
 """Compute statistics about missing values on a databse."""
 import os
 from os.path import join
-import argparse
-import pandas as pd
-import numpy as np
+
 import matplotlib
 import matplotlib.pyplot as plt
+import numpy as np
+import pandas as pd
+from custom.const import get_fig_folder, get_tab_folder
+from database import _load_feature_types, dbs
+from database.constants import (BINARY, CATEGORICAL, CONTINUE_R,
+                                is_categorical, is_continue, is_continuous,
+                                is_ordinal)
 from joblib import Memory
+from prediction.tasks import tasks
 from tqdm import tqdm
 
-from prediction.tasks import tasks
-from custom.const import get_fig_folder
-from .plot_statistics import figure1, figure2, figure2bis, figure3, plot_feature_wise_v2, plot_feature_types
-from database import dbs, _load_feature_types
-from database.constants import BINARY, CONTINUE_R, CATEGORICAL
-from database.constants import is_categorical, is_continuous, is_ordinal, is_continue
+from .plot_statistics import (figure1, figure2, figure2bis, figure3,
+                              plot_feature_types, plot_feature_wise_v2)
 from .tests import tasks_to_drop
-from custom.const import get_tab_folder
-
 
 memory = Memory('joblib_cache')
 
@@ -718,7 +718,7 @@ def run_cor(args, graphics_folder, absolute=False, csv=False, prop_only=True):
     else:
         df_cor.columns.rename(['', 'Threshold'], inplace=True)
         df_cor.rename({'N_mean': r'$\bar{n}$', 'prop': r'$\bar{p}$'}, axis=1, inplace=True)
-    
+
     smallskip = '0.15in'
     bigskip = '0.2in'
     index_rename = {}
@@ -748,13 +748,13 @@ def run_time():
     # Drop tasks
     for db, task in tasks_to_drop.items():
         df.drop(index=df[(df['db'] == db) & (df['task'] == task)].index, inplace=True)
-    
+
     df['task'] = df['task'].str.replace('_pvals', '_screening')
 
     # Sum times
     df['total_PT'] = df['imputation_PT'].fillna(0) + df['tuning_PT']
     df['total_WCT'] = df['imputation_WCT'].fillna(0) + df['tuning_WCT']
-    
+
     print(list(df.columns))
 
     total_pt = df['total_PT'].sum()
