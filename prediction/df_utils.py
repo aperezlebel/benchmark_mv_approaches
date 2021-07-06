@@ -57,6 +57,7 @@ def aggregate(df, value):
 
     return df
 
+
 def get_scores_tab(scores_raw, method_order=None, db_order=None, relative=False, average_sizes=True, formatting=True):
     """Compute article scores tab from raw scores."""
     df = scores_raw.copy()
@@ -75,7 +76,7 @@ def get_scores_tab(scores_raw, method_order=None, db_order=None, relative=False,
     if db_order is not None:
         df = df.reindex(db_order, level=0, axis=1)
 
-    avg_by_size = df.mean(level=0)
+    avg_by_size = df.groupby(level=0).mean()
     avg_by_size.loc['Average'] = avg_by_size.mean(skipna=True)
     avg_by_size['method'] = 'Reference score'
     avg_by_size.set_index('method', append=True, inplace=True)
@@ -91,8 +92,6 @@ def get_scores_tab(scores_raw, method_order=None, db_order=None, relative=False,
                 if pd.isnull(x):
                     return x
                 else:
-                    # space = '' if x < 0 else r'\hphantom{-}'
-                    # return f'{space}{x:.0e}'
                     s1 = f'{x:.0e}'
                     # Remove the 0 from the exponent
                     if s1[-2] == '0':
@@ -101,10 +100,6 @@ def get_scores_tab(scores_raw, method_order=None, db_order=None, relative=False,
                         s2 = s1
                     assert np.isclose(float(s1), float(s2)).all()
                     return s2
-                # try:
-                #     return f'{x:.1e}'
-                # except:
-                #     return x
 
             df = df.applymap(myround)
 
@@ -168,7 +163,7 @@ def get_ranks_tab(scores_raw, method_order=None, db_order=None, average_sizes=Tr
     else:
         df_with_avg_dbs = df
 
-    avg_on_dbs = df_with_avg_dbs.mean(axis=1, level=0)
+    avg_on_dbs = df_with_avg_dbs.groupby(axis=1, level=0).mean()
     avg_on_dbs['All'] = avg_on_dbs.mean(axis=1)
 
     avg_on_dbs.columns = pd.MultiIndex.from_product([['Average'], avg_on_dbs.columns])
@@ -178,7 +173,6 @@ def get_ranks_tab(scores_raw, method_order=None, db_order=None, average_sizes=Tr
             return str(int(x))
         except:
             return x
-
 
     df = df.applymap(to_int)
 

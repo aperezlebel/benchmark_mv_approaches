@@ -82,13 +82,12 @@ if __name__ == '__main__':
     p.set_defaults(func=statistics.run)
     subp = p.add_subparsers(dest='action', required=True)
     parent_l = argparse.ArgumentParser(add_help=False)
-    parent_l.add_argument(
-        '--linear', dest='linear', default=False, const=True,
-        nargs='?', help='Whether to use linear methods')
+    parent_l.add_argument('--linear', dest='linear', default=False, const=True,
+                          nargs='?', help='Whether to use linear methods')
     parent_csv = argparse.ArgumentParser(add_help=False)
-    parent_csv.add_argument(
-        '--csv', dest='csv', default=False, const=True,
-        nargs='?', help='Whether to dump into csv as well.')
+    parent_csv.add_argument('--csv', dest='csv', default=False, const=True,
+                            nargs='?',
+                            help='Whether to dump into csv as well.')
 
     p = subp.add_parser('wilcoxon', parents=[parent_l, parent_csv])
     p.add_argument('--less', type=bool, default=False, const=True, nargs='?',

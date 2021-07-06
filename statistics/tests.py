@@ -66,7 +66,6 @@ def friedman_statistic(ranks, N):
     XF2_pval = chi2.sf(XF2, k)
     FF_pval = f.sf(FF, k-1, (k-1)*(N-1))
 
-    print(f'k={k}, N={N}')
     CD = critical_distance(k, N)
 
     return XF2, XF2_pval, FF, FF_pval, CD
@@ -518,16 +517,9 @@ def run_friedman(graphics_folder, linear=False, csv=False):
     path = os.path.abspath('scores/scores.csv')
     df = pd.read_csv(path, index_col=0)
 
-    # # Drop tasks
-    # df = df.set_index(['db', 'task'])
-    # for db, task in tasks_to_drop.items():
-    #     df = df.drop((db, task), axis=0)
-    # df = df.reset_index()
-
     # Drop tasks
     for db, task in tasks_to_drop.items():
         df.drop(index=df[(df['db'] == db) & (df['task'] == task)].index, inplace=True)
-
 
     df['task'] = df['task'].str.replace('_pvals', '_screening')
 
@@ -571,8 +563,6 @@ def run_friedman(graphics_folder, linear=False, csv=False):
 
     rows = []
     for size in sizes:
-        print(f'Size={size}: ', end='\t')
-
         ranks = df.loc[size, ('Average', 'All')]
         N = (~ranks_by_db.loc[size].isna().all(axis=0)).sum()
 
@@ -595,9 +585,7 @@ def run_friedman(graphics_folder, linear=False, csv=False):
     fig, axes = plt.subplots(2, 2, figsize=(7, 8))
 
     if linear:
-        print(df)
         df.rename({'MIA': 'Boosted trees+MIA'}, axis=0, inplace=True)
-        print(df)
         fig.subplots_adjust(wspace=0.37)
 
     else:
@@ -632,7 +620,6 @@ def run_friedman(graphics_folder, linear=False, csv=False):
         df_statistic.to_csv(join(tab_folder, f'{tab_name}.csv'))
 
     # Preprocessing for latex dump
-
     df_statistic.rename({
         'XF2': r'$\chi^2_F$',
         'XF2_pval': r'$\chi^2_F$ p-value',
