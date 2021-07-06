@@ -44,7 +44,7 @@ def run(args):
     elif args.action == 'mv':
         run_mv(args, graphics_folder)
 
-    elif args.action == 'prop':
+    elif args.action == 'ftypes':
         run_prop(args, graphics_folder)
 
     elif args.action == 'cor':

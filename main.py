@@ -126,8 +126,7 @@ if __name__ == '__main__':
     p.add_argument('--fig3', dest='fig3', default=False, const=True,
                    nargs='?', help='Whether to plot the figure3')
 
-    p = subp.add_parser('prop')
-    p.add_argument('tag', default=None, nargs='?', help='The task tag')
+    p = subp.add_parser('ftypes', help='Feature types')
 
     p = subp.add_parser('cor', parents=[parent_csv])
     p.add_argument('--t', type=float, default=0.1,
