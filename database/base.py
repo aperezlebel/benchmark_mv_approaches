@@ -7,10 +7,9 @@ import numpy as np
 import yaml
 import os
 
-from missing_values import get_missing_values
 from features_type import _load_feature_types
 from df_utils import split_features, fill_df, set_dtypes_features, \
-    dtype_from_types
+    dtype_from_types, get_missing_values
 from encode import ordinal_encode, one_hot_encode, date_encode
 from .constants import CATEGORICAL, ORDINAL, BINARY, CONTINUE_R, CONTINUE_I, \
     NOT_A_FEATURE, NOT_MISSING, DATE_TIMESTAMP, DATE_EXPLODED, METADATA_PATH

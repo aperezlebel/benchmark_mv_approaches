@@ -5,8 +5,7 @@ from dataclasses import dataclass, field
 from typing import Set
 import logging
 
-from missing_values import get_missing_values
-from df_utils import fill_df
+from df_utils import fill_df, get_missing_values
 from database import dbs, _load_feature_types
 from .transform import Transform
 from encode import ordinal_encode
