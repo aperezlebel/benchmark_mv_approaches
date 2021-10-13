@@ -31,7 +31,7 @@ if __name__ == '__main__':
 
     # Configure parser
     parser = argparse.ArgumentParser(description='main program')
-    subparsers = parser.add_subparsers(dest='action')
+    subparsers = parser.add_subparsers(dest='action', required=True)
 
     # Script 1: Compute pvals for feature selection with ANOVA
     p = subparsers.add_parser('select', description='Compute p-values for '
