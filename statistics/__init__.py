@@ -6,6 +6,7 @@ from .tests import run_friedman, run_wilcoxon
 from .statistics import run_mv, run_prop, run_cor, run_time
 from .boxplots import run_boxplot
 from .tabs import run_desc, run_scores
+from .difficulty import run_difficulty
 
 
 plt.rcParams.update({
@@ -53,6 +54,9 @@ def run(args):
 
     elif args.action == 'time':
         run_time()
+
+    elif args.action == 'difficulty':
+        run_difficulty(graphics_folder)
 
     else:
         raise ValueError(f'Not known action {args.action}.')

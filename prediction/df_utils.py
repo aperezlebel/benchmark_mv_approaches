@@ -129,7 +129,7 @@ def get_scores_tab(scores_raw, method_order=None, db_order=None, relative=False,
     return df
 
 
-def get_ranks_tab(scores_raw, method_order=None, db_order=None, average_sizes=True):
+def get_ranks_tab(scores_raw, method_order=None, db_order=None, average_sizes=True, average_on_dbs=True):
     """Compute article ranks tab from raw scores."""
 
     df = scores_raw.copy()
@@ -165,11 +165,6 @@ def get_ranks_tab(scores_raw, method_order=None, db_order=None, average_sizes=Tr
     else:
         df_with_avg_dbs = df
 
-    # avg_on_dbs = df_with_avg_dbs.groupby(axis=1, level=0).mean()
-    avg_on_dbs = df_with_avg_dbs.mean(axis=1, level=0)
-    avg_on_dbs['All'] = avg_on_dbs.mean(axis=1)
-
-    avg_on_dbs.columns = pd.MultiIndex.from_product([['Average'], avg_on_dbs.columns])
 
     def to_int(x):  # Convert to int and robust to NaN
         try:
@@ -183,8 +178,14 @@ def get_ranks_tab(scores_raw, method_order=None, db_order=None, average_sizes=Tr
         avg_on_sizes = avg_on_sizes.round(1)
         df = pd.concat([df, avg_on_sizes], axis=0)
 
-    avg_on_dbs = avg_on_dbs.round(1)
-    df = pd.concat([df, avg_on_dbs], axis=1)
+    if average_on_dbs:
+        # avg_on_dbs = df_with_avg_dbs.groupby(axis=1, level=0).mean()
+        avg_on_dbs = df_with_avg_dbs.mean(axis=1, level=0)
+        avg_on_dbs['All'] = avg_on_dbs.mean(axis=1)
+
+        avg_on_dbs.columns = pd.MultiIndex.from_product([['Average'], avg_on_dbs.columns])
+        avg_on_dbs = avg_on_dbs.round(1)
+        df = pd.concat([df, avg_on_dbs], axis=1)
 
     df.index.rename(['Size', 'Method'], inplace=True)
     df.columns.rename(['Database', 'Task'], inplace=True)

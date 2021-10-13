@@ -103,6 +103,8 @@ if __name__ == '__main__':
 
     p = subp.add_parser('time', description='Total time of fit.')
 
+    p = subp.add_parser('difficulty', description='Plot rank vs difficulty.')
+
     # Script 6: Data statistics
     p = subparsers.add_parser('datastats', description='Build figures and '
                               'tables of the paper on data statistics.')
