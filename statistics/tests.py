@@ -224,7 +224,8 @@ def run_wilcoxon_():
     # W_test2 = W_test.loc[half2]
 
 
-def run_wilcoxon_mia(graphics_folder, csv=False, greater=True):
+def run_wilcoxon_mia(graphics_folder, csv=False, greater=True, spacing=True, no_rename=False):
+    """Wilcoxon test between MIA and every other methods (including linear)."""
     path = os.path.abspath('scores/scores.csv')
     df = pd.read_csv(path, index_col=0)
 
@@ -335,13 +336,18 @@ def run_wilcoxon_mia(graphics_folder, csv=False, greater=True):
 
     skip = '0.2in'
 
-    W_test.rename({
-        'Med': 'Median',
-        'Med+mask': 'Median+mask',
-        'Iter': 'Iterative',
-        'Iter+mask': 'Iterative+mask',
-        'Linear+Mean': f'\\rule{{0pt}}{{{skip}}}Linear+Mean'
-    }, axis=0, inplace=True)
+    if no_rename:
+        rename = {}
+    else:
+        rename = {
+            'Med': 'Median',
+            'Med+mask': 'Median+mask',
+            'Iter': 'Iterative',
+            'Iter+mask': 'Iterative+mask',
+        }
+    if spacing:
+        rename['Linear+Mean'] = f'\\rule{{0pt}}{{{skip}}}Linear+Mean'
+    W_test.rename(rename, axis=0, inplace=True)
 
     def pvalue_formatter(x, alpha, n_bonferroni):
         if np.isnan(x):
@@ -357,17 +363,21 @@ def run_wilcoxon_mia(graphics_folder, csv=False, greater=True):
 
     print(W_test)
 
-    tab_folder = get_tab_folder(graphics_folder)
+    if graphics_folder is not None:
+        tab_folder = get_tab_folder(graphics_folder)
 
-    if csv:
-        W_test.to_csv(join(tab_folder, f'wilcoxon_{which}.csv'))
+        if csv:
+            W_test.to_csv(join(tab_folder, f'wilcoxon_{which}.csv'))
 
-    print(f'Apply Bonferroni correction with {W_test.shape[0]} values.')
-    W_test = W_test.applymap(lambda x: pvalue_formatter(x, alpha=0.05, n_bonferroni=W_test.shape[0]))
-    W_test.to_latex(join(tab_folder, f'wilcoxon_{which}.tex'), na_rep='', escape=False, table_env='tabularx')
+        print(f'Apply Bonferroni correction with {W_test.shape[0]} values.')
+        W_test = W_test.applymap(lambda x: pvalue_formatter(x, alpha=0.05, n_bonferroni=W_test.shape[0]))
+        W_test.to_latex(join(tab_folder, f'wilcoxon_{which}.tex'), na_rep='', escape=False, table_env='tabularx')
+
+    return W_test
 
 
 def run_wilcoxon_linear(graphics_folder, csv=False, greater=True):
+    """Wilcoxon test between trees and linear methods, pairwise."""
     path = os.path.abspath('scores/scores.csv')
     df = pd.read_csv(path, index_col=0)
 
@@ -493,21 +503,23 @@ def run_wilcoxon_linear(graphics_folder, csv=False, greater=True):
 
     print(W_test)
 
-    tab_folder = get_tab_folder(graphics_folder)
+    if graphics_folder is not None:
+        tab_folder = get_tab_folder(graphics_folder)
 
-    if csv:
-        W_test.to_csv(join(tab_folder, f'wilcoxon_linear_{which}.csv'))
+        if csv:
+            W_test.to_csv(join(tab_folder, f'wilcoxon_linear_{which}.csv'))
 
-    print(f'Apply Bonferroni correction with {W_test.shape[0]} values.')
-    W_test = W_test.applymap(lambda x: pvalue_formatter(x, alpha=0.05, n_bonferroni=W_test.shape[0]))
-    W_test.to_latex(join(tab_folder, f'wilcoxon_linear_{which}.tex'), na_rep='', escape=False, table_env='tabularx')
+        print(f'Apply Bonferroni correction with {W_test.shape[0]} values.')
+        W_test = W_test.applymap(lambda x: pvalue_formatter(x, alpha=0.05, n_bonferroni=W_test.shape[0]))
+        W_test.to_latex(join(tab_folder, f'wilcoxon_linear_{which}.tex'), na_rep='', escape=False, table_env='tabularx')
+
+    return W_test
 
 
-def run_wilcoxon(graphics_folder, linear=False, csv=False, greater=True):
+def run_wilcoxon(graphics_folder, linear=False, csv=False, greater=True, spacing=True, no_rename=False):
     if linear:
-        run_wilcoxon_linear(graphics_folder, csv=csv, greater=greater)
-    else:
-        run_wilcoxon_mia(graphics_folder, csv=csv, greater=greater)
+        return run_wilcoxon_linear(graphics_folder, csv=csv, greater=greater)
+    return run_wilcoxon_mia(graphics_folder, csv=csv, greater=greater, spacing=spacing, no_rename=no_rename)
 
 
 def run_friedman(graphics_folder, linear=False, csv=False):
