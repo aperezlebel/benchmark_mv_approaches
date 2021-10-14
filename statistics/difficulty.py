@@ -15,7 +15,7 @@ tasks_to_drop = {
 }
 
 
-def run_difficulty(graphics_folder):
+def run_difficulty(graphics_folder, averaged_scores=True):
     filepath = 'scores/scores.csv'
     scores = pd.read_csv(filepath, index_col=0)
 
@@ -75,12 +75,18 @@ def run_difficulty(graphics_folder):
     melted_ranks.dropna(axis=0, inplace=True)
 
     scores = melted_ranks
+
+    if averaged_scores:
+        for _, group in scores.groupby(['Size', 'Database', 'Task']):
+            group['Score'] = group['Score'].mean()
+            scores.update(group['Score'])
+
     scores.reset_index(inplace=True)
 
     scores_auc = scores.query('scorer == "roc_auc_score"')
     scores_r2 = scores.query('scorer == "r2_score"')
 
-    fig1 = plt.figure(figsize=(6, 3.3))
+    fig1 = plt.figure(figsize=(5, 3.3))
     ax = plt.gca()
 
     # Build the color palette
@@ -93,8 +99,7 @@ def run_difficulty(graphics_folder):
                     ax=ax, hue_order=method_order, s=20)
     palette = itertools.cycle(sns.color_palette())
 
-    for name, group in scores_auc.groupby('Method', sort=False):
-        print(name)
+    for _, group in scores_auc.groupby('Method', sort=False):
         z = sm.nonparametric.lowess(group['Rank'], group['Score'])
         ax.plot(z[:, 0], z[:, 1], color=next(palette))
 
@@ -110,14 +115,14 @@ def run_difficulty(graphics_folder):
     plt.tight_layout()
 
     # R2 figure
-    fig2 = plt.figure(figsize=(6, 3.3))
+    fig2 = plt.figure(figsize=(5, 3.3))
     ax = plt.gca()
 
     sns.scatterplot(x='Score', y='Rank', hue='Method', data=scores_r2,
                     ax=ax, hue_order=method_order, s=20)
     palette = itertools.cycle(sns.color_palette())
 
-    for name, group in scores_r2.groupby('Method', sort=False):
+    for _, group in scores_r2.groupby('Method', sort=False):
         z = sm.nonparametric.lowess(group['Rank'], group['Score'])
         ax.plot(z[:, 0], z[:, 1], color=next(palette))
 
@@ -130,6 +135,8 @@ def run_difficulty(graphics_folder):
     renamed_labels = [rename.get(label, label) for label in labels]
     ax.legend(title='Methods', handles=handles, labels=renamed_labels, bbox_to_anchor=(1, 1))
     
+    plt.tight_layout()
+
     fig_folder = get_fig_folder(graphics_folder)
     fig_name = 'rank_vs_difficulty'
 
@@ -138,6 +145,3 @@ def run_difficulty(graphics_folder):
 
     fig2.savefig(os.path.join(fig_folder, f'{fig_name}_r2.pdf'), bbox_inches='tight', pad_inches=0)
     fig2.savefig(os.path.join(fig_folder, f'{fig_name}_r2.jpg'), bbox_inches='tight', pad_inches=0)
-
-    plt.tight_layout()
-    plt.show() 

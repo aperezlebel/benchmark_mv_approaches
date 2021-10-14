@@ -56,7 +56,7 @@ def run(args):
         run_time()
 
     elif args.action == 'difficulty':
-        run_difficulty(graphics_folder)
+        run_difficulty(graphics_folder, args.avg)
 
     else:
         raise ValueError(f'Not known action {args.action}.')
