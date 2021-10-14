@@ -24,6 +24,36 @@ def run_difficulty(graphics_folder):
         scores.drop(index=scores[(scores['db'] == db) & (scores['task'] == task)].index, inplace=True)
 
     scores['task'] = scores['task'].str.replace('_pvals', '_screening')
+
+    print(scores)
+
+    # scores.set_index('method', inplace=True)
+    # scores.rename({
+    #     # 'Mean+mask': 'Mean\n+mask',
+    #     'Med': 'Median',
+    #     'Med+mask': 'Median+mask',
+    #     'Iter': 'Iterative',
+    #     'Iter+mask': 'Iterative+mask',
+    #     # 'KNN+mask': 'KNN\n+mask',
+    # }, inplace=True)
+    # scores.reset_index(inplace=True)
+
+    # print(scores)
+
+    # # exit()
+    
+    # method_order = [
+    #     'MIA',
+    #     'Mean',
+    #     'Mean+mask',
+    #     'Median',
+    #     'Median+mask',
+    #     'Iterative',
+    #     'Iterative+mask',
+    #     'KNN',
+    #     'KNN+mask',
+    # ]
+
     
     method_order = [
         'MIA',
@@ -43,6 +73,15 @@ def run_difficulty(graphics_folder):
         'MIMIC',
         'NHIS',
     ]
+
+    rename = {
+        # 'Mean+mask': 'Mean\n+mask',
+        'Med': 'Median',
+        'Med+mask': 'Median+mask',
+        'Iter': 'Iterative',
+        'Iter+mask': 'Iterative+mask',
+        # 'KNN+mask': 'KNN\n+mask',
+    }
 
     # print(scores)
 
@@ -120,7 +159,7 @@ def run_difficulty(graphics_folder):
     print(scores_auc)
     print(scores_r2)
 
-    fig1 = plt.figure()
+    fig1 = plt.figure(figsize=(6, 3.3))
     ax = plt.gca()
 
     # Build the color palette for the boxplot
@@ -131,7 +170,7 @@ def run_difficulty(graphics_folder):
     sns.set_palette(boxplot_palette)
 
     sns.scatterplot(x='Score', y='Rank', hue='Method', data=scores_auc,
-                    ax=ax, hue_order=method_order)
+                    ax=ax, hue_order=method_order, s=20)
     palette = itertools.cycle(sns.color_palette())
     for name, group in scores_auc.groupby('Method', sort=False):
         print(name)
@@ -140,16 +179,23 @@ def run_difficulty(graphics_folder):
         ax.plot(z[:, 0], z[:, 1], color=next(palette))
     ax.legend(bbox_to_anchor=(1, 1))
     ax.set_xlabel('AUC score')
+    ax.invert_yaxis()
+    
+    # Rename methods in legend
+    handles, labels = ax.get_legend_handles_labels()
+    renamed_labels = [rename.get(label, label) for label in labels]
+    ax.legend(title='Methods', handles=handles, labels=renamed_labels, bbox_to_anchor=(1, 1))
+    
     # sns.lineplot()
     # twiny = ax.twiny()
 
     plt.tight_layout()
 
-    fig2 = plt.figure()
+    fig2 = plt.figure(figsize=(6, 3.3))
     ax = plt.gca()
 
     sns.scatterplot(x='Score', y='Rank', hue='Method', data=scores_r2,
-                    ax=ax, hue_order=method_order)
+                    ax=ax, hue_order=method_order, s=20)
     palette = itertools.cycle(sns.color_palette())
     for name, group in scores_r2.groupby('Method', sort=False):
         print(name)
@@ -158,7 +204,14 @@ def run_difficulty(graphics_folder):
         ax.plot(z[:, 0], z[:, 1], color=next(palette))
     ax.legend(bbox_to_anchor=(1, 1))
     ax.set_xlabel('$r^2$ score')
+    ax.invert_yaxis()
+    # ax.set_ylim((9, 1))
 
+    # Rename methods in legend
+    handles, labels = ax.get_legend_handles_labels()
+    renamed_labels = [rename.get(label, label) for label in labels]
+    ax.legend(title='Methods', handles=handles, labels=renamed_labels, bbox_to_anchor=(1, 1))
+    
     # sns.scatterplot(x='score', y='Rank', hue='Method', data=scores_r2, ax=twiny, marker='x')
     # for name, group in scores_r2.groupby('Method'):
     #     z = sm.nonparametric.lowess(group['Rank'], group['score'])
@@ -167,6 +220,7 @@ def run_difficulty(graphics_folder):
     # # sns.lineplot()
     
     plt.tight_layout()
+
 
     fig_folder = get_fig_folder(graphics_folder)
     fig_name = 'rank_vs_difficulty'
