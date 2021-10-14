@@ -550,7 +550,7 @@ class PlotHelper(object):
     @staticmethod
     def _plot(filepath, value, how, xticks_dict=None, xlims=None, db_order=None,
               method_order=None, rename=dict(), reference_method=None,
-              figsize=None, legend_bbox=None, xlabel=None):
+              figsize=None, legend_bbox=None, xlabel=None, symbols=None):
         """Plot the full available results."""
         if not isinstance(filepath, pd.DataFrame):
             df = pd.read_csv(filepath, index_col=0)
@@ -813,6 +813,24 @@ class PlotHelper(object):
             ax.set_axisbelow(True)
             ax.grid(True, axis='x')
 
+            # Optionally adds symbols on each line (for significance)
+            if symbols is not None:
+                method_symbols = symbols.get(size, None)
+                if method_symbols is None:
+                    continue
+
+                xmin, xmax = ax.get_xlim()
+                ax.set_xlim((xmin - 0.08*(xmax - xmin), xmax))
+
+                for i, method in enumerate(method_order):
+                    symbol = method_symbols.get(method, None)
+                    
+                    if symbol is None:
+                        continue
+
+                    ax.annotate(symbol, xy=(0.025, 0.935-i/9), color='black',
+                                xycoords='axes fraction', fontsize='x-large')
+
         return fig, axes
 
     @staticmethod
@@ -965,7 +983,7 @@ class PlotHelper(object):
 
     @staticmethod
     def plot_scores(filepath, db_order=None, method_order=None, rename=dict(),
-                    reference_method=None,):
+                    reference_method=None, symbols=None):
         if not isinstance(filepath, pd.DataFrame):
             scores = pd.read_csv(filepath, index_col=0)
         else:
@@ -976,7 +994,9 @@ class PlotHelper(object):
                                        db_order=db_order, rename=rename,
                                        reference_method=reference_method,
                                        figsize=(18, 5.25),
-                                       legend_bbox=(4.22, 1.075))
+                                       legend_bbox=(4.22, 1.075),
+                                       symbols=symbols,
+                                       )
 
         df_ranks = get_ranks_tab(scores, method_order=method_order, db_order=db_order, average_sizes=True)
 
@@ -1071,7 +1091,7 @@ class PlotHelper(object):
         return fig
 
     @staticmethod
-    def plot_MIA_linear(filepath, db_order, method_order, rename=dict()):
+    def plot_MIA_linear(filepath, db_order, method_order, rename=dict(), symbols=None):
         if not isinstance(filepath, pd.DataFrame):
             scores = pd.read_csv(filepath, index_col=0)
         else:
@@ -1100,6 +1120,7 @@ class PlotHelper(object):
                                        #    figsize=(17, 3.25),
                                        figsize=(18, 5.25),
                                        legend_bbox=(4.30, 1.075),
+                                       symbols=symbols,
                                        )
 
         df_ranks = get_ranks_tab(scores, method_order=method_order, db_order=db_order, average_sizes=True)
