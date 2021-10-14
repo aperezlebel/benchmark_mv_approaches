@@ -1,4 +1,5 @@
 import os
+import matplotlib
 import matplotlib.pyplot as plt
 import pandas as pd
 import seaborn as sns
@@ -141,7 +142,8 @@ def run_breakout(graphics_folder, linear):
         # sns.scatterplot(x='score', y=1, hue='Method', data=group)
         # sns.swarmplot(x='score', y='Size', hue='Method', data=group)
         # sns.stripplot(x='score', y='const', hue='Method', data=group)
-        sns.stripplot(x='score', y='Size', hue='Method', data=group, ax=ax, order=['2500', '10000', '25000', '100000'])
+        sns.stripplot(x='score', y='Size', hue='Method', data=group, ax=ax,
+                      order=['2500', '10000', '25000', '100000'], s=4, jitter=1)#0.3)
         xlabels = {
             'roc_auc_score': 'AUC',
             'r2_score': '$r^2$',
@@ -169,7 +171,39 @@ def run_breakout(graphics_folder, linear):
         # ax.tick_params(axis="x",direction="in", pad=-15)
         # break
 
-    plt.subplots_adjust(hspace=0.3, wspace=0.1)
+    db_titles2 = {
+        1: 'Traumabase',
+        3: 'UKBB',
+        4: 'MIMIC',
+        5: 'NHIS',
+    }
+
+    fs = 14
+
+    for i, db in db_titles2.items():
+        # Here is the label and arrow code of interest
+        # axes[i, 0].annotate(db, xy=(-0.4, 0.5), xycoords='axes fraction',
+        #             fontsize=fs, ha='center', va='center',
+        #             bbox=None,#dict(boxstyle='square', fc='white'),
+        #             # arrowprops=dict(arrowstyle=f'-[, widthB={70/fs}, lengthB=0.5', lw=lw),
+        #             rotation=90,
+        #             )
+        axes[i, -1].annotate(db, xy=(0.5, 0.5), xycoords='axes fraction',
+                             fontsize=fs, ha='center', va='center',
+                             bbox=dict(boxstyle='square', fc='white'),
+                             # arrowprops=dict(arrowstyle=f'-[, widthB={70/fs}, lengthB=0.5', lw=lw),
+                             rotation=0,
+                             )
+    dh = 1./6
+    # for i in range(0,7):
+    for i in [1.35, 2.15, 3.77]:
+        y = i*dh
+        line = matplotlib.lines.Line2D([0.05, 0.9], [y, y], lw=0.5, ls='-', color='gray',
+            alpha=1, transform=fig.transFigure)
+    # axes[1, 0].add_line(line)
+        fig.add_artist(line)
+
+    plt.subplots_adjust(hspace=0.4, wspace=0.1)
 
     fig_folder = get_fig_folder(graphics_folder)
     fig_name = 'breakout'
