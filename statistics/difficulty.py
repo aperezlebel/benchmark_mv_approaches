@@ -110,7 +110,7 @@ def run_difficulty(graphics_folder, averaged_scores=True):
     # Rename methods in legend
     handles, labels = ax.get_legend_handles_labels()
     renamed_labels = [rename.get(label, label) for label in labels]
-    ax.legend(title='Methods', handles=handles, labels=renamed_labels, bbox_to_anchor=(1, 1))
+    ax.legend(title='Method', handles=handles, labels=renamed_labels, bbox_to_anchor=(1, 1))
     
     plt.tight_layout()
 
@@ -133,7 +133,7 @@ def run_difficulty(graphics_folder, averaged_scores=True):
     # Rename methods in legend
     handles, labels = ax.get_legend_handles_labels()
     renamed_labels = [rename.get(label, label) for label in labels]
-    ax.legend(title='Methods', handles=handles, labels=renamed_labels, bbox_to_anchor=(1, 1))
+    ax.legend(title='Method', handles=handles, labels=renamed_labels, bbox_to_anchor=(1, 1))
     
     plt.tight_layout()
 
