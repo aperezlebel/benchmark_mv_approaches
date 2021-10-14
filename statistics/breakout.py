@@ -154,7 +154,7 @@ def run_breakout(graphics_folder, linear):
         ax.set_title(group['Task'].iloc[0].replace('_', '\\_'))
         # sns.swarmplot(x='score', y='Size', hue='Method', data=group)
         if (i, j) == (5, 0):
-            ax.legend(title='Method', ncol=2, bbox_to_anchor=(1, 1))
+            ax.legend(title='Method', ncol=2, bbox_to_anchor=(1.05, 1.04))
         else:
             ax.get_legend().remove()
         if j >= 1:
@@ -163,9 +163,9 @@ def run_breakout(graphics_folder, linear):
             ax.set_xlabel(None)
 
         scorer = xlabels[group['scorer'].iloc[0]]
-        ax.annotate(scorer, xy=(.98, .97), xycoords='axes fraction',
+        ax.annotate(scorer, xy=(0.018, 0.028), xycoords='axes fraction',
                     bbox=dict(boxstyle='square', ec='black', fc='white', alpha=1, linewidth=0.7),
-                    ha='right', va='top')
+                    ha='left', va='bottom', fontsize=8)
 
 
         # ax.tick_params(axis="x",direction="in", pad=-15)
