@@ -97,7 +97,7 @@ def run_breakout(graphics_folder, linear):
         'mathtext.fontset': 'stix',
         'font.family': 'STIXGeneral',
         # 'axes.labelsize': 15,
-        'legend.fontsize': 10,
+        'legend.fontsize': 9,#10,
         # 'figure.figsize': (8, 4.8),
         # 'figure.dpi': 600,
     })
@@ -159,7 +159,11 @@ def run_breakout(graphics_folder, linear):
         ax.set_title(group['Task'].iloc[0].replace('_', '\\_'))
         # sns.swarmplot(x='score', y='Size', hue='Method', data=group)
         if (i, j) == (5, 0):
-            ax.legend(title='Method', ncol=2, bbox_to_anchor=(1.05, 1.04))
+            # Rename methods in legend
+            handles, labels = ax.get_legend_handles_labels()
+            renamed_labels = [rename.get(label, label) for label in labels]
+            ax.legend(title='Method', ncol=2, bbox_to_anchor=(1.05, 1.0),
+                      handles=handles, labels=renamed_labels)
         else:
             ax.get_legend().remove()
         if j >= 1:
