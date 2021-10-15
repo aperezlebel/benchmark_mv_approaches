@@ -147,8 +147,10 @@ def run_breakout(graphics_folder, linear):
 
         # Seed for jitter
         np.random.seed(0)
+        # sns.stripplot(x='score', y='Size', hue='Method', data=group, ax=ax,
         sns.stripplot(x='score', y='Size', hue='Method', data=group, ax=ax,
-                      order=['2500', '10000', '25000', '100000'], s=4, jitter=1)#0.3)
+                      order=['100000', '25000', '10000', '2500'], s=4, jitter=1)#0.3)
+                    #   order=['2500', '10000', '25000', '100000'], s=4, jitter=1)#0.3)
         xlabels = {
             'roc_auc_score': 'AUC',
             'r2_score': '$r^2$',
@@ -172,9 +174,13 @@ def run_breakout(graphics_folder, linear):
             ax.set_xlabel(None)
 
         scorer = xlabels[group['scorer'].iloc[0]]
-        ax.annotate(scorer, xy=(0.018, 0.028), xycoords='axes fraction',
+        # ax.annotate(scorer, xy=(0.018, 0.028), xycoords='axes fraction',
+        #             bbox=dict(boxstyle='square', ec='black', fc='white', alpha=1, linewidth=0.7),
+        #             ha='left', va='bottom', fontsize=8)
+
+        ax.annotate(scorer, xy=(0.018, 0.972), xycoords='axes fraction',
                     bbox=dict(boxstyle='square', ec='black', fc='white', alpha=1, linewidth=0.7),
-                    ha='left', va='bottom', fontsize=8)
+                    ha='left', va='top', fontsize=8)
 
 
         # ax.tick_params(axis="x",direction="in", pad=-15)
@@ -218,5 +224,6 @@ def run_breakout(graphics_folder, linear):
     fig_name = 'breakout'
 
     plt.savefig(os.path.join(fig_folder, f'{fig_name}.pdf'), bbox_inches='tight')
+    plt.savefig(os.path.join(fig_folder, f'{fig_name}.jpg'), bbox_inches='tight', dpi=400)
     plt.tight_layout()
     # plt.show()
