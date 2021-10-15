@@ -148,15 +148,15 @@ def run_breakout(graphics_folder, linear):
         # Seed for jitter
         np.random.seed(0)
         # sns.stripplot(x='score', y='Size', hue='Method', data=group, ax=ax,
-        sns.stripplot(x='score', y='Size', hue='Method', data=group, ax=ax,
-                      order=['100000', '25000', '10000', '2500'], s=4, jitter=1)#0.3)
-                    #   order=['2500', '10000', '25000', '100000'], s=4, jitter=1)#0.3)
+        sns.stripplot(x='Size', y='score', hue='Method', data=group, ax=ax,
+                    #   order=['100000', '25000', '10000', '2500'], s=4, jitter=1)#0.3)
+                      order=['2500', '10000', '25000', '100000'], s=4, jitter=1)#0.3)
         xlabels = {
             'roc_auc_score': 'AUC',
             'r2_score': '$r^2$',
         }
         # ax.set_xlabel()
-        ax.set_xlabel('Score')
+        ax.set_ylabel('Score')
         # ax.set_title(f"\\verb|{group['Task'].iloc[0]}|")
         ax.set_title(group['Task'].iloc[0].replace('_', '\\_'))
         # sns.swarmplot(x='score', y='Size', hue='Method', data=group)
@@ -169,7 +169,8 @@ def run_breakout(graphics_folder, linear):
         else:
             ax.get_legend().remove()
         if j >= 1:
-            ax.get_yaxis().set_visible(False)
+            # ax.get_yaxis().set_visible(False)
+            ax.set_ylabel(None)
         if i < 5:
             ax.set_xlabel(None)
 
@@ -178,9 +179,13 @@ def run_breakout(graphics_folder, linear):
         #             bbox=dict(boxstyle='square', ec='black', fc='white', alpha=1, linewidth=0.7),
         #             ha='left', va='bottom', fontsize=8)
 
-        ax.annotate(scorer, xy=(0.018, 0.972), xycoords='axes fraction',
+        ax.annotate(scorer, xy=(0.019, 0.972), xycoords='axes fraction',
                     bbox=dict(boxstyle='square', ec='black', fc='white', alpha=1, linewidth=0.7),
                     ha='left', va='top', fontsize=8)
+
+        # ax.annotate(scorer, xy=(0.981, 0.028), xycoords='axes fraction',
+        #             bbox=dict(boxstyle='square', ec='black', fc='white', alpha=1, linewidth=0.7),
+        #             ha='right', va='bottom', fontsize=8)
 
 
         # ax.tick_params(axis="x",direction="in", pad=-15)
@@ -218,7 +223,7 @@ def run_breakout(graphics_folder, linear):
     # axes[1, 0].add_line(line)
         fig.add_artist(line)
 
-    plt.subplots_adjust(hspace=0.4, wspace=0.1)
+    plt.subplots_adjust(hspace=0.4, wspace=0.25)
 
     fig_folder = get_fig_folder(graphics_folder)
     fig_name = 'breakout'
