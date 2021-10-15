@@ -1,11 +1,13 @@
 import os
+
 import matplotlib
 import matplotlib.pyplot as plt
+import numpy as np
 import pandas as pd
 import seaborn as sns
 
-from prediction.df_utils import aggregate
 from custom.const import get_fig_folder
+from prediction.df_utils import aggregate
 
 tasks_to_drop = {
     'TB': 'platelet',
@@ -142,6 +144,9 @@ def run_breakout(graphics_folder, linear):
         # sns.scatterplot(x='score', y=1, hue='Method', data=group)
         # sns.swarmplot(x='score', y='Size', hue='Method', data=group)
         # sns.stripplot(x='score', y='const', hue='Method', data=group)
+
+        # Seed for jitter
+        np.random.seed(0)
         sns.stripplot(x='score', y='Size', hue='Method', data=group, ax=ax,
                       order=['2500', '10000', '25000', '100000'], s=4, jitter=1)#0.3)
         xlabels = {
