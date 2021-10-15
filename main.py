@@ -65,6 +65,7 @@ if __name__ == '__main__':
                    nargs='?', help='The trial #.')
     p.add_argument('--idx', dest='dump_idx_only', default=False, const=True,
                    nargs='?', help='Dump only the idx (no prediction).')
+    p.add_argument('--nbagging', type=int, default=None, dest='n_bagging')
 
     # Script 4: Aggregate results
     p = subparsers.add_parser('aggregate', description='Aggregate results.')
@@ -104,7 +105,7 @@ if __name__ == '__main__':
     p = subp.add_parser('time', description='Total time of fit.')
 
     p = subp.add_parser('difficulty', description='Plot rank vs difficulty.')
-    p.add_argument('--no-avg', type=bool, nargs='?', const=False, default=True, dest='avg') 
+    p.add_argument('--no-avg', type=bool, nargs='?', const=False, default=True, dest='avg')
 
     p = subp.add_parser('breakout', parents=[parent_l],
                         description='Plot broken out boxplots scores & times.')

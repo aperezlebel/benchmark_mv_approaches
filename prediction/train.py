@@ -7,6 +7,7 @@ from os.path import join, relpath
 import pandas as pd
 from sklearn.model_selection import ShuffleSplit, StratifiedShuffleSplit
 from sklearn.pipeline import Pipeline
+from sklearn.ensemble import BaggingClassifier, BaggingRegressor
 
 from .DumpHelper import DumpHelper
 from .TimerStep import TimerStep
@@ -14,7 +15,7 @@ from .TimerStep import TimerStep
 logger = logging.getLogger(__name__)
 
 
-def train(task, strategy, RS=None, dump_idx_only=False, T=0):
+def train(task, strategy, RS=None, dump_idx_only=False, T=0, n_bagging=None):
     """Train a model (strategy) on some data (task) and dump results.
 
     Parameters
@@ -29,6 +30,8 @@ def train(task, strategy, RS=None, dump_idx_only=False, T=0):
         Trial number for the ANOVA selection step, from 1 to 5 if 5 trials for
         the ANOVA selection.
         Used only for names of folder when dumping results.
+    n_bagging : bool
+        Whether to use bagging.
 
     """
     if task.is_classif() != strategy.is_classification() and not dump_idx_only:
@@ -68,6 +71,11 @@ def train(task, strategy, RS=None, dump_idx_only=False, T=0):
         ]
 
     estimator = Pipeline(steps)
+
+    if n_bagging is not None:
+        Bagging = BaggingClassifier if strategy.is_classification() else BaggingRegressor
+        estimator = Bagging(estimator, n_estimators=n_bagging, random_state=RS)
+        print(f'Using {Bagging} with {n_bagging} estimators and RS={RS}.')
 
     logger.info('Before size loop')
     # Size of the train set
@@ -115,19 +123,34 @@ def train(task, strategy, RS=None, dump_idx_only=False, T=0):
             estimator.fit(X_train, y_train)
             logger.info('Ended fitting the estimator')
 
-            # Retrieve fit times from timestamps
-            end_ts = time.time()  # Wall-clock time
-            start_ts = timer_start.last_fit_timestamp
-            mid_ts = timer_mid.last_fit_timestamp
+            def compute_times(start, mid, end):
+                return {
+                    'imputation': round(mid - start, 6) if start else None,
+                    'tuning': round(end - mid, 6),
+                }
 
-            end_pt = time.process_time()  # Process time (!= Wall-clock time)
-            start_pt = timer_start.last_fit_pt
-            mid_pt = timer_mid.last_fit_pt
+            if n_bagging is None:
+                # Retrieve fit times from timestamps
+                end_ts = time.time()  # Wall-clock time
+                start_ts = timer_start.last_fit_timestamp
+                mid_ts = timer_mid.last_fit_timestamp
 
-            imputation_time = round(mid_ts - start_ts, 6) if start_ts else None
-            tuning_time = round(end_ts - mid_ts, 6)
-            imputation_pt = round(mid_pt - start_pt, 6) if start_pt else None
-            tuning_pt = round(end_pt - mid_pt, 6)
+                end_pt = time.process_time()  # Process time (!= Wall-clock time)
+                start_pt = timer_start.last_fit_pt
+                mid_pt = timer_mid.last_fit_pt
+
+                times = compute_times(start_ts, mid_ts, end_ts)
+                pts = compute_times(start_pt, mid_pt, end_pt)
+                imputation_time = times['imputation']
+                tuning_time = times['tuning']
+                imputation_pt = pts['imputation']
+                tuning_pt = pts['tuning']
+
+            else:
+                imputation_time = None
+                tuning_time = None
+                imputation_pt = None
+                tuning_pt = None
 
             # Dump fit times
             dh.dump_times(imputation_time, tuning_time,
