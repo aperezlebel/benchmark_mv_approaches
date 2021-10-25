@@ -550,7 +550,7 @@ class PlotHelper(object):
     @staticmethod
     def _plot(filepath, value, how, xticks_dict=None, xlims=None, db_order=None,
               method_order=None, rename=dict(), reference_method=None,
-              figsize=None, legend_bbox=None, xlabel=None, symbols=None):
+              figsize=None, legend_bbox=None, xlabel=None, symbols=None, only_full_samples=True):
         """Plot the full available results."""
         if not isinstance(filepath, pd.DataFrame):
             df = pd.read_csv(filepath, index_col=0)
@@ -626,6 +626,9 @@ class PlotHelper(object):
             top=0.95,
             wspace=0.05
         )
+
+        if n_sizes == 1:
+            axes = [axes]
 
         markers = ['o', '^', 'v', 's']
         renamed_db_order = [PlotHelper.rename_str(rename, db) for db in db_order]
@@ -709,10 +712,15 @@ class PlotHelper(object):
             # Split in valid and invalid data
             # idx_valid = subdf.index[(subdf['selection'] == 'manual') | (
             #     (subdf['selection'] != 'manual') & (subdf['n_trials'] == 5))]
-            idx_valid = subdf.index[subdf['n_folds'] == 25]
-            idx_invalid = subdf.index.difference(idx_valid)
-            df_valid = subdf.loc[idx_valid]
-            df_invalid = subdf.loc[idx_invalid]
+            if only_full_samples:
+                idx_valid = subdf.index[subdf['n_folds'] == 25]
+                idx_invalid = subdf.index.difference(idx_valid)
+                df_valid = subdf.loc[idx_valid]
+                df_invalid = subdf.loc[idx_invalid]
+
+            else:
+                df_valid = subdf
+                df_invalid = pd.DataFrame(columns=subdf.columns)
 
             # Update parameters for plotting invalids
             dbs_having_invalids = list(df_invalid['Database'].unique())
@@ -824,7 +832,7 @@ class PlotHelper(object):
 
                 for i, method in enumerate(method_order):
                     symbol = method_symbols.get(method, None)
-                    
+
                     if symbol is None:
                         continue
 
@@ -983,20 +991,22 @@ class PlotHelper(object):
 
     @staticmethod
     def plot_scores(filepath, db_order=None, method_order=None, rename=dict(),
-                    reference_method=None, symbols=None):
+                    reference_method=None, symbols=None, only_full_samples=True,
+                    legend_bbox=(4.22, 1.075), figsize=(18, 5.25), table_fontsize=13):
         if not isinstance(filepath, pd.DataFrame):
             scores = pd.read_csv(filepath, index_col=0)
         else:
             scores = filepath
 
         fig, axes = PlotHelper._plot(scores, 'score', how='no-norm',
-                                       method_order=method_order,
-                                       db_order=db_order, rename=rename,
-                                       reference_method=reference_method,
-                                       figsize=(18, 5.25),
-                                       legend_bbox=(4.22, 1.075),
-                                       symbols=symbols,
-                                       )
+                                     method_order=method_order,
+                                     db_order=db_order, rename=rename,
+                                     reference_method=reference_method,
+                                     figsize=figsize,
+                                     legend_bbox=legend_bbox,
+                                     symbols=symbols,
+                                     only_full_samples=only_full_samples,
+                                     )
 
         df_ranks = get_ranks_tab(scores, method_order=method_order, db_order=db_order, average_sizes=True)
 
@@ -1014,27 +1024,47 @@ class PlotHelper(object):
                     #    bbox=[1.3, 0, .2, .735],
                        colWidths=[0.2],
                        )
-        table.set_fontsize(13)
+        table.set_fontsize(table_fontsize)
+
+
+        n_methods = 9 if method_order is None else len(method_order)
 
         # Add brackets
         ax = axes[0]
-        fs = 18
-        lw = 1.3
-        dh = 1./9
-        l_tail = 0.03
-        pos_arrow = -0.3
+
+        if n_methods == 9:
+            fs = 18
+            w_const = 70
+            w_cond = 70
+            lw = 1.3
+            dh = 1./n_methods
+            l_tail = 0.03
+            pos_arrow = -0.3
+            n_cond = 2
+            n_const = 6
+        elif n_methods == 11:
+            fs = 18
+            w_const = 55
+            w_cond = 86
+            lw = 1.3
+            dh = 1./n_methods
+            l_tail = 0.03
+            pos_arrow = -0.3
+            n_cond = 3
+            n_const = 8
+
         # Here is the label and arrow code of interest
-        ax.annotate('Constant\nimputation\n\n', xy=(pos_arrow, 6*dh), xytext=(pos_arrow-l_tail, 6*dh), xycoords='axes fraction',
+        ax.annotate('Constant\nimputation\n\n', xy=(pos_arrow, n_const*dh), xytext=(pos_arrow-l_tail, n_const*dh), xycoords='axes fraction',
                     fontsize=fs, ha='center', va='center',
                     bbox=None,#dict(boxstyle='square', fc='white'),
-                    arrowprops=dict(arrowstyle=f'-[, widthB={70/fs}, lengthB=0.5', lw=lw),
+                    arrowprops=dict(arrowstyle=f'-[, widthB={w_const/fs}, lengthB=0.5', lw=lw),
                     rotation=90,
                     )
 
-        ax.annotate('Conditional\nimputation\n\n', xy=(pos_arrow, 2*dh), xytext=(pos_arrow-l_tail, 2*dh), xycoords='axes fraction',
+        ax.annotate('Conditional\nimputation\n\n', xy=(pos_arrow, n_cond*dh), xytext=(pos_arrow-l_tail, n_cond*dh), xycoords='axes fraction',
                     fontsize=fs, ha='center', va='center',
                     bbox=None,#dict(boxstyle='square', fc='white'),
-                    arrowprops=dict(arrowstyle=f'-[, widthB={70/fs}, lengthB=0.5', lw=lw),
+                    arrowprops=dict(arrowstyle=f'-[, widthB={w_cond/fs}, lengthB=0.5', lw=lw),
                     rotation=90,
                     )
 
@@ -1044,7 +1074,8 @@ class PlotHelper(object):
 
     @staticmethod
     def plot_times(filepath, which, xticks_dict=None, xlims=None, db_order=None,
-                   method_order=None, rename=dict(), reference_method=None, linear=False):
+                   method_order=None, rename=dict(), reference_method=None,
+                   linear=False, only_full_samples=True):
         if not isinstance(filepath, pd.DataFrame):
             scores = pd.read_csv(filepath, index_col=0)
         else:
@@ -1064,7 +1095,9 @@ class PlotHelper(object):
                                     method_order=method_order,
                                     db_order=db_order, rename=rename,
                                     reference_method=reference_method,
-                                    figsize=(18, 5.25))
+                                    figsize=(18, 5.25),
+                                    only_full_samples=only_full_samples,
+                                    )
 
         # Add brackets
         ax = axes[0]
