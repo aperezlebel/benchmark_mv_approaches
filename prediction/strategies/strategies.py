@@ -78,7 +78,7 @@ strategies.append(Strategy(
     param_space=param_space,
     search_params={
         'scoring': 'roc_auc_ovr_weighted',
-        'verbose': 1000,
+        'verbose': 0,
         'n_jobs': n_jobs,
         'return_train_score': True,
     },
@@ -89,7 +89,7 @@ strategies.append(Strategy(
     # },
     # search_params={
     #     'scoring': 'recall',
-    #     'verbose': 1000,
+    #     'verbose': 0,
     #     'n_jobs': n_jobs,
     #     'return_train_score': True,
     #     'n_iter': n_iter
@@ -145,7 +145,7 @@ strategies.append(Strategy(
     search_params={
         'scoring': ['r2', 'neg_mean_absolute_error'],
         'refit': 'r2',
-        'verbose': 1000,
+        'verbose': 0,
         'n_jobs': n_jobs,
         'return_train_score': True,
     },
@@ -157,7 +157,7 @@ strategies.append(Strategy(
     # search_params={
     #     'scoring': ['r2', 'neg_mean_absolute_error'],
     #     'refit': 'r2',
-    #     'verbose': 1000,
+    #     'verbose': 0,
     #     'return_train_score': True,
     #     'n_iter': n_iter,
     #     'n_jobs': n_jobs
