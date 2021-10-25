@@ -73,8 +73,13 @@ def train(task, strategy, RS=None, dump_idx_only=False, T=0, n_bagging=None):
     estimator = Pipeline(steps)
 
     if n_bagging is not None:
+        global_timer_start = TimerStep('global_start')
         Bagging = BaggingClassifier if strategy.is_classification() else BaggingRegressor
         estimator = Bagging(estimator, n_estimators=n_bagging, random_state=RS)
+        estimator = Pipeline([
+            ('global_timer_start', global_timer_start),
+            ('bagged_estimator', estimator),
+        ])
         print(f'Using {Bagging} with {n_bagging} estimators and RS={RS}.')
 
     logger.info('Before size loop')
@@ -150,10 +155,19 @@ def train(task, strategy, RS=None, dump_idx_only=False, T=0, n_bagging=None):
                 tuning_pt = pts['tuning']
 
             else:
-                imputation_time = None
-                tuning_time = None
-                imputation_pt = None
-                tuning_pt = None
+                end_ts = time.time()  # Wall-clock time
+                start_ts = global_timer_start.last_fit_timestamp
+
+                end_pt = time.process_time()  # Process time (!= Wall-clock time)
+                start_pt = global_timer_start.last_fit_pt
+
+                # No mid_timer for bagged estimator
+                times = compute_times(start_ts, start_ts, end_ts)
+                pts = compute_times(start_pt, start_pt, end_pt)
+                imputation_time = times['imputation']
+                tuning_time = times['tuning']
+                imputation_pt = pts['imputation']
+                tuning_pt = pts['tuning']
 
             # Dump fit times
             dh.dump_times(imputation_time, tuning_time,
