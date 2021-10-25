@@ -15,7 +15,7 @@ from .TimerStep import TimerStep
 logger = logging.getLogger(__name__)
 
 
-def train(task, strategy, RS=None, dump_idx_only=False, T=0, n_bagging=None):
+def train(task, strategy, RS=None, dump_idx_only=False, T=0, n_bagging=None, train_size=None):
     """Train a model (strategy) on some data (task) and dump results.
 
     Parameters
@@ -84,7 +84,8 @@ def train(task, strategy, RS=None, dump_idx_only=False, T=0, n_bagging=None):
 
     logger.info('Before size loop')
     # Size of the train set
-    for n in strategy.train_set_steps:
+    train_set_steps = strategy.train_set_steps if train_size is None else [train_size]
+    for n in train_set_steps:
         print(f'SIZE {n}')
         logger.info(f'Size {n}')
         n_tot = X.shape[0]

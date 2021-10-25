@@ -38,7 +38,7 @@ def run(args):
         RS = int(RS)
 
     train(task, strategy, RS=RS, T=T, dump_idx_only=dump_idx_only,
-          n_bagging=args.n_bagging)
+          n_bagging=args.n_bagging, train_size=args.train_size)
 
 
 rename = {
