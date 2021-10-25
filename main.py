@@ -31,7 +31,7 @@ if __name__ == '__main__':
 
     # Configure parser
     parser = argparse.ArgumentParser(description='main program')
-    subparsers = parser.add_subparsers(dest='action', required=True)
+    subparsers = parser.add_subparsers(dest='action')
 
     # Script 1: Compute pvals for feature selection with ANOVA
     p = subparsers.add_parser('select', description='Compute p-values for '
@@ -77,7 +77,7 @@ if __name__ == '__main__':
     p = subparsers.add_parser('figs', description='Build figure and tables '
                               'of the paper.')
     p.set_defaults(func=statistics.run)
-    subp = p.add_subparsers(dest='action', required=True)
+    subp = p.add_subparsers(dest='action')
     parent_l = argparse.ArgumentParser(add_help=False)
     parent_l.add_argument('--linear', dest='linear', default=False, const=True,
                           nargs='?', help='Whether to use linear methods')
@@ -114,7 +114,7 @@ if __name__ == '__main__':
     p = subparsers.add_parser('datastats', description='Build figures and '
                               'tables of the paper on data statistics.')
     p.set_defaults(func=statistics.run)
-    subp = p.add_subparsers(dest='action', required=True)
+    subp = p.add_subparsers(dest='action')
 
     p = subp.add_parser('mv', help='Missing values distributions.')
     p.add_argument('tag', default=None, nargs='?', help='The task tag')
@@ -140,7 +140,7 @@ if __name__ == '__main__':
 
     # Script 7: Get information
     p = subparsers.add_parser('info', description='Get informations.')
-    subp = p.add_subparsers(dest='action', required=True)
+    subp = p.add_subparsers(dest='action')
     p = subp.add_parser('available',
                         description='What task/method is available.')
     p.add_argument('-t', dest='task', type=bool, default=False, const=True,

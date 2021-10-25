@@ -80,6 +80,7 @@ def train(task, strategy, RS=None, dump_idx_only=False, T=0, n_bagging=None):
     logger.info('Before size loop')
     # Size of the train set
     for n in strategy.train_set_steps:
+        print(f'SIZE {n}')
         logger.info(f'Size {n}')
         n_tot = X.shape[0]
         if n_tot - n < strategy.min_test_set*n_tot:
@@ -99,6 +100,8 @@ def train(task, strategy, RS=None, dump_idx_only=False, T=0, n_bagging=None):
         for i, (train_idx, test_idx) in enumerate(ss.split(X, y)):
             X_train, X_test = X.iloc[train_idx], X.iloc[test_idx]
             y_train, y_test = y.iloc[train_idx], y.iloc[test_idx]
+
+            print(f'FOLD {i}')
 
             # Used to save the IDs of the sub-sampled dataset.
             if dump_idx_only:
