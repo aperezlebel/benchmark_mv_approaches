@@ -70,8 +70,8 @@ if __name__ == '__main__':
     # Script 4: Aggregate results
     p = subparsers.add_parser('aggregate', description='Aggregate results.')
     p.set_defaults(func=prediction.aggregate_results)
-    p.add_argument('root_folder', type=str, help='The root folder where the '
-                   'results are stored.')
+    p.add_argument('--root', type=str, help='The root folder where the '
+                   'results are stored.', default='results/', dest='root_folder')
 
     # Script 5: Figures and tables of the paper
     p = subparsers.add_parser('figs', description='Build figure and tables '
@@ -109,6 +109,8 @@ if __name__ == '__main__':
 
     p = subp.add_parser('breakout', parents=[parent_l],
                         description='Plot broken out boxplots scores & times.')
+
+    p = subp.add_parser('mi', description='Plot multiple imputation results.')
 
     # Script 6: Data statistics
     p = subparsers.add_parser('datastats', description='Build figures and '

@@ -605,10 +605,10 @@ def septic_task(**kwargs):
 
 task_metas = {
     'death_pvals': death_task,
-    'platelet': platelet_task,
+    # 'platelet': platelet_task,
     'platelet_pvals': platelet_pvals_task,
     'hemo': hemo_task,
     'hemo_pvals': hemo_pvals_task,
-    'acid': acid_task,
+    # 'acid': acid_task,
     'septic_pvals': septic_task,
 }

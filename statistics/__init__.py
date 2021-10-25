@@ -8,6 +8,7 @@ from .boxplots import run_boxplot
 from .tabs import run_desc, run_scores
 from .difficulty import run_difficulty
 from .breakout import run_breakout
+from .mi import run_multiple_imputation
 
 
 plt.rcParams.update({
@@ -61,6 +62,9 @@ def run(args):
 
     elif args.action == 'breakout':
         run_breakout(graphics_folder, linear=args.linear)
+
+    elif args.action == 'mi':
+        run_multiple_imputation(graphics_folder)
 
     else:
         raise ValueError(f'Not known action {args.action}.')
