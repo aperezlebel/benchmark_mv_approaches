@@ -72,11 +72,12 @@ def get_tag(RS, T):
 class DumpHelper:
     """Class used to dump prediction results."""
 
-    def __init__(self, task, strat, RS=None, T=None):
+    def __init__(self, task, strat, RS=None, T=None, n_bagging=None):
         self.task = task
         self.strat = strat
         self.RS = RS
         self.T = T
+        self.n_bagging = n_bagging
 
         self.db_folder = f'{results_folder}{self.task.meta.db}/'
 
@@ -88,7 +89,8 @@ class DumpHelper:
         self.backup_folder = f'{self.task_folder}backup/'
 
         if strat is not None:
-            self.strat_folder = f'{self.task_folder}{tag}{strat.name}/'
+            name = strat.name if n_bagging is None else f'{strat.name}_Bagged{self.n_bagging}'
+            self.strat_folder = f'{self.task_folder}{tag}{name}/'
             logger.info(f'Strat folder: {self.strat_folder}')
 
         self._dump_infos()
@@ -111,14 +113,20 @@ class DumpHelper:
             # Create all necessary folders and ignore if already exist
             os.makedirs(self.strat_folder, exist_ok=True)
 
-            _dump_infos(self.task, f'{self.strat_folder}task_infos.yml')
-            _dump_infos(self.strat, f'{self.strat_folder}strat_infos.yml')
+            # Update infos of the task if using bagging
+            strat_infos = self.strat.get_infos()
+            strat_infos['n_bagging'] = self.n_bagging
+            # if self.n_bagging is not None:
+            #     strat_infos['name'] = f"Bagged_{self.n_bagging}_{strat_infos['name']}"
+
+            _dump_yaml(self.task.get_infos(), f'{self.strat_folder}task_infos.yml')
+            _dump_yaml(strat_infos, f'{self.strat_folder}strat_infos.yml')
 
         else:
             # Create all necessary folders and ignore if already exist
             os.makedirs(self.task_folder, exist_ok=True)
 
-            _dump_infos(self.task, f'{self.task_folder}task_infos.yml')
+            _dump_yaml(self.task.get_infos(), f'{self.task_folder}task_infos.yml')
 
     def _dump_features(self):
         filepath = self.strat_folder+'features.yml'

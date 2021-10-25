@@ -48,7 +48,7 @@ def train(task, strategy, RS=None, dump_idx_only=False, T=0, n_bagging=None):
         logger.info(f'Resetting strategy RS to {RS}')
         strategy.reset_RS(RS)  # Must be done before init DumpHelper
 
-    dh = DumpHelper(task, strategy, RS=RS, T=T)  # Used to dump results
+    dh = DumpHelper(task, strategy, RS=RS, T=T, n_bagging=n_bagging)  # Used to dump results
 
     # Create timer steps used in the pipeline to time training time
     timer_start = TimerStep('start')
