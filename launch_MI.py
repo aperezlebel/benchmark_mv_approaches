@@ -11,6 +11,7 @@ parser.add_argument('-t', type=str, default=None, dest='time')
 parser.add_argument('--cpu', type=int, default=40, dest='n_cpus')
 parser.add_argument('-m', type=str, choices=['mi', 'mia'], default='mi', dest='method')
 parser.add_argument('--mem', type=str, default=None, dest='memory')
+parser.add_argument('-a', type=str, default=None, dest='account')
 
 args = parser.parse_args()
 
@@ -64,7 +65,8 @@ for method in methods:
             partition_option = '' if args.partition is None else f' --partition {args.partition}'
             time_option = '' if args.time is None else f' --time {args.time}'
             memory_option = '' if args.memory is None else f' --mem {args.memory}'
-            command = f"salloc --ntasks 1 --cpus-per-task {args.n_cpus} --job-name {method}{T}{db[0]}{name}{partition_option}{time_option}{memory_option} srun --pty python main.py predict {task} {method} --RS 0 --T {T} --nbagging 100{train_size_option}"
+            account_option = '' if args.account is None else f' --account {args.account}'
+            command = f"salloc --ntasks 1 --cpus-per-task {args.n_cpus} --job-name {method}{T}{db[0]}{name}{partition_option}{time_option}{memory_option}{account_option} srun --pty python main.py predict {task} {method} --RS 0 --T {T} --nbagging 100{train_size_option}"
             session_name = f"{task}_M{method}_T{T}"
             tmux_command = f"tmux new-session -d -s {session_name} '{command}; read'"
 
