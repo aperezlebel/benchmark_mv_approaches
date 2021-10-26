@@ -1,5 +1,6 @@
 import argparse
 
+import numpy as np
 
 parser = argparse.ArgumentParser()
 parser.add_argument('-c', type=int, default=None, dest='chunk')
@@ -58,6 +59,10 @@ for method in [20, 24, 22, 26]:
 
             commands.append(tmux_command)
 
+
+if args.chunk is not None:
+    n_tot_chunks = int(np.ceil(len(commands)/chunk_size))
+    print(f'\nChunk {args.chunk}/{n_tot_chunks}:\n')
 
 for i, command in enumerate(commands):
     if args.chunk is None or (args.chunk*chunk_size <= i < (args.chunk+1)*chunk_size):
