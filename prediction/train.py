@@ -200,11 +200,13 @@ def train(task, strategy, RS=None, dump_idx_only=False, T=0, n_bagging=None,
             dh.dump_prediction(y_pred, y_test, fold=i, tag=str(n))
 
             if n_permutation is not None:
+                scoring = 'roc_auc' if strategy.is_classification() else 'r2'
                 r = permutation_importance(estimator, X_test, y_test,
                                            n_repeats=n_permutation,
-                                           random_state=RS)
+                                           random_state=RS, scoring=scoring)
 
                 importances = pd.DataFrame(r.importances.T, columns=X_train.columns)
                 importances.index.rename('repeat', inplace=True)
+                importances = importances.reindex(sorted(importances.columns), axis=1)
 
                 dh.dump_importances(importances, fold=i, tag=str(n))
