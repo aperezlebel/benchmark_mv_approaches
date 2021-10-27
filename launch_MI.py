@@ -1,4 +1,5 @@
 import argparse
+import os
 
 import numpy as np
 
@@ -12,6 +13,7 @@ parser.add_argument('--cpu', type=int, default=40, dest='n_cpus')
 parser.add_argument('-m', type=str, choices=['mi', 'mia'], default='mi', dest='method')
 parser.add_argument('--mem', type=str, default=None, dest='memory')
 parser.add_argument('-a', type=str, default=None, dest='account')
+parser.add_argument('--run', type=bool, nargs='?', default=False, const=True, dest='run')
 
 args = parser.parse_args()
 
@@ -80,5 +82,7 @@ if args.chunk is not None:
 for i, command in enumerate(commands):
     if args.chunk is None or (args.chunk*chunk_size <= i < (args.chunk+1)*chunk_size):
         print(command)
+        if args.run:
+            os.system(command)
 
 
