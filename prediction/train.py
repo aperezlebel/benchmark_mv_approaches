@@ -210,3 +210,9 @@ def train(task, strategy, RS=None, dump_idx_only=False, T=0, n_bagging=None,
                 importances = importances.reindex(sorted(importances.columns), axis=1)
 
                 dh.dump_importances(importances, fold=i, tag=str(n))
+
+                mv_props = X_test.isna().sum(axis=0)/X_test.shape[0]
+                mv_props.rename(i, inplace=True)
+                mv_props = mv_props.to_frame().T
+                mv_props = mv_props.reindex(sorted(mv_props.columns), axis=1)
+                dh.dump_mv_props(mv_props, fold=i, tag=str(n))

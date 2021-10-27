@@ -236,6 +236,13 @@ class DumpHelper:
 
         self._dump(importances, f'{tag}_importances.csv', fold=fold)
 
+    def dump_mv_props(self, mv_props, fold=None, tag=None):
+
+        if tag is None:
+            tag = ''
+
+        self._dump(mv_props, f'{tag}_mv_props.csv', fold=fold)
+
     def dump_best_params(self, best_params, fold=None):
         self._dump(best_params, 'best_params.yml', fold=fold)
 
