@@ -67,6 +67,7 @@ if __name__ == '__main__':
                    nargs='?', help='Dump only the idx (no prediction).')
     p.add_argument('--nbagging', type=int, default=None, dest='n_bagging')
     p.add_argument('--n', type=int, default=None, dest='train_size')
+    p.add_argument('--npermutation', type=int, default=None, dest='n_permutation')
 
     # Script 4: Aggregate results
     p = subparsers.add_parser('aggregate', description='Aggregate results.')
