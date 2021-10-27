@@ -758,7 +758,41 @@ def run_time():
     total_wct = df['total_WCT'].sum()
 
     print(
-        f'Total number of training time:\n'
+        f'Total training time:\n'
         f'\tCPU time: {int(total_pt/3600)} hours\n'
         f'\tWall-clock time: {int(total_wct/3600)} hours'
     )
+    method = 'MIA'
+
+    df = df.query('method == @method')
+
+    # Sum times
+    df['total_PT'] = df['imputation_PT'].fillna(0) + df['tuning_PT']
+    df['total_WCT'] = df['imputation_WCT'].fillna(0) + df['tuning_WCT']
+
+    total_pt = df['total_PT'].sum()
+    total_wct = df['total_WCT'].sum()
+
+    print(
+        f'{method} training time:\n'
+        f'\tCPU time: {int(total_pt/3600)} hours\n'
+        f'\tWall-clock time: {int(total_wct/3600)} hours'
+    )
+
+
+# 150 000 heures CPU, noeuds de 40 CPU, 3750 heures noeuds, 156 jours noeuds, 20 noeuds : 8 jours
+
+# iter : 1486 CPU hours
+# + mask: 1836 CPU hours
+
+# Les deux : 3322 CPU hours
+# 332 200 heures CPU
+# noeuds de 40 CPU
+# 8305 heures noeuds
+# 350 jours
+# 40 noeuds : 9 jours
+
+
+# MIA : 950 hours CPU
+# 95 000 hours
+
