@@ -16,6 +16,7 @@ parser.add_argument('-a', type=str, default=None, dest='account')
 parser.add_argument('--run', type=bool, nargs='?', default=False, const=True, dest='run')
 parser.add_argument('--nbagging', type=int, default=100, dest='n_bagging')
 parser.add_argument('--npermutation', type=int, default=None, dest='n_permutation')
+parser.add_argument('--no-slurm', type=bool, nargs='?', default=True, const=False, dest='slurm')
 
 args = parser.parse_args()
 
@@ -78,7 +79,8 @@ for method in methods:
             time_option = '' if args.time is None else f' --time {args.time}'
             memory_option = '' if args.memory is None else f' --mem {args.memory}'
             account_option = '' if args.account is None else f' --account {args.account}'
-            command = f"salloc --ntasks 1 --cpus-per-task {args.n_cpus} --job-name {method}{T}{db[0]}{name}{partition_option}{time_option}{memory_option}{account_option} srun --pty python main.py predict {task} {method} --RS 0 --T {T} {bagging_option}{permutation_option}{train_size_option}"
+            slurm_command = f"salloc --ntasks 1 --cpus-per-task {args.n_cpus} --job-name {method}{T}{db[0]}{name}{partition_option}{time_option}{memory_option}{account_option} srun --pty " if args.slurm else ''
+            command = f"{slurm_command}python main.py predict {task} {method} --RS 0 --T {T} {bagging_option}{permutation_option}{train_size_option}"
             session_name = f"{task}_M{method}_T{T}"
             tmux_command = f"tmux new-session -d -s {session_name} '{command}; read'"
 
