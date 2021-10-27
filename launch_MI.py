@@ -74,6 +74,10 @@ for method in methods:
 
             commands.append(tmux_command)
 
+			# Break for tasks that don't need 5 trials
+            if task in manual_tasks:
+                break
+
 
 if args.chunk is not None:
     n_tot_chunks = int(np.ceil(len(commands)/chunk_size))
