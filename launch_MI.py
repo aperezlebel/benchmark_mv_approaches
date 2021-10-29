@@ -1,5 +1,6 @@
 import argparse
 import os
+import sys
 
 import numpy as np
 
@@ -62,6 +63,8 @@ methods = [20, 24, 22, 26] if args.method == 'mi' else [0, 2]
 reg_methods = [22, 26] if args.method == 'mi' else [2]
 clf_methods = [20, 24] if args.method == 'mi' else [0]
 
+python_path = sys.executable
+
 for method in methods:
     for task in tasks:
         if task in reg_tasks and method in clf_methods:
@@ -80,7 +83,7 @@ for method in methods:
             memory_option = '' if args.memory is None else f' --mem {args.memory}'
             account_option = '' if args.account is None else f' --account {args.account}'
             slurm_command = f"salloc --ntasks 1 --cpus-per-task {args.n_cpus} --job-name {method}{T}{db[0]}{name}{partition_option}{time_option}{memory_option}{account_option} srun --pty " if args.slurm else ''
-            command = f"{slurm_command}python main.py predict {task} {method} --RS 0 --T {T} {bagging_option}{permutation_option}{train_size_option}"
+            command = f"{slurm_command}{python_path} main.py predict {task} {method} --RS 0 --T {T} {bagging_option}{permutation_option}{train_size_option}"
             session_name = f"{task}_M{method}_T{T}"
             tmux_command = f"tmux new-session -d -s {session_name} '{command}; read'"
 
@@ -98,6 +101,7 @@ if args.chunk is not None:
 for i, command in enumerate(commands):
     if args.chunk is None or (args.chunk*chunk_size <= i < (args.chunk+1)*chunk_size):
         print(command)
+        print()
         if args.run:
             os.system(command)
 
