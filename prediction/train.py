@@ -5,9 +5,10 @@ import time
 from os.path import join, relpath
 
 import pandas as pd
+from sklearn.ensemble import BaggingClassifier, BaggingRegressor
+from sklearn.inspection import permutation_importance
 from sklearn.model_selection import ShuffleSplit, StratifiedShuffleSplit
 from sklearn.pipeline import Pipeline
-from sklearn.ensemble import BaggingClassifier, BaggingRegressor
 
 from .DumpHelper import DumpHelper
 from .TimerStep import TimerStep
@@ -15,7 +16,8 @@ from .TimerStep import TimerStep
 logger = logging.getLogger(__name__)
 
 
-def train(task, strategy, RS=None, dump_idx_only=False, T=0, n_bagging=None, train_size=None):
+def train(task, strategy, RS=None, dump_idx_only=False, T=0, n_bagging=None,
+          train_size=None, n_permutation=None):
     """Train a model (strategy) on some data (task) and dump results.
 
     Parameters
@@ -196,3 +198,21 @@ def train(task, strategy, RS=None, dump_idx_only=False, T=0, n_bagging=None, tra
             # Dump results
             logger.info(f'Fold {i}: Ended predict.')
             dh.dump_prediction(y_pred, y_test, fold=i, tag=str(n))
+
+            if n_permutation is not None:
+                scoring = 'roc_auc' if strategy.is_classification() else 'r2'
+                r = permutation_importance(estimator, X_test, y_test,
+                                           n_repeats=n_permutation,
+                                           random_state=RS, scoring=scoring)
+
+                importances = pd.DataFrame(r.importances.T, columns=X_train.columns)
+                importances.index.rename('repeat', inplace=True)
+                importances = importances.reindex(sorted(importances.columns), axis=1)
+
+                dh.dump_importances(importances, fold=i, tag=str(n))
+
+                mv_props = X_test.isna().sum(axis=0)/X_test.shape[0]
+                mv_props.rename(i, inplace=True)
+                mv_props = mv_props.to_frame().T
+                mv_props = mv_props.reindex(sorted(mv_props.columns), axis=1)
+                dh.dump_mv_props(mv_props, fold=i, tag=str(n))

@@ -229,6 +229,20 @@ class DumpHelper:
 
         self._dump(df, f'{tag}_prediction.csv', fold=fold)
 
+    def dump_importances(self, importances, fold=None, tag=None):
+
+        if tag is None:
+            tag = ''
+
+        self._dump(importances, f'{tag}_importances.csv', fold=fold)
+
+    def dump_mv_props(self, mv_props, fold=None, tag=None):
+
+        if tag is None:
+            tag = ''
+
+        self._dump(mv_props, f'{tag}_mv_props.csv', fold=fold)
+
     def dump_best_params(self, best_params, fold=None):
         self._dump(best_params, 'best_params.yml', fold=fold)
 
@@ -262,13 +276,13 @@ class DumpHelper:
 
         self._dump(df, f'{tag}_probas.csv', fold=fold)
 
-    def dump_importance(self, importance, fold=None):
-        data = {
-            'importances_mean': importance.importances_mean,
-            'importances_std': importance.importances_std,
-            'importances': importance.importances
-        }
-        self._dump(data, 'importance.yml', fold=fold)
+    # def dump_importance(self, importance, fold=None):
+    #     data = {
+    #         'importances_mean': importance.importances_mean,
+    #         'importances_std': importance.importances_std,
+    #         'importances': importance.importances
+    #     }
+    #     self._dump(data, 'importance.yml', fold=fold)
 
     def dump_learning_curve(self, learning_curve, fold=None):
         self._dump(learning_curve, 'learning_curve.yml', fold=fold)
