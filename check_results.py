@@ -1,13 +1,19 @@
 import re
 import os
 from os.path import join
+import argparse
 
 import pandas as pd
 
+parser = argparse.ArgumentParser()
+parser.add_argument('-n', type=int, default=2500)
+
+args = parser.parse_args()
+
 filenames = [
-    '2500_prediction.csv',
-    '2500_times.csv',
-    '2500_probas.csv',
+    f'{args.n}_prediction.csv',
+    f'{args.n}_probas.csv',
+    f'{args.n}_times.csv',
 ]
 rows = []
 
@@ -18,6 +24,7 @@ def file_len(f):
     return i + 1
 
 
+print(f'Checking results for n={args.n}:')
 for root, subdirs, files in os.walk('results/'):
     counts = {}
 
@@ -57,5 +64,5 @@ df = pd.DataFrame(rows, columns=['path', 'task', 'trial']+filenames)
 print(df)
 df.to_csv('results_counts.csv')
 
-df_incomplete = df.query('`2500_times.csv` != 6')
+df_incomplete = df.query(f'`{args.n}_times.csv` != 6')
 df_incomplete.to_csv('results_incomplete.csv')
