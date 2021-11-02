@@ -45,6 +45,7 @@ def run(args):
 
 rename = {
     '': 'MIA',
+    '_Bagged100': 'MIA+bagging',
     '_imputed_Mean': 'Mean',
     '_imputed_Mean+mask': 'Mean+mask',
     '_imputed_Med': 'Med',
