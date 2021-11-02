@@ -69,6 +69,7 @@ if __name__ == '__main__':
     p.add_argument('--n', type=int, default=None, dest='train_size')
     p.add_argument('--npermutation', type=int, default=None, dest='n_permutation')
     p.add_argument('--fold', type=int, default=None, dest='asked_fold')
+    p.add_argument('--out', type=str, default=None, dest='results_folder')
 
     # Script 4: Aggregate results
     p = subparsers.add_parser('aggregate', description='Aggregate results.')

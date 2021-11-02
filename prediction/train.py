@@ -17,7 +17,8 @@ logger = logging.getLogger(__name__)
 
 
 def train(task, strategy, RS=None, dump_idx_only=False, T=0, n_bagging=None,
-          train_size=None, n_permutation=None, asked_fold=None):
+          train_size=None, n_permutation=None, asked_fold=None,
+          results_folder=None):
     """Train a model (strategy) on some data (task) and dump results.
 
     Parameters
@@ -50,7 +51,8 @@ def train(task, strategy, RS=None, dump_idx_only=False, T=0, n_bagging=None,
         logger.info(f'Resetting strategy RS to {RS}')
         strategy.reset_RS(RS)  # Must be done before init DumpHelper
 
-    dh = DumpHelper(task, strategy, RS=RS, T=T, n_bagging=n_bagging)  # Used to dump results
+    dh = DumpHelper(task, strategy, RS=RS, T=T, n_bagging=n_bagging,
+                    results_folder=results_folder)  # Used to dump results
 
     # Create timer steps used in the pipeline to time training time
     timer_start = TimerStep('start')
