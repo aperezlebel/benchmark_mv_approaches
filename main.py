@@ -114,6 +114,7 @@ if __name__ == '__main__':
                         description='Plot broken out boxplots scores & times.')
 
     p = subp.add_parser('mi', description='Plot multiple imputation results.')
+    p.add_argument('-n', type=int, default=2500)
 
     # Script 6: Data statistics
     p = subparsers.add_parser('datastats', description='Build figures and '

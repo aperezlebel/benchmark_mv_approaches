@@ -64,7 +64,7 @@ def run(args):
         run_breakout(graphics_folder, linear=args.linear)
 
     elif args.action == 'mi':
-        run_multiple_imputation(graphics_folder)
+        run_multiple_imputation(graphics_folder, args.n)
 
     else:
         raise ValueError(f'Not known action {args.action}.')
