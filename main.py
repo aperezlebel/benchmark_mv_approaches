@@ -75,6 +75,8 @@ if __name__ == '__main__':
     p.set_defaults(func=prediction.aggregate_results)
     p.add_argument('--root', type=str, help='The root folder where the '
                    'results are stored.', default='results/', dest='root_folder')
+    p.add_argument('-n', type=int, default=None, dest='n')
+    p.add_argument('--out', type=str, default='test_scores', dest='out')
 
     # Script 5: Figures and tables of the paper
     p = subparsers.add_parser('figs', description='Build figure and tables '

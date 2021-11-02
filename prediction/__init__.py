@@ -75,4 +75,4 @@ rename = {
 
 def aggregate_results(args):
     ph = PlotHelper(root_folder=args.root_folder, rename=rename)
-    ph.dump('scores/test_scores.csv')
+    ph.dump(f'scores/{args.out}.csv', n=args.n)

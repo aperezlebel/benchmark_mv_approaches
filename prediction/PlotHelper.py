@@ -379,11 +379,18 @@ class PlotHelper(object):
                     r_subpath = subpath.replace('/', '_')
                     shutil.copyfile(df_path, dump_dir+r_subpath)
 
-    def dump(self, filepath):
+    def dump(self, filepath, n=None):
         """Scan results in result_folder and compute scores."""
         existing_sizes = self.existing_sizes()
+        if n is not None and str(n) not in existing_sizes:
+            raise ValueError(f'Asked n={n} not in existing sizes: {existing_sizes}')
+        elif n is not None:
+            sizes = [str(n)]
+        else:
+            sizes = existing_sizes
+
         rows = []
-        for i, size in enumerate(existing_sizes):
+        for i, size in enumerate(sizes):
             for db in self.databases():
                 for t in self.tasks(db):
                     methods = self.availale_methods_by_size(db, t, size)
@@ -550,7 +557,8 @@ class PlotHelper(object):
     @staticmethod
     def _plot(filepath, value, how, xticks_dict=None, xlims=None, db_order=None,
               method_order=None, rename=dict(), reference_method=None,
-              figsize=None, legend_bbox=None, xlabel=None, symbols=None, only_full_samples=True):
+              figsize=None, legend_bbox=None, xlabel=None, symbols=None, only_full_samples=True,
+              y_labelsize=18):
         """Plot the full available results."""
         if not isinstance(filepath, pd.DataFrame):
             df = pd.read_csv(filepath, index_col=0)
@@ -609,7 +617,7 @@ class PlotHelper(object):
             'axes.titlesize': 18,
             'axes.labelsize': 18,
             'xtick.labelsize': 12,
-            'ytick.labelsize': 18,
+            'ytick.labelsize': y_labelsize,
             # 'mathtext.fontset': 'stixsans',
             'font.family': 'STIXGeneral',
             'text.usetex': True,
@@ -992,7 +1000,8 @@ class PlotHelper(object):
     @staticmethod
     def plot_scores(filepath, db_order=None, method_order=None, rename=dict(),
                     reference_method=None, symbols=None, only_full_samples=True,
-                    legend_bbox=(4.22, 1.075), figsize=(18, 5.25), table_fontsize=13):
+                    legend_bbox=(4.22, 1.075), figsize=(18, 5.25), table_fontsize=13,
+                    y_labelsize=18):
         if not isinstance(filepath, pd.DataFrame):
             scores = pd.read_csv(filepath, index_col=0)
         else:
@@ -1006,6 +1015,7 @@ class PlotHelper(object):
                                      legend_bbox=legend_bbox,
                                      symbols=symbols,
                                      only_full_samples=only_full_samples,
+                                     y_labelsize=y_labelsize,
                                      )
 
         df_ranks = get_ranks_tab(scores, method_order=method_order, db_order=db_order, average_sizes=True)
@@ -1052,6 +1062,16 @@ class PlotHelper(object):
             pos_arrow = -0.3
             n_cond = 3
             n_const = 8
+        elif n_methods == 12:
+            fs = 18
+            w_const = 50
+            w_cond = 80
+            lw = 1.3
+            dh = 1./n_methods
+            l_tail = 0.03
+            pos_arrow = -0.3
+            n_cond = 4
+            n_const = 9
 
         # Here is the label and arrow code of interest
         ax.annotate('Constant\nimputation\n\n', xy=(pos_arrow, n_const*dh), xytext=(pos_arrow-l_tail, n_const*dh), xycoords='axes fraction',
