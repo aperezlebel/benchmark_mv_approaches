@@ -7,6 +7,7 @@ import pandas as pd
 
 parser = argparse.ArgumentParser()
 parser.add_argument('-n', type=int, default=2500)
+parser.add_argument('--root', type=str, default='results', dest='results_folder')
 
 args = parser.parse_args()
 
@@ -25,7 +26,7 @@ def file_len(f):
 
 
 print(f'Checking results for n={args.n}:')
-for root, subdirs, files in os.walk('results/'):
+for root, subdirs, files in os.walk(args.results_folder):
     counts = {}
 
     for filename in filenames:
@@ -35,7 +36,7 @@ for root, subdirs, files in os.walk('results/'):
 
             # Extract trial and task from root
             print(root)
-            res = re.search('results/(.*)/RS', root)
+            res = re.search(f'{args.results_folder}/(.*)/RS', root)
             if res is None:
                 task = None
                 trial = None
