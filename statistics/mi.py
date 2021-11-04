@@ -89,8 +89,8 @@ tasks_to_drop = {
 def run_multiple_imputation(graphics_folder, n=None):
     filepaths = [
         'scores/scores.csv',
-        'scores/scores_mi.csv',
-        'scores/scores_mia.csv',
+        'scores/scores_mi_2500.csv',
+        'scores/scores_mia_2500.csv',
         'scores/scores_mi_10000.csv',
         'scores/scores_mia_10000.csv',
         'scores/scores_mia_25000.csv',
