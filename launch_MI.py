@@ -45,6 +45,18 @@ tasks = [
     "NHIS/income_pvals",
 ]
 
+sizes_max = {
+    "TB/death_pvals": 10000,
+    "TB/platelet_pvals": 10000,
+    "TB/hemo_pvals": 10000,
+    "TB/hemo": 10000,
+    "TB/septic_pvals": 2500,
+    "UKBB/fluid_pvals": 25000,
+    "MIMIC/septic_pvals": 25000,
+    "MIMIC/hemo_pvals": 25000,
+    "NHIS/income_pvals": 10000,
+}
+
 reg_tasks = [
     "TB/platelet_pvals",
     "UKBB/fluid_pvals",
@@ -71,6 +83,10 @@ for method in methods:
         if task in reg_tasks and method in clf_methods:
             continue
         if task not in reg_tasks and method in reg_methods:
+            continue
+
+        n_max = sizes_max.get(task, None)
+        if n_max is not None and args.train_size is not None and int(args.train_size) > n_max:
             continue
 
         db, name = task.split('/')
