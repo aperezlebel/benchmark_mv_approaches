@@ -54,6 +54,7 @@ rename_on_plot = {
     'Linear+KNN+mask': 'Linear+KNN\n+mask',
     'MI+mask': 'MI\n+mask',
     'MIA+Bagging100': 'MIA\n+Bagging',
+    'MIA+bagging': 'MIA\n+Bagging',
     # 'MIA': 'Boosted trees\n+MIA'
 }
 
@@ -69,7 +70,7 @@ method_order = [
     'KNN+mask',
     'MI',
     'MI+mask',
-    # 'MIA+Bagging100',
+    'MIA+bagging',
 ]
 
 db_order = [
@@ -85,19 +86,17 @@ tasks_to_drop = {
 }
 
 
-def run_multiple_imputation(graphics_folder, n):
-    # pass
-    # exit()
-    filepath = 'scores/scores.csv'
-    filepath_mi = 'scores/scores_mi.csv'
-    filepath_mia = 'scores/scores_mia.csv'
-    filepath_mia_10000 = 'scores/scores_mia_10000.csv'
-    scores_all = pd.read_csv(filepath, index_col=0)
-    scores_mi = pd.read_csv(filepath_mi, index_col=0)
-    scores_mia = pd.read_csv(filepath_mia, index_col=0)
-    scores_mia_10000 = pd.read_csv(filepath_mia_10000, index_col=0)
-
-    scores = pd.concat([scores_all, scores_mi, scores_mia, scores_mia_10000], axis=0)
+def run_multiple_imputation(graphics_folder, n=None):
+    filepaths = [
+        'scores/scores.csv',
+        'scores/scores_mi_2500.csv',
+        'scores/scores_mia_2500.csv',
+        'scores/scores_mi_10000.csv',
+        'scores/scores_mia_10000.csv',
+        'scores/scores_mia_25000.csv',
+    ]
+    dfs = [pd.read_csv(path, index_col=0) for path in filepaths]
+    scores = pd.concat(dfs, axis=0)
 
     # Drop tasks
     for db, task in tasks_to_drop.items():
@@ -105,7 +104,14 @@ def run_multiple_imputation(graphics_folder, n):
 
     scores['task'] = scores['task'].str.replace('_pvals', '_screening')
 
-    scores = scores.query(f'size == {n}')
+    if n is not None:
+        scores = scores.query(f'size == {n}')
+        figsize = (4.5, 5.25)
+        legend_bbox = (1.055, 1.075)
+
+    else:
+        figsize = (18, 5.25)
+        legend_bbox = (4.22, 1.075)
 
     if len(method_order) >= 12:
         y_labelsize = 14
@@ -115,16 +121,18 @@ def run_multiple_imputation(graphics_folder, n):
     fig = PlotHelper.plot_scores(
         scores, method_order=method_order, db_order=db_order,
         rename=rename_on_plot, reference_method=None, symbols=None,
-        only_full_samples=False, legend_bbox=(1.055, 1.075), figsize=(4.5, 5.25),
+        only_full_samples=False, legend_bbox=legend_bbox, figsize=figsize,
         table_fontsize=10, y_labelsize=y_labelsize)
     xticks = {
+        1/10: '$\\frac{1}{10}\\times$',
         2/3: '$\\frac{2}{3}\\times$',
         1: '$1\\times$',
         3/2: '$\\frac{3}{2}\\times$',
+        10: '$10\\times$',
     }
     fig_time = PlotHelper.plot_times(
         scores, 'PT', xticks_dict=xticks, method_order=method_order,
-        db_order=db_order, rename=rename_on_plot)
+        db_order=db_order, rename=rename_on_plot, y_labelsize=y_labelsize)
 
     fig_folder = get_fig_folder(graphics_folder)
 
