@@ -1,4 +1,5 @@
 from os.path import join
+from matplotlib.pyplot import ylabel
 import pandas as pd
 
 from custom.const import get_fig_folder
@@ -16,6 +17,7 @@ rename = {
     '_imputed_KNN+mask': 'KNN+mask',
     '_imputed_Iterative_Bagged100': 'MI',
     '_imputed_Iterative+mask_Bagged100': 'MI+mask',
+    # '_Bagged100': 'MIA+Bagging',
     '_Logit_imputed_Mean': 'Linear+Mean',
     '_Logit_imputed_Mean+mask': 'Linear+Mean+mask',
     '_Logit_imputed_Med': 'Linear+Med',
@@ -51,6 +53,8 @@ rename_on_plot = {
     'Linear+Iter+mask': 'Linear+Iter\n+mask',
     'Linear+KNN+mask': 'Linear+KNN\n+mask',
     'MI+mask': 'MI\n+mask',
+    'MIA+Bagging100': 'MIA\n+Bagging',
+    'MIA+bagging': 'MIA\n+Bagging',
     # 'MIA': 'Boosted trees\n+MIA'
 }
 
@@ -66,6 +70,7 @@ method_order = [
     'KNN+mask',
     'MI',
     'MI+mask',
+    'MIA+bagging',
 ]
 
 db_order = [
@@ -81,15 +86,18 @@ tasks_to_drop = {
 }
 
 
-def run_multiple_imputation(graphics_folder):
-    # pass
-    # exit()
-    filepath = 'scores/scores.csv'
-    filepath_mi = 'scores/scores_mi.csv'
-    scores_all = pd.read_csv(filepath, index_col=0)
-    scores_mi = pd.read_csv(filepath_mi, index_col=0)
-
-    scores = pd.concat([scores_all, scores_mi], axis=0)
+def run_multiple_imputation(graphics_folder, n=None):
+    filepaths = [
+        'scores/scores.csv',
+        'scores/scores_mi_2500.csv',
+        'scores/scores_mia_2500.csv',
+        'scores/scores_mi_10000.csv',
+        'scores/scores_mia_10000.csv',
+        'scores/scores_mia_100000.csv',
+        'scores/scores_mia_25000.csv',
+    ]
+    dfs = [pd.read_csv(path, index_col=0) for path in filepaths]
+    scores = pd.concat(dfs, axis=0)
 
     # Drop tasks
     for db, task in tasks_to_drop.items():
@@ -97,26 +105,40 @@ def run_multiple_imputation(graphics_folder):
 
     scores['task'] = scores['task'].str.replace('_pvals', '_screening')
 
-    scores = scores.query('size == 2500')
+    if n is not None:
+        scores = scores.query(f'size == {n}')
+        figsize = (4.5, 5.25)
+        legend_bbox = (1.055, 1.075)
+
+    else:
+        figsize = (18, 5.25)
+        legend_bbox = (4.22, 1.075)
+
+    if len(method_order) >= 12:
+        y_labelsize = 14
+    else:
+        y_labelsize = 18
 
     fig = PlotHelper.plot_scores(
         scores, method_order=method_order, db_order=db_order,
         rename=rename_on_plot, reference_method=None, symbols=None,
-        only_full_samples=False, legend_bbox=(1.055, 1.075), figsize=(4.5, 5.25),
-        table_fontsize=10)
+        only_full_samples=False, legend_bbox=legend_bbox, figsize=figsize,
+        table_fontsize=10, y_labelsize=y_labelsize)
     xticks = {
+        1/10: '$\\frac{1}{10}\\times$',
         2/3: '$\\frac{2}{3}\\times$',
         1: '$1\\times$',
         3/2: '$\\frac{3}{2}\\times$',
+        10: '$10\\times$',
     }
     fig_time = PlotHelper.plot_times(
         scores, 'PT', xticks_dict=xticks, method_order=method_order,
-        db_order=db_order, rename=rename_on_plot)
+        db_order=db_order, rename=rename_on_plot, y_labelsize=y_labelsize)
 
     fig_folder = get_fig_folder(graphics_folder)
 
-    fig_name = 'boxplots_mi_scores'
-    fig_time_name = 'boxplots_mi_times'
+    fig_name = f'boxplots_mi_scores_{n}'
+    fig_time_name = f'boxplots_mi_times_{n}'
 
     fig.savefig(join(fig_folder, f'{fig_name}.pdf'), bbox_inches='tight')
     fig_time.savefig(join(fig_folder, f'{fig_time_name}.pdf'), bbox_inches='tight')

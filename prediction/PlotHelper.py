@@ -379,11 +379,18 @@ class PlotHelper(object):
                     r_subpath = subpath.replace('/', '_')
                     shutil.copyfile(df_path, dump_dir+r_subpath)
 
-    def dump(self, filepath):
+    def dump(self, filepath, n=None):
         """Scan results in result_folder and compute scores."""
         existing_sizes = self.existing_sizes()
+        if n is not None and str(n) not in existing_sizes:
+            raise ValueError(f'Asked n={n} not in existing sizes: {existing_sizes}')
+        elif n is not None:
+            sizes = [str(n)]
+        else:
+            sizes = existing_sizes
+
         rows = []
-        for i, size in enumerate(existing_sizes):
+        for i, size in enumerate(sizes):
             for db in self.databases():
                 for t in self.tasks(db):
                     methods = self.availale_methods_by_size(db, t, size)
@@ -550,7 +557,8 @@ class PlotHelper(object):
     @staticmethod
     def _plot(filepath, value, how, xticks_dict=None, xlims=None, db_order=None,
               method_order=None, rename=dict(), reference_method=None,
-              figsize=None, legend_bbox=None, xlabel=None, symbols=None, only_full_samples=True):
+              figsize=None, legend_bbox=None, xlabel=None, symbols=None, only_full_samples=True,
+              y_labelsize=18):
         """Plot the full available results."""
         if not isinstance(filepath, pd.DataFrame):
             df = pd.read_csv(filepath, index_col=0)
@@ -609,7 +617,7 @@ class PlotHelper(object):
             'axes.titlesize': 18,
             'axes.labelsize': 18,
             'xtick.labelsize': 12,
-            'ytick.labelsize': 18,
+            'ytick.labelsize': y_labelsize,
             # 'mathtext.fontset': 'stixsans',
             'font.family': 'STIXGeneral',
             'text.usetex': True,
@@ -992,7 +1000,8 @@ class PlotHelper(object):
     @staticmethod
     def plot_scores(filepath, db_order=None, method_order=None, rename=dict(),
                     reference_method=None, symbols=None, only_full_samples=True,
-                    legend_bbox=(4.22, 1.075), figsize=(18, 5.25), table_fontsize=13):
+                    legend_bbox=(4.22, 1.075), figsize=(18, 5.25), table_fontsize=13,
+                    y_labelsize=18):
         if not isinstance(filepath, pd.DataFrame):
             scores = pd.read_csv(filepath, index_col=0)
         else:
@@ -1006,6 +1015,7 @@ class PlotHelper(object):
                                      legend_bbox=legend_bbox,
                                      symbols=symbols,
                                      only_full_samples=only_full_samples,
+                                     y_labelsize=y_labelsize,
                                      )
 
         df_ranks = get_ranks_tab(scores, method_order=method_order, db_order=db_order, average_sizes=True)
@@ -1042,6 +1052,16 @@ class PlotHelper(object):
             pos_arrow = -0.3
             n_cond = 2
             n_const = 6
+        elif n_methods == 10:
+            fs = 18
+            w_const = 55
+            w_cond = 70
+            lw = 1.3
+            dh = 1./n_methods
+            l_tail = 0.03
+            pos_arrow = -0.3
+            n_cond = 3
+            n_const = 7
         elif n_methods == 11:
             fs = 18
             w_const = 55
@@ -1052,6 +1072,16 @@ class PlotHelper(object):
             pos_arrow = -0.3
             n_cond = 3
             n_const = 8
+        elif n_methods == 12:
+            fs = 18
+            w_const = 50
+            w_cond = 80
+            lw = 1.3
+            dh = 1./n_methods
+            l_tail = 0.03
+            pos_arrow = -0.3
+            n_cond = 4
+            n_const = 9
 
         # Here is the label and arrow code of interest
         ax.annotate('Constant\nimputation\n\n', xy=(pos_arrow, n_const*dh), xytext=(pos_arrow-l_tail, n_const*dh), xycoords='axes fraction',
@@ -1075,7 +1105,7 @@ class PlotHelper(object):
     @staticmethod
     def plot_times(filepath, which, xticks_dict=None, xlims=None, db_order=None,
                    method_order=None, rename=dict(), reference_method=None,
-                   linear=False, only_full_samples=True):
+                   linear=False, only_full_samples=True, y_labelsize=18):
         if not isinstance(filepath, pd.DataFrame):
             scores = pd.read_csv(filepath, index_col=0)
         else:
@@ -1090,34 +1120,74 @@ class PlotHelper(object):
         else:
             raise ValueError(f'Unknown argument {which}')
         fig, axes = PlotHelper._plot(scores, value, how='log',
-                                    xticks_dict=xticks_dict,
-                                    xlims=xlims,
-                                    method_order=method_order,
-                                    db_order=db_order, rename=rename,
-                                    reference_method=reference_method,
-                                    figsize=(18, 5.25),
-                                    only_full_samples=only_full_samples,
-                                    )
+                                     xticks_dict=xticks_dict,
+                                     xlims=xlims,
+                                     method_order=method_order,
+                                     db_order=db_order, rename=rename,
+                                     reference_method=reference_method,
+                                     figsize=(18, 5.25),
+                                     only_full_samples=only_full_samples,
+                                     y_labelsize=y_labelsize,
+                                     )
 
         # Add brackets
         ax = axes[0]
-        fs = 18
-        lw = 1.3
-        dh = 1./9
-        l_tail = 0.03
+        # fs = 18
+        # lw = 1.3
+        # dh = 1./9
+        # l_tail = 0.03
+        n_methods = 9 if method_order is None else len(method_order)
+
+        if n_methods == 9:
+            fs = 18
+            w_const = 70
+            w_cond = 70
+            lw = 1.3
+            dh = 1./n_methods
+            l_tail = 0.03
+            n_cond = 2
+            n_const = 6
+        elif n_methods == 10:
+            fs = 18
+            w_const = 55
+            w_cond = 70
+            lw = 1.3
+            dh = 1./n_methods
+            l_tail = 0.03
+            n_cond = 3
+            n_const = 7
+        elif n_methods == 11:
+            fs = 18
+            w_const = 55
+            w_cond = 86
+            lw = 1.3
+            dh = 1./n_methods
+            l_tail = 0.03
+            n_cond = 3
+            n_const = 8
+        elif n_methods == 12:
+            fs = 18
+            w_const = 50
+            w_cond = 80
+            lw = 1.3
+            dh = 1./n_methods
+            l_tail = 0.03
+            n_cond = 4
+            n_const = 9
+
         pos_arrow = -0.4 if linear else -0.26
         # Here is the label and arrow code of interest
-        ax.annotate('Constant\nimputation\n\n', xy=(pos_arrow, 6*dh), xytext=(pos_arrow-l_tail, 6*dh), xycoords='axes fraction',
+        ax.annotate('Constant\nimputation\n\n', xy=(pos_arrow, n_const*dh), xytext=(pos_arrow-l_tail, n_const*dh), xycoords='axes fraction',
                     fontsize=fs, ha='center', va='center',
                     bbox=None,#dict(boxstyle='square', fc='white'),
-                    arrowprops=dict(arrowstyle=f'-[, widthB={70/fs}, lengthB=0.5', lw=lw),
+                    arrowprops=dict(arrowstyle=f'-[, widthB={w_const/fs}, lengthB=0.5', lw=lw),
                     rotation=90,
                     )
 
-        ax.annotate('Conditional\nimputation\n\n', xy=(pos_arrow, 2*dh), xytext=(pos_arrow-l_tail, 2*dh), xycoords='axes fraction',
+        ax.annotate('Conditional\nimputation\n\n', xy=(pos_arrow, n_cond*dh), xytext=(pos_arrow-l_tail, n_cond*dh), xycoords='axes fraction',
                     fontsize=fs, ha='center', va='center',
                     bbox=None,#dict(boxstyle='square', fc='white'),
-                    arrowprops=dict(arrowstyle=f'-[, widthB={70/fs}, lengthB=0.5', lw=lw),
+                    arrowprops=dict(arrowstyle=f'-[, widthB={w_cond/fs}, lengthB=0.5', lw=lw),
                     rotation=90,
                     )
 

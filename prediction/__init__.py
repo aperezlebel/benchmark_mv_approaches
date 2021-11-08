@@ -39,11 +39,13 @@ def run(args):
 
     train(task, strategy, RS=RS, T=T, dump_idx_only=dump_idx_only,
           n_bagging=args.n_bagging, train_size=args.train_size,
-          n_permutation=args.n_permutation)
+          n_permutation=args.n_permutation, asked_fold=args.asked_fold,
+          results_folder=args.results_folder)
 
 
 rename = {
     '': 'MIA',
+    '_Bagged100': 'MIA+bagging',
     '_imputed_Mean': 'Mean',
     '_imputed_Mean+mask': 'Mean+mask',
     '_imputed_Med': 'Med',
@@ -75,4 +77,4 @@ rename = {
 
 def aggregate_results(args):
     ph = PlotHelper(root_folder=args.root_folder, rename=rename)
-    ph.dump('scores/test_scores.csv')
+    ph.dump(f'scores/{args.out}.csv', n=args.n)

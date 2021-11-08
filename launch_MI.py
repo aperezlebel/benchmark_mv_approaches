@@ -18,6 +18,7 @@ parser.add_argument('--run', type=bool, nargs='?', default=False, const=True, de
 parser.add_argument('--nbagging', type=int, default=100, dest='n_bagging')
 parser.add_argument('--npermutation', type=int, default=None, dest='n_permutation')
 parser.add_argument('--no-slurm', type=bool, nargs='?', default=True, const=False, dest='slurm')
+parser.add_argument('--out', type=str, default=None, dest='results_folder')
 
 args = parser.parse_args()
 
@@ -43,6 +44,18 @@ tasks = [
     "MIMIC/hemo_pvals",
     "NHIS/income_pvals",
 ]
+
+sizes_max = {
+    "TB/death_pvals": 10000,
+    "TB/platelet_pvals": 10000,
+    "TB/hemo_pvals": 10000,
+    "TB/hemo": 10000,
+    "TB/septic_pvals": 2500,
+    "UKBB/fluid_pvals": 25000,
+    "MIMIC/septic_pvals": 25000,
+    "MIMIC/hemo_pvals": 25000,
+    "NHIS/income_pvals": 10000,
+}
 
 reg_tasks = [
     "TB/platelet_pvals",
@@ -72,6 +85,10 @@ for method in methods:
         if task not in reg_tasks and method in reg_methods:
             continue
 
+        n_max = sizes_max.get(task, None)
+        if n_max is not None and args.train_size is not None and int(args.train_size) > n_max:
+            continue
+
         db, name = task.split('/')
 
         for T in range(5):
@@ -82,9 +99,10 @@ for method in methods:
             time_option = '' if args.time is None else f' --time {args.time}'
             memory_option = '' if args.memory is None else f' --mem {args.memory}'
             account_option = '' if args.account is None else f' --account {args.account}'
+            out_option = '' if args.results_folder is None else f' --out {args.results_folder}'
             slurm_command = f"salloc --ntasks 1 --cpus-per-task {args.n_cpus} --job-name {method}{T}{db[0]}{name}{partition_option}{time_option}{memory_option}{account_option} srun --pty " if args.slurm else ''
-            command = f"{slurm_command}{python_path} main.py predict {task} {method} --RS 0 --T {T} {bagging_option}{permutation_option}{train_size_option}"
-            session_name = f"{task}_M{method}_T{T}"
+            command = f"{slurm_command}{python_path} main.py predict {task} {method} --RS 0 --T {T} {bagging_option}{permutation_option}{train_size_option}{out_option}"
+            session_name = f"{task}_M{method}_T{T}_bag{args.n_bagging}_perm{args.n_permutation}"
             tmux_command = f"tmux new-session -d -s {session_name} '{command}; read'"
 
             commands.append(tmux_command)
