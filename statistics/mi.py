@@ -93,6 +93,7 @@ def run_multiple_imputation(graphics_folder, n=None):
         'scores/scores_mia_2500.csv',
         'scores/scores_mi_10000.csv',
         'scores/scores_mia_10000.csv',
+        'scores/scores_mia_100000.csv',
         'scores/scores_mia_25000.csv',
     ]
     dfs = [pd.read_csv(path, index_col=0) for path in filepaths]
