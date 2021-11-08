@@ -16,78 +16,116 @@ db_order = [
 
 
 def run_feature_importance(graphics_folder, results_folder, n, average_folds=True):
-    filenames = [
-        f'{n}_importances.csv',
-        f'{n}_mv_props.csv',
-    ]
 
-    dfs = []
+    def retrive_importance(n):
 
-    # Aggregate feature importances of all tasks
-    for root, subdirs, files in os.walk(results_folder):
-        print(root)
+        filenames = [
+            f'{n}_importances.csv',
+            f'{n}_mv_props.csv',
+        ]
 
-        res = re.search(join(results_folder, '/(.*)/RS'), root)
+        dfs = []
 
-        if res is None:
-            continue
+        # Aggregate feature importances of all tasks
+        for root, subdirs, files in os.walk(results_folder):
+            print(root)
 
-        if not all([f in files for f in filenames]):
-            continue
+            res = re.search(join(results_folder, '/(.*)/RS'), root)
 
-        task = res.group(1)
-        db = task.split('/')[0]
+            if res is None:
+                continue
 
-        importance = pd.read_csv(join(root, f'{n}_importances.csv'), index_col=0)
-        mv_props = pd.read_csv(join(root, f'{n}_mv_props.csv'), index_col=0)
-        mv_props.set_index('fold', inplace=True)
+            if not all([f in files for f in filenames]):
+                continue
 
-        importance.reset_index(inplace=True)
-        importance.set_index(['fold', 'repeat'], inplace=True)
-        importance_avg = importance.groupby(level='fold').mean()
+            task = res.group(1)
+            db = task.split('/')[0]
 
-        if average_folds:
-            importance_avg = importance_avg.mean()
-            importance_avg = importance_avg.to_frame().T
-            mv_props = mv_props.mean()
-            mv_props = mv_props.to_frame().T
-            id_vars = None
-            index = ['feature']
+            importance = pd.read_csv(join(root, f'{n}_importances.csv'), index_col=0)
+            mv_props = pd.read_csv(join(root, f'{n}_mv_props.csv'), index_col=0)
+            mv_props.set_index('fold', inplace=True)
 
+            importance.reset_index(inplace=True)
+            importance.set_index(['fold', 'repeat'], inplace=True)
+            importance_avg = importance.groupby(level='fold').mean()
+
+            if average_folds:
+                importance_avg = importance_avg.mean()
+                importance_avg = importance_avg.to_frame().T
+                mv_props = mv_props.mean()
+                mv_props = mv_props.to_frame().T
+                id_vars = None
+                index = ['feature']
+
+            else:
+                importance_avg.reset_index(inplace=True)
+                mv_props.reset_index(inplace=True)
+                id_vars = ['fold']
+                index = ['fold', 'feature']
+
+            importance_avg = pd.melt(importance_avg, id_vars=id_vars,
+                                     var_name='feature', value_name='importance')
+            importance_avg.set_index(index, inplace=True)
+
+            mv_props = pd.melt(mv_props, id_vars=id_vars, var_name='feature', value_name='mv_prop')
+            mv_props.set_index(index, inplace=True)
+
+            df = pd.concat([importance_avg, mv_props], axis=1)
+            assert not pd.isna(df).any().any()
+
+            df['db'] = db
+            df = pd.concat({task: df}, names=['task'])
+
+            dfs.append(df)
+
+        df = pd.concat(dfs, axis=0)
+        return df
+
+    plt.rcParams.update({
+        'font.size': 10,
+        'legend.fontsize': 12,
+        'legend.title_fontsize': 14,
+        'axes.titlesize': 18,
+        'axes.labelsize': 18,
+        'xtick.labelsize': 12,
+        'ytick.labelsize': 12,
+        'font.family': 'STIXGeneral',
+        'text.usetex': True,
+    })
+
+    if n is None:
+        sizes = [2500, 10000, 25000, 100000]
+        fig, axes = plt.subplots(nrows=4, ncols=1, figsize=(6.25, 18))
+        legend_bbox = (0.5, 1.32)
+
+    else:
+        sizes = [n]
+        fig = plt.figure()
+        ax = plt.gca()
+        axes = [ax]
+        legend_bbox = (0.5, 1.28)
+
+    for i, (size, ax) in enumerate(zip(sizes, axes)):
+        df = retrive_importance(size)
+        print(df)
+
+        sns.set_palette(sns.color_palette('colorblind'))
+        sns.scatterplot(x='mv_prop', y='importance', hue='db', data=df, ax=ax,
+                        s=15, hue_order=db_order, linewidth=0.3)
+        ax.set_ylabel('Feature importance (score drop)')
+        if i == len(sizes)-1:
+            ax.set_xlabel('Proportion of missing values in features')
         else:
-            importance_avg.reset_index(inplace=True)
-            mv_props.reset_index(inplace=True)
-            id_vars = ['fold']
-            index = ['fold', 'feature']
-
-        importance_avg = pd.melt(importance_avg, id_vars=id_vars,
-                                 var_name='feature', value_name='importance')
-        importance_avg.set_index(index, inplace=True)
-
-        mv_props = pd.melt(mv_props, id_vars=id_vars, var_name='feature', value_name='mv_prop')
-        mv_props.set_index(index, inplace=True)
-
-        df = pd.concat([importance_avg, mv_props], axis=1)
-        assert not pd.isna(df).any().any()
-
-        df['db'] = db
-        df = pd.concat({task: df}, names=['task'])
-
-        dfs.append(df)
-
-    df = pd.concat(dfs, axis=0)
-    print(df)
-
-    fig = plt.figure()
-    ax = plt.gca()
-    sns.set_palette(sns.color_palette('colorblind'))
-    sns.scatterplot(x='mv_prop', y='importance', hue='db', data=df, ax=ax, s=15, hue_order=db_order)
-    ax.set_xlabel('Proportion of missing values in features')
-    ax.set_ylabel('Feature importance (score drop)')
-    ax.set_yscale('log')
-    ax.legend(title='Database')
+            ax.set_xlabel(None)
+        ax.set_yscale('log')
+        ax.set_title(f'n={size}')
+        if i == 0:
+            ax.legend(title='Database', ncol=4, loc='upper center',
+                      bbox_to_anchor=legend_bbox)
+        else:
+            ax.get_legend().remove()
 
     fig_name = f'importance_{n}_avg' if average_folds else f'importance_{n}'
     fig_folder = get_fig_folder(graphics_folder)
     fig.savefig(join(fig_folder, f'{fig_name}.pdf'), bbox_inches='tight')
-    fig.savefig(join(fig_folder, f'{fig_name}.jpg'), bbox_inches='tight')
+    fig.savefig(join(fig_folder, f'{fig_name}.jpg'), bbox_inches='tight', dpi=300)
