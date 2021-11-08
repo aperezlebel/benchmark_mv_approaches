@@ -32,10 +32,9 @@ def run_feature_importance(graphics_folder, results_folder, n, average_folds=Tru
         if res is None:
             continue
 
-        for filename in filenames:
+        if not all([f in files for f in filenames]):
+            continue
 
-            if filename not in files:
-                raise OSError(f'{filename} not found at path {root}')
         task = res.group(1)
         db = task.split('/')[0]
 
@@ -85,9 +84,10 @@ def run_feature_importance(graphics_folder, results_folder, n, average_folds=Tru
     sns.scatterplot(x='mv_prop', y='importance', hue='db', data=df, ax=ax, s=15, hue_order=db_order)
     ax.set_xlabel('Proportion of missing values in features')
     ax.set_ylabel('Feature importance (score drop)')
+    ax.set_yscale('log')
     ax.legend(title='Database')
 
-    fig_name = 'importance_avg' if average_folds else 'importance'
+    fig_name = f'importance_{n}_avg' if average_folds else f'importance_{n}'
     fig_folder = get_fig_folder(graphics_folder)
     fig.savefig(join(fig_folder, f'{fig_name}.pdf'), bbox_inches='tight')
     fig.savefig(join(fig_folder, f'{fig_name}.jpg'), bbox_inches='tight')
