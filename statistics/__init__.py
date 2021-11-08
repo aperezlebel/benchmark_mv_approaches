@@ -68,7 +68,7 @@ def run(args):
         run_multiple_imputation(graphics_folder, args.n)
 
     elif args.action == 'imp':
-        run_feature_importance(graphics_folder, args.root, args.n)
+        run_feature_importance(graphics_folder, args.root, args.n, args.average_folds)
 
     else:
         raise ValueError(f'Not known action {args.action}.')

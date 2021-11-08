@@ -122,6 +122,7 @@ if __name__ == '__main__':
     p = subp.add_parser('imp', description='Plot feature importance results.')
     p.add_argument('-n', type=int, default='2500')
     p.add_argument('--root', type=str)
+    p.add_argument('--no-avg', type=bool, nargs='?', default=True, const=False, dest='average_folds')
 
     # Script 6: Data statistics
     p = subparsers.add_parser('datastats', description='Build figures and '
