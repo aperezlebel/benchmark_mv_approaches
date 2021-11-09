@@ -119,6 +119,12 @@ if __name__ == '__main__':
     p = subp.add_parser('mi', description='Plot multiple imputation results.')
     p.add_argument('-n', type=int, default=None)
 
+    p = subp.add_parser('imp', description='Plot feature importance results.')
+    p.add_argument('-n', type=int, default=None)
+    p.add_argument('--root', type=str)
+    p.add_argument('--no-avg', type=bool, nargs='?', default=True, const=False, dest='average_folds')
+    p.add_argument('--mode', type=str, choices=['abs', 'rel', 'percent'], default='abs', dest='mode')
+
     # Script 6: Data statistics
     p = subparsers.add_parser('datastats', description='Build figures and '
                               'tables of the paper on data statistics.')

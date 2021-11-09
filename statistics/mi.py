@@ -1,5 +1,4 @@
 from os.path import join
-from matplotlib.pyplot import ylabel
 import pandas as pd
 
 from custom.const import get_fig_folder

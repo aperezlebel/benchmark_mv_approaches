@@ -109,7 +109,7 @@ class DumpHelper:
                 # Move it in the backup folder
                 os.makedirs(self.backup_folder, exist_ok=True)
                 time_tag = datetime.now().strftime("%Y-%m-%d_%H:%M:%S.%f")
-                dest = f'{self.backup_folder}{self.strat.name}_{time_tag}'
+                dest = join(self.backup_folder, f'{self.strat.name}_{time_tag}')
 
                 # Move lead to error on next dumping so copy + delete
                 shutil.copytree(self.strat_folder, dest)
