@@ -132,7 +132,7 @@ def run_feature_importance(graphics_folder, results_folder, n, average_folds,
     plt.rcParams.update({
         'font.size': 10,
         'legend.fontsize': 12,
-        'legend.title_fontsize': 14,
+        'legend.title_fontsize': 16,
         'axes.titlesize': 18,
         'axes.labelsize': 18,
         'xtick.labelsize': 12,
@@ -185,7 +185,7 @@ def run_feature_importance(graphics_folder, results_folder, n, average_folds,
                             ax=ax, s=15, hue_order=task_order_renamed, style_order=db_order, linewidth=0.3)#, legend=False)
             ncol = 3
             legend_bbox = (0.5, 1.7)
-            title = 'Task'
+            title = '\\textbf{{Task}}'
         else:
             sns.set_palette(sns.color_palette('colorblind'))
             sns.scatterplot(x='mv_prop', y=y, hue='db', data=df, ax=ax,
@@ -245,14 +245,14 @@ def run_feature_importance(graphics_folder, results_folder, n, average_folds,
                     + 2*blank_handle
                     + task_handles[12:13])
                 labels = (
-                    ['Traumabase']
+                    ['\\textbf{{Traumabase}}']
                     + task_labels[:5]
-                    + ['UKBB']
+                    + ['\\textbf{{UKBB}}']
                     + task_labels[5:10]
-                    + ['MIMIC']
+                    + ['\\textbf{{MIMIC}}']
                     + task_labels[10:12]
                     + blank_label
-                    + ['NHIS']
+                    + ['\\textbf{{NHIS}}']
                     + task_labels[12:13])
                 # 4 columns legend
                 # handles = (blank_handle
