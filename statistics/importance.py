@@ -8,14 +8,19 @@ import seaborn as sns
 from custom.const import get_fig_folder
 
 db_order = [
-    'TB',
+    'Traumabase',
     'UKBB',
     'MIMIC',
     'NHIS',
 ]
 
+rename_db = {
+    'TB': 'Traumabase',
+}
 
-def run_feature_importance(graphics_folder, results_folder, n, average_folds=True):
+
+def run_feature_importance(graphics_folder, results_folder, n, average_folds,
+                           mode):
 
     def retrive_importance(n):
 
@@ -40,6 +45,8 @@ def run_feature_importance(graphics_folder, results_folder, n, average_folds=Tru
 
             task = res.group(1)
             db = task.split('/')[0]
+            res = re.search('RS0_T(.)_', root)
+            trial = res.group(1)
 
             importance = pd.read_csv(join(root, f'{n}_importances.csv'), index_col=0)
             mv_props = pd.read_csv(join(root, f'{n}_mv_props.csv'), index_col=0)
@@ -64,7 +71,7 @@ def run_feature_importance(graphics_folder, results_folder, n, average_folds=Tru
                 index = ['fold', 'feature']
 
             importance_avg = pd.melt(importance_avg, id_vars=id_vars,
-                                     var_name='feature', value_name='importance')
+                                     var_name='feature', value_name='importance_abs')
             importance_avg.set_index(index, inplace=True)
 
             mv_props = pd.melt(mv_props, id_vars=id_vars, var_name='feature', value_name='mv_prop')
@@ -73,12 +80,27 @@ def run_feature_importance(graphics_folder, results_folder, n, average_folds=Tru
             df = pd.concat([importance_avg, mv_props], axis=1)
             assert not pd.isna(df).any().any()
 
-            df['db'] = db
+            df['db'] = rename_db.get(db, db)
+            df['trial'] = trial
             df = pd.concat({task: df}, names=['task'])
 
             dfs.append(df)
 
         df = pd.concat(dfs, axis=0)
+        # print(df)
+
+        df.reset_index(inplace=True)
+        df.set_index(['task', 'trial'], inplace=True)
+        df_agg = df.groupby(['task', 'trial']).agg({'importance_abs': 'mean'})
+        # df_agg.rename({'importance': 'importance_ref'}, axis=1, inplace=True)
+        # print(df_agg)
+
+        # df = pd.concat([df, df_agg], axis=1)
+
+        df['importance_ref'] = df_agg
+        df['importance_rel'] = df['importance_abs'] - df['importance_ref']
+        df['importance_rel_%'] = (df['importance_abs'] - df['importance_ref'])/df['importance_ref']
+
         return df
 
     plt.rcParams.update({
@@ -105,19 +127,34 @@ def run_feature_importance(graphics_folder, results_folder, n, average_folds=Tru
         axes = [ax]
         legend_bbox = (0.5, 1.28)
 
+    if mode == 'abs':
+        y = 'importance_abs'
+        yscale = 'symlog'
+        linthresh = 0.001
+        ylabel = 'Feature importance (score drop)'
+    elif mode == 'rel':
+        y = 'importance_rel'
+        yscale = 'symlog'
+        linthresh = 0.001
+        ylabel = 'Relative score drop'
+    elif mode == 'percent':
+        y = 'importance_rel_%'
+        yscale = 'symlog'
+        linthresh = 0.1
+        ylabel = 'Relative score drop normalized'
+
     for i, (size, ax) in enumerate(zip(sizes, axes)):
         df = retrive_importance(size)
-        print(df)
 
         sns.set_palette(sns.color_palette('colorblind'))
-        sns.scatterplot(x='mv_prop', y='importance', hue='db', data=df, ax=ax,
+        sns.scatterplot(x='mv_prop', y=y, hue='db', data=df, ax=ax,
                         s=15, hue_order=db_order, linewidth=0.3)
-        ax.set_ylabel('Feature importance (score drop)')
+        ax.set_ylabel(ylabel)
         if i == len(sizes)-1:
             ax.set_xlabel('Proportion of missing values in features')
         else:
             ax.set_xlabel(None)
-        ax.set_yscale('log')
+        ax.set_yscale(yscale, linthresh=linthresh)
         ax.set_title(f'n={size}')
         if i == 0:
             ax.legend(title='Database', ncol=4, loc='upper center',
@@ -125,7 +162,7 @@ def run_feature_importance(graphics_folder, results_folder, n, average_folds=Tru
         else:
             ax.get_legend().remove()
 
-    fig_name = f'importance_{n}_avg' if average_folds else f'importance_{n}'
+    fig_name = f'importance_{n}_avg_{mode}' if average_folds else f'importance_{n}_{mode}'
     fig_folder = get_fig_folder(graphics_folder)
     fig.savefig(join(fig_folder, f'{fig_name}.pdf'), bbox_inches='tight')
     fig.savefig(join(fig_folder, f'{fig_name}.jpg'), bbox_inches='tight', dpi=300)
