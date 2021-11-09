@@ -140,7 +140,7 @@ def run_feature_importance(graphics_folder, results_folder, n, average_folds,
     elif mode == 'percent':
         y = 'importance_rel_%'
         yscale = 'symlog'
-        linthresh = 0.1
+        linthresh = 1
         ylabel = 'Relative score drop normalized'
 
     for i, (size, ax) in enumerate(zip(sizes, axes)):
@@ -155,6 +155,8 @@ def run_feature_importance(graphics_folder, results_folder, n, average_folds,
         else:
             ax.set_xlabel(None)
         ax.set_yscale(yscale, linthresh=linthresh)
+        if yscale != 'log':
+            ax.axhline(0, xmin=0, xmax=1, color='grey', zorder=-10)#, lw=1)
         ax.set_title(f'n={size}')
         if i == 0:
             ax.legend(title='Database', ncol=4, loc='upper center',
