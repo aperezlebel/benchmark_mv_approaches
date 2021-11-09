@@ -1,7 +1,10 @@
+import copy
 import os
 import re
+from functools import reduce
 from os.path import join
 
+import matplotlib
 import matplotlib.pyplot as plt
 import pandas as pd
 import seaborn as sns
@@ -166,35 +169,121 @@ def run_feature_importance(graphics_folder, results_folder, n, average_folds,
         linthresh = 1
         ylabel = 'Relative score drop normalized'
 
+    colors = [
+        sns.color_palette('Set2', n_colors=8).as_hex(),
+        sns.color_palette('husl', n_colors=5).as_hex(),
+    ]
+    colors = reduce(lambda x, y: x+y, colors)
+
     for i, (size, ax) in enumerate(zip(sizes, axes)):
         df = retrive_importance(size)
         print(df)
 
-        sns.set_palette(sns.color_palette('colorblind'))
-
         if hue_by_task:
+            sns.set_palette(sns.color_palette(colors))
             sns.scatterplot(x='mv_prop', y=y, hue='task', style='db', markers=markers_db, data=df,
-                            ax=ax, s=15, hue_order=task_order_renamed, linewidth=0.3)
+                            ax=ax, s=15, hue_order=task_order_renamed, style_order=db_order, linewidth=0.3)#, legend=False)
+            ncol = 3
+            legend_bbox = (0.5, 1.7)
+            title = 'Task'
         else:
+            sns.set_palette(sns.color_palette('colorblind'))
             sns.scatterplot(x='mv_prop', y=y, hue='db', data=df, ax=ax,
                             s=15, hue_order=db_order, linewidth=0.3)
+            ncol = 4
+            title = 'Database'
 
         ax.set_ylabel(ylabel)
         if i == len(sizes)-1:
             ax.set_xlabel('Proportion of missing values in features')
         else:
             ax.set_xlabel(None)
+
         ax.set_yscale(yscale, linthresh=linthresh)
         if yscale != 'log':
             ax.axhline(0, xmin=0, xmax=1, color='grey', zorder=-10)#, lw=1)
+
         ax.set_title(f'n={size}')
+
+        # Update legend
         if i == 0:
-            ax.legend(title='Database', ncol=4, loc='upper center',
-                      bbox_to_anchor=legend_bbox)
+            handles, labels = ax.get_legend_handles_labels()
+
+            if hue_by_task:
+                task_handles = handles[1:14]
+                db_markers = ax.collections[-4:]
+
+                # Update markers shapes in the legend (all had same shape)
+                for i in range(13):
+                    if i < 5:
+                        id_marker = 0
+                    elif i < 10:
+                        id_marker = 1
+                    elif i < 12:
+                        id_marker = 2
+                    else:
+                        id_marker = 3
+                    h = task_handles[i]
+                    fc = h.get_fc()
+                    ec = h.get_ec()
+                    task_handles[i] = copy.copy(db_markers[id_marker])
+                    task_handles[i].set_fc(fc)
+                    task_handles[i].set_ec(ec)
+
+                task_labels = labels[1:14]
+                task_labels = [t.split('/')[1] for t in task_labels]
+                blank_handle = [handles[0]]
+                blank_label = ['']
+                # 3 columns legend
+                handles = (
+                    blank_handle
+                    + task_handles[:5]
+                    + blank_handle
+                    + task_handles[5:10]
+                    + blank_handle
+                    + task_handles[10:12]
+                    + 2*blank_handle
+                    + task_handles[12:13])
+                labels = (
+                    ['Traumabase']
+                    + task_labels[:5]
+                    + ['UKBB']
+                    + task_labels[5:10]
+                    + ['MIMIC']
+                    + task_labels[10:12]
+                    + blank_label
+                    + ['NHIS']
+                    + task_labels[12:13])
+                # 4 columns legend
+                # handles = (blank_handle
+                # + task_handles[:5]
+                # + blank_handle
+                # + task_handles[5:10]
+                # + blank_handle
+                # + task_handles[10:12]
+                # + 4*blank_handle
+                # + task_handles[12:13]
+                # + 4*blank_handle)
+                # labels = (['Traumabase']
+                # + task_labels[:5]
+                # + ['UKBB']
+                # + task_labels[5:10]
+                # + ['MIMIC']
+                # + task_labels[10:12]
+                # + 3*blank_label
+                # + ['NHIS']
+                # + task_labels[12:13]
+                # + 4*blank_label)
+
+            ax.legend(title=title, ncol=ncol, loc='upper center',
+                      bbox_to_anchor=legend_bbox,
+                      handles=handles, labels=labels,
+                      )
+
         else:
             ax.get_legend().remove()
 
-    fig_name = f'importance_{n}_avg_{mode}' if average_folds else f'importance_{n}_{mode}'
+    fig_name = f'importance_{n}_avg_{mode}_hue{hue_by_task}' if average_folds else f'importance_{n}_{mode}'
     fig_folder = get_fig_folder(graphics_folder)
     fig.savefig(join(fig_folder, f'{fig_name}.pdf'), bbox_inches='tight')
     fig.savefig(join(fig_folder, f'{fig_name}.jpg'), bbox_inches='tight', dpi=300)
