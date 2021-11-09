@@ -14,13 +14,40 @@ db_order = [
     'NHIS',
 ]
 
+markers_db = {
+    'Traumabase': 'o',
+    'UKBB': '^',
+    'MIMIC': 'v',
+    'NHIS': 's',
+}
+
+task_order = [
+    'TB/death_pvals',
+    'TB/hemo',
+    'TB/hemo_pvals',
+    # 'TB/platelet',
+    'TB/platelet_pvals',
+    'TB/septic_pvals',
+    'UKBB/breast_25',
+    'UKBB/breast_pvals',
+    'UKBB/fluid_pvals',
+    'UKBB/parkinson_pvals',
+    'UKBB/skin_pvals',
+    'MIMIC/hemo_pvals',
+    'MIMIC/septic_pvals',
+    # 'NHIS/bmi_pvals',
+    'NHIS/income_pvals',
+]
+
+task_order_renamed = [t.replace('_', '\\_').replace('pvals', 'screening') for t in task_order]
+
 rename_db = {
     'TB': 'Traumabase',
 }
 
 
 def run_feature_importance(graphics_folder, results_folder, n, average_folds,
-                           mode):
+                           mode, hue_by_task):
 
     def retrive_importance(n):
 
@@ -47,6 +74,7 @@ def run_feature_importance(graphics_folder, results_folder, n, average_folds,
             db = task.split('/')[0]
             res = re.search('RS0_T(.)_', root)
             trial = res.group(1)
+            task = task.replace('_', '\\_').replace('pvals', 'screening')
 
             importance = pd.read_csv(join(root, f'{n}_importances.csv'), index_col=0)
             mv_props = pd.read_csv(join(root, f'{n}_mv_props.csv'), index_col=0)
@@ -87,15 +115,10 @@ def run_feature_importance(graphics_folder, results_folder, n, average_folds,
             dfs.append(df)
 
         df = pd.concat(dfs, axis=0)
-        # print(df)
 
         df.reset_index(inplace=True)
         df.set_index(['task', 'trial'], inplace=True)
         df_agg = df.groupby(['task', 'trial']).agg({'importance_abs': 'mean'})
-        # df_agg.rename({'importance': 'importance_ref'}, axis=1, inplace=True)
-        # print(df_agg)
-
-        # df = pd.concat([df, df_agg], axis=1)
 
         df['importance_ref'] = df_agg
         df['importance_rel'] = df['importance_abs'] - df['importance_ref']
@@ -145,10 +168,17 @@ def run_feature_importance(graphics_folder, results_folder, n, average_folds,
 
     for i, (size, ax) in enumerate(zip(sizes, axes)):
         df = retrive_importance(size)
+        print(df)
 
         sns.set_palette(sns.color_palette('colorblind'))
-        sns.scatterplot(x='mv_prop', y=y, hue='db', data=df, ax=ax,
-                        s=15, hue_order=db_order, linewidth=0.3)
+
+        if hue_by_task:
+            sns.scatterplot(x='mv_prop', y=y, hue='task', style='db', markers=markers_db, data=df,
+                            ax=ax, s=15, hue_order=task_order_renamed, linewidth=0.3)
+        else:
+            sns.scatterplot(x='mv_prop', y=y, hue='db', data=df, ax=ax,
+                            s=15, hue_order=db_order, linewidth=0.3)
+
         ax.set_ylabel(ylabel)
         if i == len(sizes)-1:
             ax.set_xlabel('Proportion of missing values in features')
