@@ -102,7 +102,7 @@ for method in methods:
             out_option = '' if args.results_folder is None else f' --out {args.results_folder}'
             slurm_command = f"salloc --ntasks 1 --cpus-per-task {args.n_cpus} --job-name {method}{T}{db[0]}{name}{partition_option}{time_option}{memory_option}{account_option} srun --pty " if args.slurm else ''
             command = f"{slurm_command}{python_path} main.py predict {task} {method} --RS 0 --T {T} {bagging_option}{permutation_option}{train_size_option}{out_option}"
-            session_name = f"{task}_M{method}_T{T}_bag{args.n_bagging}_perm{args.n_permutation}"
+            session_name = f"{task}_n{args.train_size}_bag{args.n_bagging}_perm{args.n_permutation}_M{method}_T{T}"
             tmux_command = f"tmux new-session -d -s {session_name} '{command}; read'"
 
             commands.append(tmux_command)
@@ -122,5 +122,6 @@ for i, command in enumerate(commands):
         print()
         if args.run:
             os.system(command)
+        print()
 
 
