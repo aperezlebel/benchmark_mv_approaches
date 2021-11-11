@@ -41,7 +41,7 @@ for root, subdirs, files in os.walk(args.results_folder):
 
             # Extract trial and task from root
             print(root)
-            res = re.search(f'{args.results_folder}/(.*)/RS', root)
+            res = re.search(join(args.results_folder, '/(.*)/RS'), root)
             if res is None:
                 task = None
                 trial = None
