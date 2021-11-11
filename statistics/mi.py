@@ -92,8 +92,9 @@ def run_multiple_imputation(graphics_folder, n=None):
         'scores/scores_mia_2500.csv',
         'scores/scores_mi_10000.csv',
         'scores/scores_mia_10000.csv',
-        'scores/scores_mia_100000.csv',
         'scores/scores_mia_25000.csv',
+        'scores/scores_mi_25000.csv',
+        'scores/scores_mia_100000.csv',
     ]
     dfs = [pd.read_csv(path, index_col=0) for path in filepaths]
     scores = pd.concat(dfs, axis=0)
@@ -132,7 +133,8 @@ def run_multiple_imputation(graphics_folder, n=None):
     }
     fig_time = PlotHelper.plot_times(
         scores, 'PT', xticks_dict=xticks, method_order=method_order,
-        db_order=db_order, rename=rename_on_plot, y_labelsize=y_labelsize)
+        db_order=db_order, rename=rename_on_plot, y_labelsize=y_labelsize,
+        only_full_samples=False)
 
     fig_folder = get_fig_folder(graphics_folder)
 
