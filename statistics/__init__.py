@@ -69,7 +69,7 @@ def run(args):
 
     elif args.action == 'imp':
         run_feature_importance(graphics_folder, args.root, args.n,
-                               args.average_folds, args.mode)
+                               args.average_folds, args.mode, args.hue_by_task)
 
     else:
         raise ValueError(f'Not known action {args.action}.')

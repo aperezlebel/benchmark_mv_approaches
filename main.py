@@ -124,6 +124,7 @@ if __name__ == '__main__':
     p.add_argument('--root', type=str)
     p.add_argument('--no-avg', type=bool, nargs='?', default=True, const=False, dest='average_folds')
     p.add_argument('--mode', type=str, choices=['abs', 'rel', 'percent'], default='abs', dest='mode')
+    p.add_argument('--task', type=bool, nargs='?', default=False, const=True, dest='hue_by_task')
 
     # Script 6: Data statistics
     p = subparsers.add_parser('datastats', description='Build figures and '

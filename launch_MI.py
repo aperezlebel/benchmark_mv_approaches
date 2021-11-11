@@ -11,7 +11,7 @@ parser.add_argument('-n', type=int, default=None, dest='train_size')
 parser.add_argument('-p', type=str, default=None, dest='partition')
 parser.add_argument('-t', type=str, default=None, dest='time')
 parser.add_argument('--cpu', type=int, default=40, dest='n_cpus')
-parser.add_argument('-m', type=str, choices=['mi', 'mia'], default='mi', dest='method')
+parser.add_argument('-m', type=str, choices=['mi', 'mia', 'mmean'], default='mi', dest='method')
 parser.add_argument('--mem', type=str, default=None, dest='memory')
 parser.add_argument('-a', type=str, default=None, dest='account')
 parser.add_argument('--run', type=bool, nargs='?', default=False, const=True, dest='run')
@@ -75,6 +75,21 @@ methods = [20, 24, 22, 26] if args.method == 'mi' else [0, 2]
 
 reg_methods = [22, 26] if args.method == 'mi' else [2]
 clf_methods = [20, 24] if args.method == 'mi' else [0]
+
+if args.method == 'mi':
+    methods = [20, 24, 22, 26]
+    reg_methods = [22, 26]
+    clf_methods = [20, 24]
+
+elif args.method == 'mia':
+    methods = [0, 2]
+    reg_methods = [2]
+    clf_methods = [0]
+
+elif args.method == 'mmean':
+    methods = [8, 10]
+    reg_methods = [10]
+    clf_methods = [8]
 
 python_path = sys.executable
 
