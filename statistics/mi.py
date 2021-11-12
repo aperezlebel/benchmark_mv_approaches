@@ -187,13 +187,14 @@ def run_multiple_imputation(graphics_folder, n=None):
         # 2/3: '$\\frac{2}{3}\\times$',
         1: '$1\\times$',
         # 3/2: '$\\frac{3}{2}\\times$',
+        5: '$5\\times$',
         10: '$10\\times$',
         100: '$100\\times$',
     }
     fig_time = PlotHelper.plot_times(
         scores, 'PT', xticks_dict=xticks, method_order=method_order,
         db_order=db_order, rename=rename_on_plot, y_labelsize=y_labelsize,
-        legend_bbox=legend_bbox,
+        legend_bbox=legend_bbox, broken_axis=(20, 50),
         only_full_samples=False, reference_method='MIA', figsize=figsize, comments=comments)
 
     fig_folder = get_fig_folder(graphics_folder)

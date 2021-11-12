@@ -11,6 +11,7 @@ import pandas as pd
 import seaborn as sns
 import yaml
 from sklearn.metrics import r2_score, roc_auc_score
+from mpl_toolkits.axes_grid1 import make_axes_locatable
 
 from prediction.df_utils import aggregate, assert_equal, get_ranks_tab
 
@@ -558,7 +559,7 @@ class PlotHelper(object):
     def _plot(filepath, value, how, xticks_dict=None, xlims=None, db_order=None,
               method_order=None, rename=dict(), reference_method=None,
               figsize=None, legend_bbox=None, xlabel=None, symbols=None, comments=None,
-              only_full_samples=True, y_labelsize=18):
+              only_full_samples=True, y_labelsize=18, broken_axis=None):
         """Plot the full available results."""
         if not isinstance(filepath, pd.DataFrame):
             df = pd.read_csv(filepath, index_col=0)
@@ -714,6 +715,18 @@ class PlotHelper(object):
         for i, size in enumerate(sizes):
             ax = axes[i]
 
+            if broken_axis is not None:
+                divider = make_axes_locatable(ax)
+                ax2 = divider.new_horizontal(size="100%", pad=0.1)
+                fig.add_axes(ax2)
+                ax.spines['right'].set_visible(False)
+                ax2.spines['left'].set_visible(False)
+                ax2.tick_params(left=False, labelleft=False)
+
+                locator = divider.new_locator(nx=0, ny=1)
+                ax.set_axes_locator(locator)
+
+
             # Select the rows of interest
             subdf = df[df['size'] == size]
 
@@ -740,12 +753,23 @@ class PlotHelper(object):
             twinx.set_ylim(0, n_methods)
             twinx.yaxis.set_visible(False)
 
+            if broken_axis is not None:
+                twinx2 = ax2.twinx()
+                twinx2.set_ylim(0, n_methods)
+                twinx2.yaxis.set_visible(False)
+                twinx2.spines['left'].set_visible(False)
+                twinx2.tick_params(left=False, labelleft=False)
+
             # Add gray layouts in the background every other rows
             for k in range(0, n_methods, 2):
                 ax.axhspan(k-0.5, k+0.5, color='.93', zorder=0)
+                if broken_axis is not None:
+                    ax2.axhspan(k-0.5, k+0.5, color='.93', zorder=0)
 
             mid = 1 if how == 'log' else 0
             ax.axvline(mid, ymin=0, ymax=n_methods, color='gray', zorder=0)
+            if broken_axis is not None:
+                ax.axvline(mid, ymin=0, ymax=n_methods, color='gray', zorder=0)
 
             # Build the color palette for the boxplot
             paired_colors = sns.color_palette('Paired').as_hex()
@@ -755,6 +779,9 @@ class PlotHelper(object):
             sns.set_palette(boxplot_palette)
             sns.boxplot(x=f'relative_{value}', y='method', data=df_valid, orient='h',
                         ax=ax, order=method_order, showfliers=False)
+            if broken_axis is not None:
+                sns.boxplot(x=f'relative_{value}', y='method', data=df_valid, orient='h',
+                            ax=ax2, order=method_order, showfliers=False)
 
             # Scatter plot for valid data points
             sns.set_palette(sns.color_palette('colorblind'))
@@ -765,6 +792,14 @@ class PlotHelper(object):
                                  markers=db_markers,
                                  s=75,
                                  )
+            if broken_axis is not None:
+                g2_2 = sns.scatterplot(x=f'relative_{value}', y='y', hue='Database',
+                                     data=df_valid, ax=twinx2,
+                                     hue_order=renamed_db_order,
+                                     style='Database',
+                                     markers=db_markers,
+                                     s=75,
+                                     )
 
             if legend_bbox:
                 # g2.legend(loc='upper left', bbox_to_anchor=legend_bbox, ncol=1, title='Database')
@@ -793,9 +828,17 @@ class PlotHelper(object):
 
             if not legend_bbox and i < len(sizes)-1:
                 twinx.get_legend().remove()
+                if broken_axis is not None:
+                    twinx2.get_legend().remove()
 
             elif legend_bbox and i > 0:
                 twinx.get_legend().remove()
+
+            if broken_axis is not None:
+                twinx2.get_legend().remove()
+
+            if broken_axis is not None:
+                ax2.yaxis.set_visible(False)
 
             if i > 0:  # if not the first axis
                 ax.yaxis.set_visible(False)
@@ -806,10 +849,16 @@ class PlotHelper(object):
                 r_labels = [PlotHelper.rename_str(rename, l) for l in labels]
                 ax.set_yticklabels(r_labels)
                 # ax.text(1.1, 1.1, '\\textbf{{Database}}', fontsize='x-large', ha='left', va='center', transform=ax.transAxes, zorder=10)
+                # if broken_axis is not None:
+                #     ax2.set_yticklabels(r_labels)
 
             if how == 'log':
                 ax.set_xscale('log')
                 twinx.set_xscale('log')
+
+                if broken_axis is not None:
+                    ax2.set_xscale('log')
+                    twinx2.set_xscale('log')
 
             # Comment this line to use same xlims constraint for all subplots
             xlim_min, xlim_max, xticks, xtick_labels = xticks_params(subdf[f'relative_{value}'], xticks_dict=xticks_dict)
@@ -830,6 +879,22 @@ class PlotHelper(object):
             ax.set_xlim(left=xlim_min, right=xlim_max)
             # twinx.set_xlim(left=xlim_min, right=xlim_max)
 
+            if broken_axis is not None:
+                if xtick_labels is not None:
+                    ax2.set_xticks(xticks, minor=False)
+                    ax2.set_xticklabels(xtick_labels, minor=False)
+                    ax2.xaxis.set_minor_locator(matplotlib.ticker.NullLocator())
+
+                    twinx2.set_xticks(xticks, minor=False)
+                    twinx2.set_xticklabels(xtick_labels, minor=False)
+                    twinx2.xaxis.set_minor_locator(matplotlib.ticker.NullLocator())
+
+                else:
+                    ax2.set_xticks(xticks)
+                    twinx2.set_xticks(xticks)
+
+                ax.set_xlim(left=xlim_min, right=xlim_max)
+
             ax.set_title(f'n={size}')
             if xlabel is None:
                 xlabel = ax.get_xlabel()
@@ -837,6 +902,20 @@ class PlotHelper(object):
             ax.set_ylabel(None)
             ax.set_axisbelow(True)
             ax.grid(True, axis='x')
+            if broken_axis is not None:
+                if xlabel is None:
+                    xlabel = ax2.get_xlabel()
+                # ax2.set_xlabel(PlotHelper.rename_str(rename, xlabel))
+                ax2.set_xlabel(None)
+                ax2.set_ylabel(None)
+                ax2.set_axisbelow(True)
+                ax2.grid(True, axis='x')
+
+            if broken_axis is not None:
+                xlim = ax.get_xlim()
+                xlim2 = ax2.get_xlim()
+                ax.set_xlim((xlim[0], broken_axis[0]))
+                ax2.set_xlim((broken_axis[1], xlim2[1]))
 
             # Optionally adds symbols on each line (for significance)
             if symbols is not None:
@@ -1151,7 +1230,7 @@ class PlotHelper(object):
     def plot_times(filepath, which, xticks_dict=None, xlims=None, db_order=None,
                    method_order=None, rename=dict(), reference_method=None,
                    linear=False, only_full_samples=True, y_labelsize=18, comments=None, figsize=(18, 5.25),
-                    legend_bbox=(4.22, 1.075)):
+                    legend_bbox=(4.22, 1.075), broken_axis=None):
         if not isinstance(filepath, pd.DataFrame):
             scores = pd.read_csv(filepath, index_col=0)
         else:
@@ -1176,6 +1255,7 @@ class PlotHelper(object):
                                      y_labelsize=y_labelsize,
                                      comments=comments,
                                      legend_bbox=legend_bbox,
+                                     broken_axis=broken_axis,
                                      )
 
         # Add brackets
