@@ -9,6 +9,7 @@ from .tabs import run_desc, run_scores
 from .difficulty import run_difficulty
 from .breakout import run_breakout
 from .mi import run_multiple_imputation
+from .importance import run_feature_importance
 
 
 plt.rcParams.update({
@@ -64,7 +65,11 @@ def run(args):
         run_breakout(graphics_folder, linear=args.linear)
 
     elif args.action == 'mi':
-        run_multiple_imputation(graphics_folder)
+        run_multiple_imputation(graphics_folder, args.n)
+
+    elif args.action == 'imp':
+        run_feature_importance(graphics_folder, args.root, args.n,
+                               args.average_folds, args.mode, args.hue_by_task)
 
     else:
         raise ValueError(f'Not known action {args.action}.')

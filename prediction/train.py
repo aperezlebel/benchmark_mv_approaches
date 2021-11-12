@@ -5,9 +5,10 @@ import time
 from os.path import join, relpath
 
 import pandas as pd
+from sklearn.ensemble import BaggingClassifier, BaggingRegressor
+from sklearn.inspection import permutation_importance
 from sklearn.model_selection import ShuffleSplit, StratifiedShuffleSplit
 from sklearn.pipeline import Pipeline
-from sklearn.ensemble import BaggingClassifier, BaggingRegressor
 
 from .DumpHelper import DumpHelper
 from .TimerStep import TimerStep
@@ -15,7 +16,9 @@ from .TimerStep import TimerStep
 logger = logging.getLogger(__name__)
 
 
-def train(task, strategy, RS=None, dump_idx_only=False, T=0, n_bagging=None, train_size=None):
+def train(task, strategy, RS=None, dump_idx_only=False, T=0, n_bagging=None,
+          train_size=None, n_permutation=None, asked_fold=None,
+          results_folder=None):
     """Train a model (strategy) on some data (task) and dump results.
 
     Parameters
@@ -48,7 +51,8 @@ def train(task, strategy, RS=None, dump_idx_only=False, T=0, n_bagging=None, tra
         logger.info(f'Resetting strategy RS to {RS}')
         strategy.reset_RS(RS)  # Must be done before init DumpHelper
 
-    dh = DumpHelper(task, strategy, RS=RS, T=T, n_bagging=n_bagging)  # Used to dump results
+    dh = DumpHelper(task, strategy, RS=RS, T=T, n_bagging=n_bagging,
+                    results_folder=results_folder)  # Used to dump results
 
     # Create timer steps used in the pipeline to time training time
     timer_start = TimerStep('start')
@@ -104,10 +108,14 @@ def train(task, strategy, RS=None, dump_idx_only=False, T=0, n_bagging=None, tra
 
         # Repetedly draw train and test sets
         for i, (train_idx, test_idx) in enumerate(ss.split(X, y)):
+            print(f'FOLD {i}')
+            if asked_fold is not None and i != asked_fold:
+                print('skipped')
+                continue
+
             X_train, X_test = X.iloc[train_idx], X.iloc[test_idx]
             y_train, y_test = y.iloc[train_idx], y.iloc[test_idx]
 
-            print(f'FOLD {i}')
 
             # Used to save the IDs of the sub-sampled dataset.
             if dump_idx_only:
@@ -196,3 +204,21 @@ def train(task, strategy, RS=None, dump_idx_only=False, T=0, n_bagging=None, tra
             # Dump results
             logger.info(f'Fold {i}: Ended predict.')
             dh.dump_prediction(y_pred, y_test, fold=i, tag=str(n))
+
+            if n_permutation is not None:
+                scoring = 'roc_auc' if strategy.is_classification() else 'r2'
+                r = permutation_importance(estimator, X_test, y_test,
+                                           n_repeats=n_permutation,
+                                           random_state=RS, scoring=scoring)
+
+                importances = pd.DataFrame(r.importances.T, columns=X_train.columns)
+                importances.index.rename('repeat', inplace=True)
+                importances = importances.reindex(sorted(importances.columns), axis=1)
+
+                dh.dump_importances(importances, fold=i, tag=str(n))
+
+                mv_props = X_test.isna().sum(axis=0)/X_test.shape[0]
+                mv_props.rename(i, inplace=True)
+                mv_props = mv_props.to_frame().T
+                mv_props = mv_props.reindex(sorted(mv_props.columns), axis=1)
+                dh.dump_mv_props(mv_props, fold=i, tag=str(n))

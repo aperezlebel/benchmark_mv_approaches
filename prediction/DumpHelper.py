@@ -3,12 +3,13 @@ import logging
 import os
 import shutil
 from datetime import datetime
+from os.path import join
 
 import numpy as np
 import pandas as pd
 import yaml
 
-results_folder = 'results/'
+# results_folder = 'results/'
 logger = logging.getLogger(__name__)
 
 
@@ -72,25 +73,29 @@ def get_tag(RS, T):
 class DumpHelper:
     """Class used to dump prediction results."""
 
-    def __init__(self, task, strat, RS=None, T=None, n_bagging=None):
+    def __init__(self, task, strat, RS=None, T=None, n_bagging=None, results_folder=None):
         self.task = task
         self.strat = strat
         self.RS = RS
         self.T = T
         self.n_bagging = n_bagging
+        self.results_folder = results_folder if results_folder is not None else 'results'
 
-        self.db_folder = f'{results_folder}{self.task.meta.db}/'
+        # self.db_folder = f'{results_folder}{self.task.meta.db}/'
+        self.db_folder = join(self.results_folder, self.task.meta.db)
 
         tag = get_tag(RS, T)
 
-        self.task_folder = f'{self.db_folder}{self.task.meta.name}/'
+        # self.task_folder = f'{self.db_folder}{self.task.meta.name}/'
+        self.task_folder = join(self.db_folder, self.task.meta.name)
         logger.info(f'Task folder: {self.task_folder}')
 
-        self.backup_folder = f'{self.task_folder}backup/'
+        # self.backup_folder = f'{self.task_folder}backup/'
+        self.backup_folder = join(self.task_folder, 'backup')
 
         if strat is not None:
             name = strat.name if n_bagging is None else f'{strat.name}_Bagged{self.n_bagging}'
-            self.strat_folder = f'{self.task_folder}{tag}{name}/'
+            self.strat_folder = join(self.task_folder, f'{tag}{name}')
             logger.info(f'Strat folder: {self.strat_folder}')
 
         self._dump_infos()
@@ -104,7 +109,7 @@ class DumpHelper:
                 # Move it in the backup folder
                 os.makedirs(self.backup_folder, exist_ok=True)
                 time_tag = datetime.now().strftime("%Y-%m-%d_%H:%M:%S.%f")
-                dest = f'{self.backup_folder}{self.strat.name}_{time_tag}'
+                dest = join(self.backup_folder, f'{self.strat.name}_{time_tag}')
 
                 # Move lead to error on next dumping so copy + delete
                 shutil.copytree(self.strat_folder, dest)
@@ -119,21 +124,21 @@ class DumpHelper:
             # if self.n_bagging is not None:
             #     strat_infos['name'] = f"Bagged_{self.n_bagging}_{strat_infos['name']}"
 
-            _dump_yaml(self.task.get_infos(), f'{self.strat_folder}task_infos.yml')
-            _dump_yaml(strat_infos, f'{self.strat_folder}strat_infos.yml')
+            _dump_yaml(self.task.get_infos(), join(self.strat_folder, 'task_infos.yml'))
+            _dump_yaml(strat_infos, join(self.strat_folder, 'strat_infos.yml'))
 
         else:
             # Create all necessary folders and ignore if already exist
             os.makedirs(self.task_folder, exist_ok=True)
 
-            _dump_yaml(self.task.get_infos(), f'{self.task_folder}task_infos.yml')
+            _dump_yaml(self.task.get_infos(), join(self.task_folder, 'task_infos.yml'))
 
     def _dump_features(self):
-        filepath = self.strat_folder+'features.yml'
+        filepath = join(self.strat_folder, 'features.yml')
         _dump_yaml(list(self.task.X.columns), filepath)
 
     def _filepath(self, filename):
-        return f'{self.strat_folder}{filename}'
+        return join(self.strat_folder, filename)
 
     @staticmethod
     def _load_content(filepath):
@@ -229,6 +234,20 @@ class DumpHelper:
 
         self._dump(df, f'{tag}_prediction.csv', fold=fold)
 
+    def dump_importances(self, importances, fold=None, tag=None):
+
+        if tag is None:
+            tag = ''
+
+        self._dump(importances, f'{tag}_importances.csv', fold=fold)
+
+    def dump_mv_props(self, mv_props, fold=None, tag=None):
+
+        if tag is None:
+            tag = ''
+
+        self._dump(mv_props, f'{tag}_mv_props.csv', fold=fold)
+
     def dump_best_params(self, best_params, fold=None):
         self._dump(best_params, 'best_params.yml', fold=fold)
 
@@ -262,13 +281,13 @@ class DumpHelper:
 
         self._dump(df, f'{tag}_probas.csv', fold=fold)
 
-    def dump_importance(self, importance, fold=None):
-        data = {
-            'importances_mean': importance.importances_mean,
-            'importances_std': importance.importances_std,
-            'importances': importance.importances
-        }
-        self._dump(data, 'importance.yml', fold=fold)
+    # def dump_importance(self, importance, fold=None):
+    #     data = {
+    #         'importances_mean': importance.importances_mean,
+    #         'importances_std': importance.importances_std,
+    #         'importances': importance.importances
+    #     }
+    #     self._dump(data, 'importance.yml', fold=fold)
 
     def dump_learning_curve(self, learning_curve, fold=None):
         self._dump(learning_curve, 'learning_curve.yml', fold=fold)

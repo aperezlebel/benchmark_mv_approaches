@@ -67,12 +67,17 @@ if __name__ == '__main__':
                    nargs='?', help='Dump only the idx (no prediction).')
     p.add_argument('--nbagging', type=int, default=None, dest='n_bagging')
     p.add_argument('--n', type=int, default=None, dest='train_size')
+    p.add_argument('--npermutation', type=int, default=None, dest='n_permutation')
+    p.add_argument('--fold', type=int, default=None, dest='asked_fold')
+    p.add_argument('--out', type=str, default=None, dest='results_folder')
 
     # Script 4: Aggregate results
     p = subparsers.add_parser('aggregate', description='Aggregate results.')
     p.set_defaults(func=prediction.aggregate_results)
     p.add_argument('--root', type=str, help='The root folder where the '
                    'results are stored.', default='results/', dest='root_folder')
+    p.add_argument('-n', type=int, default=None, dest='n')
+    p.add_argument('--out', type=str, default='test_scores', dest='out')
 
     # Script 5: Figures and tables of the paper
     p = subparsers.add_parser('figs', description='Build figure and tables '
@@ -112,6 +117,14 @@ if __name__ == '__main__':
                         description='Plot broken out boxplots scores & times.')
 
     p = subp.add_parser('mi', description='Plot multiple imputation results.')
+    p.add_argument('-n', type=int, default=None)
+
+    p = subp.add_parser('imp', description='Plot feature importance results.')
+    p.add_argument('-n', type=int, default=None)
+    p.add_argument('--root', type=str)
+    p.add_argument('--no-avg', type=bool, nargs='?', default=True, const=False, dest='average_folds')
+    p.add_argument('--mode', type=str, choices=['abs', 'rel', 'percent', 'ratio'], default='abs', dest='mode')
+    p.add_argument('--task', type=bool, nargs='?', default=False, const=True, dest='hue_by_task')
 
     # Script 6: Data statistics
     p = subparsers.add_parser('datastats', description='Build figures and '
