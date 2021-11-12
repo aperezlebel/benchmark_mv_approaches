@@ -1026,14 +1026,20 @@ class PlotHelper(object):
         cellText = np.transpose([list(global_avg_ranks.astype(str))])
         rowLabels = list(global_avg_ranks.index)
         rowLabels = [PlotHelper.rename_str(rename, s) for s in rowLabels]
+        n_methods = cellText.shape[0]
+        cellColours = [['white']]*n_methods
+        for i in range(0, n_methods, 2):
+            cellColours[i] = ['.93']
 
         table = axes[-1].table(cellText=cellText, loc='right',
-                       rowLabels=rowLabels,
-                       colLabels=['Mean\nrank'],
-                       bbox=[1.32, -0.11, .19, .87],
-                    #    bbox=[1.3, 0, .2, .735],
-                       colWidths=[0.2],
-                       )
+                               rowLabels=None,
+                               colLabels=['Mean\nrank'],
+                            #    bbox=[1.32, -0.11, .19, .87],
+                               bbox=[1.05, 0, .19, 13/12],
+                               #    bbox=[1.3, 0, .2, .735],
+                               colWidths=[0.18],
+                               cellColours=cellColours,
+                               )
         table.set_fontsize(table_fontsize)
 
 

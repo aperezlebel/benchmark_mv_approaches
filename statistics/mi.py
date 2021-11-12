@@ -55,6 +55,8 @@ rename_on_plot = {
     'MI+mask': 'MI\n+mask',
     'MIA+Bagging100': 'MIA\n+Bagging',
     'MIA+bagging': 'MIA\n+Bagging',
+    'MI': 'Iterative\n+Bagging',
+    'MI+mask': 'Iterative+mask\n+Bagging',
     # 'MIA': 'Boosted trees\n+MIA'
 }
 
@@ -132,7 +134,7 @@ def run_multiple_imputation(graphics_folder, n=None):
 
     else:
         figsize = (18, 5.25)
-        legend_bbox = (4.22, 1.075)
+        legend_bbox = (4.415, 1.015)
 
     if len(method_order) >= 12:
         y_labelsize = 14
@@ -143,7 +145,7 @@ def run_multiple_imputation(graphics_folder, n=None):
         scores, method_order=method_order, db_order=db_order,
         rename=rename_on_plot, reference_method=None, symbols=symbols,
         only_full_samples=False, legend_bbox=legend_bbox, figsize=figsize,
-        table_fontsize=10, y_labelsize=y_labelsize)
+        table_fontsize=13, y_labelsize=y_labelsize)
     xticks = {
         1/10: '$\\frac{1}{10}\\times$',
         2/3: '$\\frac{2}{3}\\times$',
@@ -154,7 +156,7 @@ def run_multiple_imputation(graphics_folder, n=None):
     fig_time = PlotHelper.plot_times(
         scores, 'PT', xticks_dict=xticks, method_order=method_order,
         db_order=db_order, rename=rename_on_plot, y_labelsize=y_labelsize,
-        only_full_samples=False)
+        only_full_samples=False, reference_method='MIA')
 
     fig_folder = get_fig_folder(graphics_folder)
 
