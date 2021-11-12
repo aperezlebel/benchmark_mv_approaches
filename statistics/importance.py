@@ -126,6 +126,7 @@ def run_feature_importance(graphics_folder, results_folder, n, average_folds,
         df['importance_ref'] = df_agg
         df['importance_rel'] = df['importance_abs'] - df['importance_ref']
         df['importance_rel_%'] = (df['importance_abs'] - df['importance_ref'])/df['importance_ref']
+        df['importance_ratio'] = df['importance_abs']/df['importance_ref']
 
         return df
 
@@ -168,6 +169,11 @@ def run_feature_importance(graphics_folder, results_folder, n, average_folds,
         yscale = 'symlog'
         linthresh = 1
         ylabel = 'Relative score drop normalized'
+    elif mode == 'ratio':
+        y = 'importance_ratio'
+        yscale = 'symlog'
+        linthresh = 1
+        ylabel = 'Score drop normalized'
 
     colors = [
         sns.color_palette('Set2', n_colors=8).as_hex(),
