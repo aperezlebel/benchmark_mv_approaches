@@ -16,15 +16,27 @@ tasks_to_drop = {
 
 
 def run_difficulty(graphics_folder, averaged_scores=True):
-    filepath = 'scores/scores.csv'
-    scores = pd.read_csv(filepath, index_col=0)
+    # filepath = 'scores/scores.csv'
+    # scores = pd.read_csv(filepath, index_col=0)
+    filepaths = [
+        'scores/scores.csv',
+        'scores/scores_mi_2500.csv',
+        'scores/scores_mia_2500.csv',
+        'scores/scores_mi_10000.csv',
+        'scores/scores_mia_10000.csv',
+        'scores/scores_mia_25000.csv',
+        'scores/scores_mi_25000.csv',
+        'scores/scores_mia_100000.csv',
+    ]
+    dfs = [pd.read_csv(path, index_col=0) for path in filepaths]
+    scores = pd.concat(dfs, axis=0)
 
     # Drop tasks
     for db, task in tasks_to_drop.items():
         scores.drop(index=scores[(scores['db'] == db) & (scores['task'] == task)].index, inplace=True)
 
     scores['task'] = scores['task'].str.replace('_pvals', '_screening')
-    
+
     method_order = [
         'MIA',
         'Mean',
@@ -35,6 +47,9 @@ def run_difficulty(graphics_folder, averaged_scores=True):
         'Iter+mask',
         'KNN',
         'KNN+mask',
+        'MI',
+        'MI+mask',
+        'MIA+bagging',
     ]
 
     db_order = [
@@ -96,7 +111,7 @@ def run_difficulty(graphics_folder, averaged_scores=True):
 
     # AUC figure
     sns.scatterplot(x='Score', y='Rank', hue='Method', data=scores_auc,
-                    ax=ax, hue_order=method_order, s=20)
+                    ax=ax, hue_order=method_order, s=20)#, linewidth=0.2, edgecolor='black')
     palette = itertools.cycle(sns.color_palette())
 
     for _, group in scores_auc.groupby('Method', sort=False):
@@ -106,12 +121,12 @@ def run_difficulty(graphics_folder, averaged_scores=True):
     ax.legend(bbox_to_anchor=(1, 1))
     ax.set_xlabel('AUC score')
     ax.invert_yaxis()
-    
+
     # Rename methods in legend
     handles, labels = ax.get_legend_handles_labels()
     renamed_labels = [rename.get(label, label) for label in labels]
     ax.legend(title='Method', handles=handles, labels=renamed_labels, bbox_to_anchor=(1, 1))
-    
+
     plt.tight_layout()
 
     # R2 figure
@@ -119,7 +134,7 @@ def run_difficulty(graphics_folder, averaged_scores=True):
     ax = plt.gca()
 
     sns.scatterplot(x='Score', y='Rank', hue='Method', data=scores_r2,
-                    ax=ax, hue_order=method_order, s=20)
+                    ax=ax, hue_order=method_order, s=20)#, linewidth=0.2, edgecolor='black')
     palette = itertools.cycle(sns.color_palette())
 
     for _, group in scores_r2.groupby('Method', sort=False):
@@ -134,7 +149,7 @@ def run_difficulty(graphics_folder, averaged_scores=True):
     handles, labels = ax.get_legend_handles_labels()
     renamed_labels = [rename.get(label, label) for label in labels]
     ax.legend(title='Method', handles=handles, labels=renamed_labels, bbox_to_anchor=(1, 1))
-    
+
     plt.tight_layout()
 
     fig_folder = get_fig_folder(graphics_folder)

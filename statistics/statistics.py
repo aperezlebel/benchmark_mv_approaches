@@ -741,8 +741,20 @@ def run_cor(args, graphics_folder, absolute=False, csv=False, prop_only=True):
 
 
 def run_time():
-    path = os.path.abspath('scores/scores.csv')
-    df = pd.read_csv(path, index_col=0)
+    # path = os.path.abspath('scores/scores.csv')
+    # df = pd.read_csv(path, index_col=0)
+    filepaths = [
+        'scores/scores.csv',
+        'scores/scores_mi_2500.csv',
+        'scores/scores_mia_2500.csv',
+        'scores/scores_mi_10000.csv',
+        'scores/scores_mia_10000.csv',
+        'scores/scores_mia_25000.csv',
+        'scores/scores_mi_25000.csv',
+        'scores/scores_mia_100000.csv',
+    ]
+    dfs = [pd.read_csv(path, index_col=0) for path in filepaths]
+    df = pd.concat(dfs, axis=0)
 
     # Drop tasks
     for db, task in tasks_to_drop.items():

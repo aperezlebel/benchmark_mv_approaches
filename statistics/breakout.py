@@ -16,8 +16,20 @@ tasks_to_drop = {
 
 
 def run_breakout(graphics_folder, linear):
-    filepath = 'scores/scores.csv'
-    scores = pd.read_csv(filepath, index_col=0)
+    # filepath = 'scores/scores.csv'
+    # scores = pd.read_csv(filepath, index_col=0)
+    filepaths = [
+        'scores/scores.csv',
+        'scores/scores_mi_2500.csv',
+        'scores/scores_mia_2500.csv',
+        'scores/scores_mi_10000.csv',
+        'scores/scores_mia_10000.csv',
+        'scores/scores_mia_25000.csv',
+        'scores/scores_mi_25000.csv',
+        'scores/scores_mia_100000.csv',
+    ]
+    dfs = [pd.read_csv(path, index_col=0) for path in filepaths]
+    scores = pd.concat(dfs, axis=0)
 
     # Drop tasks
     for db, task in tasks_to_drop.items():
@@ -35,6 +47,9 @@ def run_breakout(graphics_folder, linear):
         'Iter+mask',
         'KNN',
         'KNN+mask',
+        'MI',
+        'MI+mask',
+        'MIA+bagging',
     ]
 
     db_order = [
@@ -150,7 +165,7 @@ def run_breakout(graphics_folder, linear):
         # sns.stripplot(x='score', y='Size', hue='Method', data=group, ax=ax,
         sns.stripplot(x='Size', y='score', hue='Method', data=group, ax=ax,
                     #   order=['100000', '25000', '10000', '2500'], s=4, jitter=1)#0.3)
-                      order=['2500', '10000', '25000', '100000'], s=4, jitter=1)#0.3)
+                      order=['2500', '10000', '25000', '100000'], s=4, jitter=1, linewidth=0.2, edgecolor='black')#0.3)
         xlabels = {
             'roc_auc_score': 'AUC',
             'r2_score': '$r^2$',
