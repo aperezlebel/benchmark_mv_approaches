@@ -1115,7 +1115,8 @@ class PlotHelper(object):
             lw = 1.3
             dh = 1./n_methods
             l_tail = 0.03
-            pos_arrow = -0.43
+            # pos_arrow = -0.43
+            pos_arrow = -0.78
             n_cond = 5
             n_const = 9
             n_bag = 1.5
@@ -1135,7 +1136,7 @@ class PlotHelper(object):
                     rotation=90,
                     )
 
-        ax.annotate('Bagging\n\n', xy=(pos_arrow, n_bag*dh), xytext=(pos_arrow-l_tail, n_bag*dh), xycoords='axes fraction',
+        ax.annotate('Bagging\n\\small{{(multiple imputation)}}\n\n', xy=(pos_arrow, n_bag*dh), xytext=(pos_arrow-l_tail, n_bag*dh), xycoords='axes fraction',
                     fontsize=fs, ha='center', va='center',
                     bbox=None,#dict(boxstyle='square', fc='white'),
                     arrowprops=dict(arrowstyle=f'-[, widthB={w_bag/fs}, lengthB=0.5', lw=lw),
@@ -1149,7 +1150,8 @@ class PlotHelper(object):
     @staticmethod
     def plot_times(filepath, which, xticks_dict=None, xlims=None, db_order=None,
                    method_order=None, rename=dict(), reference_method=None,
-                   linear=False, only_full_samples=True, y_labelsize=18, comments=None):
+                   linear=False, only_full_samples=True, y_labelsize=18, comments=None, figsize=(18, 5.25),
+                    legend_bbox=(4.22, 1.075)):
         if not isinstance(filepath, pd.DataFrame):
             scores = pd.read_csv(filepath, index_col=0)
         else:
@@ -1169,10 +1171,11 @@ class PlotHelper(object):
                                      method_order=method_order,
                                      db_order=db_order, rename=rename,
                                      reference_method=reference_method,
-                                     figsize=(18, 5.25),
+                                     figsize=figsize,
                                      only_full_samples=only_full_samples,
                                      y_labelsize=y_labelsize,
                                      comments=comments,
+                                     legend_bbox=legend_bbox,
                                      )
 
         # Add brackets
@@ -1182,6 +1185,9 @@ class PlotHelper(object):
         # dh = 1./9
         # l_tail = 0.03
         n_methods = 9 if method_order is None else len(method_order)
+
+        w_bag = 45
+        n_bag = 1.5
 
         if n_methods == 9:
             fs = 18
@@ -1210,17 +1216,28 @@ class PlotHelper(object):
             l_tail = 0.03
             n_cond = 3
             n_const = 8
+        # elif n_methods == 12:
+        #     fs = 18
+        #     w_const = 50
+        #     w_cond = 80
+        #     lw = 1.3
+        #     dh = 1./n_methods
+        #     l_tail = 0.03
+        #     n_cond = 4
+        #     n_const = 9
         elif n_methods == 12:
             fs = 18
-            w_const = 50
-            w_cond = 80
+            w_const = 60
+            w_cond = 60
+            w_bag = 45
             lw = 1.3
             dh = 1./n_methods
             l_tail = 0.03
-            n_cond = 4
+            pos_arrow = -0.75
+            n_cond = 5
             n_const = 9
+            n_bag = 1.5
 
-        pos_arrow = -0.4 if linear else -0.26
         # Here is the label and arrow code of interest
         ax.annotate('Constant\nimputation\n\n', xy=(pos_arrow, n_const*dh), xytext=(pos_arrow-l_tail, n_const*dh), xycoords='axes fraction',
                     fontsize=fs, ha='center', va='center',
@@ -1233,6 +1250,13 @@ class PlotHelper(object):
                     fontsize=fs, ha='center', va='center',
                     bbox=None,#dict(boxstyle='square', fc='white'),
                     arrowprops=dict(arrowstyle=f'-[, widthB={w_cond/fs}, lengthB=0.5', lw=lw),
+                    rotation=90,
+                    )
+
+        ax.annotate('Bagging\n\\small{{(multiple imputation)}}\n\n', xy=(pos_arrow, n_bag*dh), xytext=(pos_arrow-l_tail, n_bag*dh), xycoords='axes fraction',
+                    fontsize=fs, ha='center', va='center',
+                    bbox=None,#dict(boxstyle='square', fc='white'),
+                    arrowprops=dict(arrowstyle=f'-[, widthB={w_bag/fs}, lengthB=0.5', lw=lw),
                     rotation=90,
                     )
 

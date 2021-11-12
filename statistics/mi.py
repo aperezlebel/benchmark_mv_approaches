@@ -193,6 +193,7 @@ def run_multiple_imputation(graphics_folder, n=None):
     fig_time = PlotHelper.plot_times(
         scores, 'PT', xticks_dict=xticks, method_order=method_order,
         db_order=db_order, rename=rename_on_plot, y_labelsize=y_labelsize,
+        legend_bbox=legend_bbox,
         only_full_samples=False, reference_method='MIA', figsize=figsize, comments=comments)
 
     fig_folder = get_fig_folder(graphics_folder)
