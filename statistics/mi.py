@@ -55,8 +55,8 @@ rename_on_plot = {
     'MI+mask': 'MI\n+mask',
     'MIA+Bagging100': 'MIA\n+Bagging',
     'MIA+bagging': 'MIA\n+Bagging',
-    'MI': 'Iterative\n+Bagging',
-    'MI+mask': 'Iterative+mask\n+Bagging',
+    'MI': 'Iterative\n+Bagging (MI)',
+    'MI+mask': 'Iterative+mask\n+Bagging (MI)',
     # 'MIA': 'Boosted trees\n+MIA'
 }
 
@@ -133,7 +133,7 @@ def run_multiple_imputation(graphics_folder, n=None):
         legend_bbox = (1.055, 1.075)
 
     else:
-        figsize = (18, 5.25)
+        figsize = (18, 6)
         legend_bbox = (4.415, 1.015)
 
     if len(method_order) >= 12:

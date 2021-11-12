@@ -1048,6 +1048,9 @@ class PlotHelper(object):
         # Add brackets
         ax = axes[0]
 
+        w_bag = 45
+        n_bag = 1.5
+
         if n_methods == 9:
             fs = 18
             w_const = 70
@@ -1080,14 +1083,16 @@ class PlotHelper(object):
             n_const = 8
         elif n_methods == 12:
             fs = 18
-            w_const = 50
-            w_cond = 80
+            w_const = 60
+            w_cond = 60
+            w_bag = 45
             lw = 1.3
             dh = 1./n_methods
             l_tail = 0.03
-            pos_arrow = -0.3
-            n_cond = 4
+            pos_arrow = -0.43
+            n_cond = 5
             n_const = 9
+            n_bag = 1.5
 
         # Here is the label and arrow code of interest
         ax.annotate('Constant\nimputation\n\n', xy=(pos_arrow, n_const*dh), xytext=(pos_arrow-l_tail, n_const*dh), xycoords='axes fraction',
@@ -1101,6 +1106,13 @@ class PlotHelper(object):
                     fontsize=fs, ha='center', va='center',
                     bbox=None,#dict(boxstyle='square', fc='white'),
                     arrowprops=dict(arrowstyle=f'-[, widthB={w_cond/fs}, lengthB=0.5', lw=lw),
+                    rotation=90,
+                    )
+
+        ax.annotate('Bagging\n\n', xy=(pos_arrow, n_bag*dh), xytext=(pos_arrow-l_tail, n_bag*dh), xycoords='axes fraction',
+                    fontsize=fs, ha='center', va='center',
+                    bbox=None,#dict(boxstyle='square', fc='white'),
+                    arrowprops=dict(arrowstyle=f'-[, widthB={w_bag/fs}, lengthB=0.5', lw=lw),
                     rotation=90,
                     )
 
