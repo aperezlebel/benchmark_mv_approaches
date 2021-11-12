@@ -47,14 +47,14 @@ rename_on_plot = {
     'Med+mask': 'Median\n+mask',
     'Iter': 'Iterative',
     'Iter+mask': 'Iterative\n+mask',
-    'KNN+mask': 'KNN\n+mask',
+    'KNN+mask': 'KNN+mask',
     'Linear+Mean+mask': 'Linear+Mean\n+mask',
     'Linear+Med+mask': 'Linear+Med\n+mask',
     'Linear+Iter+mask': 'Linear+Iter\n+mask',
     'Linear+KNN+mask': 'Linear+KNN\n+mask',
     'MI+mask': 'MI\n+mask',
-    'MIA+Bagging100': 'MIA\n+Bagging',
-    'MIA+bagging': 'MIA\n+Bagging',
+    'MIA+Bagging100': 'MIA+Bagging',
+    'MIA+bagging': 'MIA+Bagging',
     'MI': 'Iterative\n+Bagging (MI)',
     'MI+mask': 'Iterative+mask\n+Bagging (MI)',
     # 'MIA': 'Boosted trees\n+MIA'
@@ -115,7 +115,7 @@ def run_multiple_imputation(graphics_folder, n=None):
     symbols = {}
 
     def pvalue_to_symbol(pvalue, alpha, n_bonferroni, greater=True):
-        c = '' if greater else '(<)'
+        c = '' if greater else '(>)'
         if pvalue < alpha/n_bonferroni:
             return f'$\\star\\star{c}$'
         if pvalue < alpha:
