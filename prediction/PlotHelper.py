@@ -844,7 +844,7 @@ class PlotHelper(object):
                     if symbol is None:
                         continue
 
-                    ax.annotate(symbol, xy=(0.025, 0.935-i/9), color='black',
+                    ax.annotate(symbol, xy=(0.025, 0.94-.995*i/n_methods), color='black',
                                 xycoords='axes fraction', fontsize='x-large')
 
         return fig, axes

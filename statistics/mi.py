@@ -3,6 +3,7 @@ import pandas as pd
 
 from custom.const import get_fig_folder
 from prediction.PlotHelper import PlotHelper
+from .tests import run_wilcoxon
 
 rename = {
     '': 'MIA',
@@ -105,6 +106,25 @@ def run_multiple_imputation(graphics_folder, n=None):
 
     scores['task'] = scores['task'].str.replace('_pvals', '_screening')
 
+    # Get Wilcoxon table for symbol annotation
+    W_test = run_wilcoxon(graphics_folder=None, spacing=False, no_rename=True)
+
+    symbols = {}
+
+    def pvalue_to_symbol(pvalue, alpha, n_bonferroni):
+        if pvalue < alpha/n_bonferroni:
+            return '$\\star\\star$'
+        if pvalue < alpha:
+            return '$\\star$'
+        return None
+
+    alpha = 0.05
+    n_bonferroni = W_test.shape[0]
+
+    for size in W_test:
+        symbols[size] = {k: pvalue_to_symbol(v, alpha, n_bonferroni) for k, v in W_test[size].iteritems()}
+        symbols[size]['MIA'] = '$\\rightarrow$'
+
     if n is not None:
         scores = scores.query(f'size == {n}')
         figsize = (4.5, 5.25)
@@ -121,7 +141,7 @@ def run_multiple_imputation(graphics_folder, n=None):
 
     fig = PlotHelper.plot_scores(
         scores, method_order=method_order, db_order=db_order,
-        rename=rename_on_plot, reference_method=None, symbols=None,
+        rename=rename_on_plot, reference_method=None, symbols=symbols,
         only_full_samples=False, legend_bbox=legend_bbox, figsize=figsize,
         table_fontsize=10, y_labelsize=y_labelsize)
     xticks = {
