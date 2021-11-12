@@ -109,23 +109,30 @@ def run_multiple_imputation(graphics_folder, n=None):
     scores['task'] = scores['task'].str.replace('_pvals', '_screening')
 
     # Get Wilcoxon table for symbol annotation
-    W_test = run_wilcoxon(graphics_folder=None, spacing=False, no_rename=True)
+    W_test_greater = run_wilcoxon(graphics_folder=None, spacing=False, no_rename=True, greater=True)
+    W_test_less = run_wilcoxon(graphics_folder=None, spacing=False, no_rename=True, greater=False)
 
     symbols = {}
 
-    def pvalue_to_symbol(pvalue, alpha, n_bonferroni):
+    def pvalue_to_symbol(pvalue, alpha, n_bonferroni, greater=True):
+        c = '' if greater else '(<)'
         if pvalue < alpha/n_bonferroni:
-            return '$\\star\\star$'
+            return f'$\\star\\star{c}$'
         if pvalue < alpha:
-            return '$\\star$'
+            return f'$\\star{c}$'
         return None
 
     alpha = 0.05
-    n_bonferroni = W_test.shape[0]
+    n_bonferroni = W_test_greater.shape[0]
 
-    for size in W_test:
-        symbols[size] = {k: pvalue_to_symbol(v, alpha, n_bonferroni) for k, v in W_test[size].iteritems()}
+    for size in W_test_greater:
+        symbols[size] = {}
         symbols[size]['MIA'] = '$\\rightarrow$'
+        for k, v in W_test_greater[size].iteritems():
+            symbols[size][k] = pvalue_to_symbol(v, alpha, n_bonferroni, greater=True)
+        for k, v in W_test_less[size].iteritems():
+            if symbols[size][k] is None:
+                symbols[size][k] = pvalue_to_symbol(v, alpha, n_bonferroni, greater=False)
 
     comments = {}
     comments[100000] = {}
