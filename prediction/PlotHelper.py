@@ -557,8 +557,8 @@ class PlotHelper(object):
     @staticmethod
     def _plot(filepath, value, how, xticks_dict=None, xlims=None, db_order=None,
               method_order=None, rename=dict(), reference_method=None,
-              figsize=None, legend_bbox=None, xlabel=None, symbols=None, only_full_samples=True,
-              y_labelsize=18):
+              figsize=None, legend_bbox=None, xlabel=None, symbols=None, comments=None,
+              only_full_samples=True, y_labelsize=18):
         """Plot the full available results."""
         if not isinstance(filepath, pd.DataFrame):
             df = pd.read_csv(filepath, index_col=0)
@@ -847,6 +847,22 @@ class PlotHelper(object):
                     ax.annotate(symbol, xy=(0.025, 0.94-.995*i/n_methods), color='black',
                                 xycoords='axes fraction', fontsize='x-large')
 
+            # Optionally adds comments on each line (for untractable)
+            if comments is not None:
+                method_comments = comments.get(size, None)
+                if method_comments is None:
+                    continue
+
+                for i, method in enumerate(method_order):
+                    comment = method_comments.get(method, None)
+
+                    if comment is None:
+                        continue
+
+                    # ax.annotate(comment, xy=(0.5, 0.94-.995*i/n_methods), color='.3',
+                    #             xycoords='axes fraction', fontsize='x-large')
+                    ax.text(0.025, 1-(i+0.5)/n_methods, comment, color='.4', fontsize='x-large', ha='left', va='center', transform=ax.transAxes)
+
         return fig, axes
 
     @staticmethod
@@ -999,7 +1015,7 @@ class PlotHelper(object):
 
     @staticmethod
     def plot_scores(filepath, db_order=None, method_order=None, rename=dict(),
-                    reference_method=None, symbols=None, only_full_samples=True,
+                    reference_method=None, symbols=None, comments=None, only_full_samples=True,
                     legend_bbox=(4.22, 1.075), figsize=(18, 5.25), table_fontsize=13,
                     y_labelsize=18):
         if not isinstance(filepath, pd.DataFrame):
@@ -1014,6 +1030,7 @@ class PlotHelper(object):
                                      figsize=figsize,
                                      legend_bbox=legend_bbox,
                                      symbols=symbols,
+                                     comments=comments,
                                      only_full_samples=only_full_samples,
                                      y_labelsize=y_labelsize,
                                      )
@@ -1123,7 +1140,7 @@ class PlotHelper(object):
     @staticmethod
     def plot_times(filepath, which, xticks_dict=None, xlims=None, db_order=None,
                    method_order=None, rename=dict(), reference_method=None,
-                   linear=False, only_full_samples=True, y_labelsize=18):
+                   linear=False, only_full_samples=True, y_labelsize=18, comments=None):
         if not isinstance(filepath, pd.DataFrame):
             scores = pd.read_csv(filepath, index_col=0)
         else:
@@ -1146,6 +1163,7 @@ class PlotHelper(object):
                                      figsize=(18, 5.25),
                                      only_full_samples=only_full_samples,
                                      y_labelsize=y_labelsize,
+                                     comments=comments,
                                      )
 
         # Add brackets

@@ -127,6 +127,11 @@ def run_multiple_imputation(graphics_folder, n=None):
         symbols[size] = {k: pvalue_to_symbol(v, alpha, n_bonferroni) for k, v in W_test[size].iteritems()}
         symbols[size]['MIA'] = '$\\rightarrow$'
 
+    comments = {}
+    comments[100000] = {}
+    comments[100000]['KNN'] = 'Intractable'
+    comments[100000]['KNN+mask'] = 'Intractable'
+
     if n is not None:
         scores = scores.query(f'size == {n}')
         figsize = (4.5, 5.25)
@@ -145,7 +150,7 @@ def run_multiple_imputation(graphics_folder, n=None):
         scores, method_order=method_order, db_order=db_order,
         rename=rename_on_plot, reference_method=None, symbols=symbols,
         only_full_samples=False, legend_bbox=legend_bbox, figsize=figsize,
-        table_fontsize=13, y_labelsize=y_labelsize)
+        table_fontsize=13, y_labelsize=y_labelsize, comments=comments)
     xticks = {
         1/10: '$\\frac{1}{10}\\times$',
         2/3: '$\\frac{2}{3}\\times$',
