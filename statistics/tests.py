@@ -226,8 +226,21 @@ def run_wilcoxon_():
 
 def run_wilcoxon_mia(graphics_folder, csv=False, greater=True, spacing=True, no_rename=False):
     """Wilcoxon test between MIA and every other methods (including linear)."""
-    path = os.path.abspath('scores/scores.csv')
-    df = pd.read_csv(path, index_col=0)
+    # path = os.path.abspath('scores/scores.csv')
+    # df = pd.read_csv(path, index_col=0)
+
+    filepaths = [
+        'scores/scores.csv',
+        'scores/scores_mi_2500.csv',
+        'scores/scores_mia_2500.csv',
+        'scores/scores_mi_10000.csv',
+        'scores/scores_mia_10000.csv',
+        'scores/scores_mia_25000.csv',
+        'scores/scores_mi_25000.csv',
+        'scores/scores_mia_100000.csv',
+    ]
+    dfs = [pd.read_csv(os.path.abspath(path), index_col=0) for path in filepaths]
+    df = pd.concat(dfs, axis=0)
 
     which = 'greater' if greater else 'less'
 
@@ -254,6 +267,9 @@ def run_wilcoxon_mia(graphics_folder, csv=False, greater=True, spacing=True, no_
         'Iter+mask',
         'KNN',
         'KNN+mask',
+        'MI',
+        'MI+mask',
+        'MIA+bagging',
     ]
 
     method_order2 = [
