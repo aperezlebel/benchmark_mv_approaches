@@ -612,8 +612,8 @@ class PlotHelper(object):
 
         matplotlib.rcParams.update({
             'font.size': 10,
-            'legend.fontsize': 12,
-            'legend.title_fontsize': 14,
+            'legend.fontsize': 15,
+            'legend.title_fontsize': 18,
             'axes.titlesize': 18,
             'axes.labelsize': 18,
             'xtick.labelsize': 12,
@@ -767,7 +767,16 @@ class PlotHelper(object):
                                  )
 
             if legend_bbox:
-                g2.legend(loc='upper left', bbox_to_anchor=legend_bbox, ncol=1, title='Database')
+                # g2.legend(loc='upper left', bbox_to_anchor=legend_bbox, ncol=1, title='Database')
+                handles, labels = g2.get_legend_handles_labels()
+                r = matplotlib.patches.Rectangle((0,0), 1, 1, fill=False, edgecolor='none',
+                                 visible=False)
+                handles = [r] + handles
+                labels = ['\\textbf{{Database}}'] + labels
+                # g2.legend(loc='lower center', bbox_to_anchor=legend_bbox, ncol=4, title='\\textbf{{Database}}')
+                # g2.get_legend().get_title().set_position((-250, -20))
+                g2.legend(loc='lower center', bbox_to_anchor=legend_bbox, ncol=5, handles=handles, labels=labels)
+                # g2.legend(loc='lower center', bbox_to_anchor=legend_bbox, ncol=4, title='Database')
 
             # Scatter plot for invalid data points
             if n_dbs_invalid > 0:
@@ -788,7 +797,6 @@ class PlotHelper(object):
             elif legend_bbox and i > 0:
                 twinx.get_legend().remove()
 
-
             if i > 0:  # if not the first axis
                 ax.yaxis.set_visible(False)
                 # twinx.get_legend().remove()
@@ -797,6 +805,7 @@ class PlotHelper(object):
                 labels = [item.get_text() for item in ax.get_yticklabels()]
                 r_labels = [PlotHelper.rename_str(rename, l) for l in labels]
                 ax.set_yticklabels(r_labels)
+                # ax.text(1.1, 1.1, '\\textbf{{Database}}', fontsize='x-large', ha='left', va='center', transform=ax.transAxes, zorder=10)
 
             if how == 'log':
                 ax.set_xscale('log')

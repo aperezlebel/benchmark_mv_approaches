@@ -36,28 +36,51 @@ rename = {
     '_Ridge_imputed_KNN+mask': 'Linear+KNN+mask',
 }
 
+# rename_on_plot = {
+#     'relative_score': 'Relative prediction score',
+#     'absolute_score': 'Prediction score difference',
+#     'relative_total_PT': 'Relative total training time',
+#     'relative_total_WCT': 'Relative wall-clock time',
+#     'TB': 'Traumabase',
+#     'Mean+mask': 'Mean\n+mask',
+#     'Med': 'Median',
+#     'Med+mask': 'Median\n+mask',
+#     'Iter': 'Iterative',
+#     'Iter+mask': 'Iterative\n+mask',
+#     'KNN+mask': 'KNN+mask',
+#     'Linear+Mean+mask': 'Linear+Mean\n+mask',
+#     'Linear+Med+mask': 'Linear+Med\n+mask',
+#     'Linear+Iter+mask': 'Linear+Iter\n+mask',
+#     'Linear+KNN+mask': 'Linear+KNN\n+mask',
+#     'MI+mask': 'MI\n+mask',
+#     'MIA+Bagging100': 'MIA+Bagging',
+#     'MIA+bagging': 'MIA+Bagging',
+#     'MI': 'Iterative\n+Bagging (MI)',
+#     'MI+mask': 'Iterative+mask\n+Bagging (MI)',
+#     # 'MIA': 'Boosted trees\n+MIA'
+# }
 rename_on_plot = {
     'relative_score': 'Relative prediction score',
     'absolute_score': 'Prediction score difference',
     'relative_total_PT': 'Relative total training time',
     'relative_total_WCT': 'Relative wall-clock time',
     'TB': 'Traumabase',
-    'Mean+mask': 'Mean\n+mask',
+    'Mean+mask': 'Mean+mask',
     'Med': 'Median',
-    'Med+mask': 'Median\n+mask',
+    'Med+mask': 'Median+mask',
     'Iter': 'Iterative',
-    'Iter+mask': 'Iterative\n+mask',
+    'Iter+mask': 'Iterative+mask',
     'KNN+mask': 'KNN+mask',
-    'Linear+Mean+mask': 'Linear+Mean\n+mask',
-    'Linear+Med+mask': 'Linear+Med\n+mask',
-    'Linear+Iter+mask': 'Linear+Iter\n+mask',
-    'Linear+KNN+mask': 'Linear+KNN\n+mask',
-    'MI+mask': 'MI\n+mask',
+    'Linear+Mean+mask': 'Linear+Mean+mask',
+    'Linear+Med+mask': 'Linear+Med+mask',
+    'Linear+Iter+mask': 'Linear+Iter+mask',
+    'Linear+KNN+mask': 'Linear+KNN+mask',
+    'MI+mask': 'MI+mask',
     'MIA+Bagging100': 'MIA+Bagging',
     'MIA+bagging': 'MIA+Bagging',
-    'MI': 'Iterative\n+Bagging (MI)',
-    'MI+mask': 'Iterative+mask\n+Bagging (MI)',
-    # 'MIA': 'Boosted trees\n+MIA'
+    'MI': 'Iterative+Bagging (MI)',
+    'MI+mask': 'Iterative+mask+Bagging (MI)',
+    # 'MIA': 'Boosted trees+MIA'
 }
 
 method_order = [
@@ -146,7 +169,8 @@ def run_multiple_imputation(graphics_folder, n=None):
 
     else:
         figsize = (18, 6)
-        legend_bbox = (4.415, 1.015)
+        # legend_bbox = (4.415, 1.015)
+        legend_bbox = (2.05, 1.05)
 
     if len(method_order) >= 12:
         y_labelsize = 14
@@ -159,16 +183,17 @@ def run_multiple_imputation(graphics_folder, n=None):
         only_full_samples=False, legend_bbox=legend_bbox, figsize=figsize,
         table_fontsize=13, y_labelsize=y_labelsize, comments=comments)
     xticks = {
-        1/10: '$\\frac{1}{10}\\times$',
-        2/3: '$\\frac{2}{3}\\times$',
+        # 1/10: '$\\frac{1}{10}\\times$',
+        # 2/3: '$\\frac{2}{3}\\times$',
         1: '$1\\times$',
-        3/2: '$\\frac{3}{2}\\times$',
+        # 3/2: '$\\frac{3}{2}\\times$',
         10: '$10\\times$',
+        100: '$100\\times$',
     }
     fig_time = PlotHelper.plot_times(
         scores, 'PT', xticks_dict=xticks, method_order=method_order,
         db_order=db_order, rename=rename_on_plot, y_labelsize=y_labelsize,
-        only_full_samples=False, reference_method='MIA')
+        only_full_samples=False, reference_method='MIA', figsize=figsize, comments=comments)
 
     fig_folder = get_fig_folder(graphics_folder)
 
