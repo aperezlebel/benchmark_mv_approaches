@@ -1,8 +1,9 @@
 from os.path import join
-import pandas as pd
 
+import pandas as pd
 from custom.const import get_fig_folder
 from prediction.PlotHelper import PlotHelper
+
 from .tests import run_wilcoxon
 
 rename = {
@@ -182,20 +183,53 @@ def run_multiple_imputation(graphics_folder, n=None):
         rename=rename_on_plot, reference_method=None, symbols=symbols,
         only_full_samples=False, legend_bbox=legend_bbox, figsize=figsize,
         table_fontsize=13, y_labelsize=y_labelsize, comments=comments)
+
+    scores['total_PT'] = scores['imputation_PT'].fillna(0) + scores['tuning_PT']
+    scores['tag'] = scores['db'] + '/' + scores['task']
+    print(scores)
+    for index, subdf in scores.groupby(['size', 'method']):
+        size, method = index
+        # print(subdf)
+        # print(subdf['tag'])
+        # print(subdf['tag'].unique())
+        # print(len(subdf['tag'].unique()))
+        n_tasks = len(subdf['tag'].unique())
+        total_pt_time = subdf['total_PT'].sum()/n_tasks
+        # exit()
+        # print(index)
+        comments_size = comments.get(size, {})
+        if comments_size.get(method, None) is None:
+            comments_size[method] = f'{int(total_pt_time/3600):,d} hours'.replace(',', '\\,')
+        comments[size] = comments_size
+    print(comments)
+    # exit()
     xticks = {
         # 1/10: '$\\frac{1}{10}\\times$',
         # 2/3: '$\\frac{2}{3}\\times$',
         1: '$1\\times$',
         # 3/2: '$\\frac{3}{2}\\times$',
-        5: '$5\\times$',
-        10: '$10\\times$',
+        2: '$2\\times$',
+        # 5: '$5\\times$',
+        # 10: '$10\\times$',
+        50: '$50\\times$',
         100: '$100\\times$',
+        # 150: '$150\\times$',
+        200: '$200\\times$',
+        500: '$500\\times$',
+    }
+    legend_bbox = (4.22, 1.05)
+    comments_align = {
+        0: ['right']*9+['left']*3,
+        1: ['right']*9+['left']*3,
+        2: ['right']*9+['left']*3,
+        3: ['right']*7+['left']*5,
     }
     fig_time = PlotHelper.plot_times(
         scores, 'PT', xticks_dict=xticks, method_order=method_order,
         db_order=db_order, rename=rename_on_plot, y_labelsize=y_labelsize,
-        legend_bbox=legend_bbox, broken_axis=(20, 50),
-        only_full_samples=False, reference_method='MIA', figsize=figsize, comments=comments)
+        legend_bbox=legend_bbox, broken_axis=[(2.3, 55), (2.3, 55), (2.5, 25), (3.5, 25)],
+        only_full_samples=False, reference_method='MIA', figsize=figsize, comments=comments,
+        comments_align=comments_align, comments_spacing=0.11)
 
     fig_folder = get_fig_folder(graphics_folder)
 
