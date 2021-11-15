@@ -106,7 +106,8 @@ def run_difficulty(graphics_folder, averaged_scores=True):
 
     # Build the color palette
     paired_colors = sns.color_palette('Paired').as_hex()
-    del paired_colors[10]
+    # del paired_colors[10]
+    paired_colors[10] = sns.color_palette("Set2").as_hex()[5]
     boxplot_palette = sns.color_palette(['#525252']+paired_colors)
     sns.set_palette(boxplot_palette)
 

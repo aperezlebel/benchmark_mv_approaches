@@ -833,6 +833,8 @@ class PlotHelper(object):
 
             # Build the color palette for the boxplot
             paired_colors = sns.color_palette('Paired').as_hex()
+            # del paired_colors[10]
+            paired_colors[10] = sns.color_palette("Set2").as_hex()[5]
             boxplot_palette = sns.color_palette(['#525252']+paired_colors)
 
             # Boxplot
