@@ -1230,9 +1230,9 @@ class PlotHelper(object):
                                rowLabels=None,
                                colLabels=['Mean\nrank'],
                             #    bbox=[1.32, -0.11, .19, .87],
-                               bbox=[1.05, 0, .19, 13/12],
+                               bbox=[1.02, 0, .14, (n_methods+1)/n_methods],
                                #    bbox=[1.3, 0, .2, .735],
-                               colWidths=[0.18],
+                               colWidths=[0.14],
                                cellColours=cellColours,
                                )
         table.set_fontsize(table_fontsize)
@@ -1299,7 +1299,7 @@ class PlotHelper(object):
             dh = 1./n_methods
             l_tail = 0.03
             # pos_arrow = -0.43
-            pos_arrow = -0.78
+            pos_arrow = -0.74
             n_cond = 5
             n_const = 9
             n_bag = 1.5
@@ -1394,7 +1394,7 @@ class PlotHelper(object):
                                rowLabels=None,
                                colLabels=['CPU\ndays'],
                             #    bbox=[1.32, -0.11, .19, .87],
-                               bbox=[1.10, 0, .28, (n_methods+1)/n_methods],
+                               bbox=[1.042, 0, .28, (n_methods+1)/n_methods],
                                #    bbox=[1.3, 0, .2, .735],
                                colWidths=[0.28],
                                cellColours=cellColours,
@@ -1474,7 +1474,7 @@ class PlotHelper(object):
             lw = 1.3
             dh = 1./n_methods
             l_tail = 0.03
-            pos_arrow = -1.49
+            pos_arrow = -1.575
             n_cond = 5
             n_const = 9
             n_bag = 1.5

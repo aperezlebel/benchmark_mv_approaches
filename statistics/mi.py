@@ -185,7 +185,7 @@ def run_multiple_imputation(graphics_folder, n=None, bagging_only=False):
     else:
         figsize = (18, 6)
         # legend_bbox = (4.415, 1.015)
-        legend_bbox = (2.05, 1.05)
+        legend_bbox = (2.02, 1.05)
 
     if len(method_order) >= 12:
         y_labelsize = 14
@@ -231,7 +231,7 @@ def run_multiple_imputation(graphics_folder, n=None, bagging_only=False):
         200: '$200\\times$',
         500: '$500\\times$',
     }
-    legend_bbox = (4.22, 1.05)
+    legend_bbox = (4.16, 1.05)
     if bagging_only:
         comments_align = {
             0: ['right']*2+['left']*3,
@@ -247,6 +247,8 @@ def run_multiple_imputation(graphics_folder, n=None, bagging_only=False):
             3: ['right']*7+['left']*5,
         }
 
+    # figsize = (18, 6)
+    y_labelsize = 15.5
     fig_time = PlotHelper.plot_times(
         scores, 'PT', xticks_dict=xticks, method_order=method_order,
         db_order=db_order, rename=rename_on_plot, y_labelsize=y_labelsize,
@@ -254,8 +256,9 @@ def run_multiple_imputation(graphics_folder, n=None, bagging_only=False):
         only_full_samples=False, reference_method=reference_method, figsize=figsize, comments=comments,
         comments_align=comments_align, comments_spacing=0.11)
 
+    fig.subplots_adjust(wspace=0.02)
+    fig_time.subplots_adjust(wspace=0.02)
     fig_folder = get_fig_folder(graphics_folder)
-
     name = 'bagging' if bagging_only else 'mi'
 
     fig_name = f'boxplots_{name}_scores_{n}'
