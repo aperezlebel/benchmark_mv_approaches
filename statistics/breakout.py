@@ -206,6 +206,14 @@ def run_breakout(graphics_folder, linear):
         # ax.tick_params(axis="x",direction="in", pad=-15)
         # break
 
+        # Add thousand separator for sizes
+        xticklabels = ax.get_xticklabels()
+        for i, xticklabel in enumerate(xticklabels):
+            s = xticklabel.get_text()
+            s = f'{int(str(s)):,}'.replace(',', '\\,')
+            xticklabels[i] = s
+        ax.set_xticklabels(xticklabels)
+
     db_titles2 = {
         1: 'Traumabase',
         3: 'UKBB',
