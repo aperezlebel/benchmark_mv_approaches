@@ -116,7 +116,7 @@ def run_difficulty(graphics_folder, averaged_scores=True):
     palette = itertools.cycle(sns.color_palette())
 
     for _, group in scores_auc.groupby('Method', sort=False):
-        z = sm.nonparametric.lowess(group['Rank'], group['Score'])
+        z = sm.nonparametric.lowess(group['Rank'], group['Score'], frac=1)
         ax.plot(z[:, 0], z[:, 1], color=next(palette), lw=2)
 
     ax.legend(bbox_to_anchor=(1, 1))
@@ -139,7 +139,7 @@ def run_difficulty(graphics_folder, averaged_scores=True):
     palette = itertools.cycle(sns.color_palette())
 
     for _, group in scores_r2.groupby('Method', sort=False):
-        z = sm.nonparametric.lowess(group['Rank'], group['Score'])
+        z = sm.nonparametric.lowess(group['Rank'], group['Score'], frac=1)
         ax.plot(z[:, 0], z[:, 1], color=next(palette), lw=2)
 
     ax.legend(bbox_to_anchor=(1, 1))
