@@ -4,10 +4,10 @@ import re
 from functools import reduce
 from os.path import join
 
-import matplotlib
 import matplotlib.pyplot as plt
 import pandas as pd
 import seaborn as sns
+import statsmodels.api as sm
 from custom.const import get_fig_folder
 
 db_order = [
@@ -145,7 +145,7 @@ def run_feature_importance(graphics_folder, results_folder, n, average_folds,
     if n is None:
         sizes = [2500, 10000, 25000, 100000]
         fig, axes = plt.subplots(nrows=4, ncols=1, figsize=(6.25, 18))
-        legend_bbox = (0.5, 1.32)
+        legend_bbox = (0.4, 1.32)
 
     else:
         sizes = [n]
@@ -187,10 +187,13 @@ def run_feature_importance(graphics_folder, results_folder, n, average_folds,
 
         if hue_by_task:
             sns.set_palette(sns.color_palette(colors))
-            sns.scatterplot(x='mv_prop', y=y, hue='task', style='db', markers=markers_db, data=df,
-                            ax=ax, s=15, hue_order=task_order_renamed, style_order=db_order, linewidth=0.3)#, legend=False)
+            sns.scatterplot(x='mv_prop', y=y, hue='task', style='db',
+                            markers=markers_db, data=df, ax=ax, s=15,
+                            hue_order=task_order_renamed, style_order=db_order,
+                            linewidth=0.2)  # , legend=False)
+
             ncol = 3
-            legend_bbox = (0.5, 1.7)
+            legend_bbox = (0.4, 1.7)
             title = '\\textbf{{Task}}'
         else:
             sns.set_palette(sns.color_palette('colorblind'))
@@ -288,6 +291,16 @@ def run_feature_importance(graphics_folder, results_folder, n, average_folds,
 
         else:
             ax.get_legend().remove()
+
+        # Add lowess
+        if hue_by_task:
+            colors_index = {task: i for i, task in enumerate(task_order_renamed)}
+            for i, (index, group) in enumerate(df.groupby('task', sort=False)):
+                print(index)
+                z = sm.nonparametric.lowess(group[y], group['mv_prop'], frac=1)
+                ax.plot(z[:, 0], z[:, 1], color=colors[colors_index[index]], lw=0.8)
+
+            # exit()
 
     fig_name = f'importance_{n}_avg_{mode}_hue{hue_by_task}' if average_folds else f'importance_{n}_{mode}'
     fig_folder = get_fig_folder(graphics_folder)
