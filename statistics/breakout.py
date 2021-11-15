@@ -83,6 +83,7 @@ def run_breakout(graphics_folder, linear):
 
     # Build the color palette
     paired_colors = sns.color_palette('Paired').as_hex()
+    del paired_colors[10]
     boxplot_palette = sns.color_palette(['#525252']+paired_colors)
     sns.set_palette(boxplot_palette)
 
@@ -165,7 +166,7 @@ def run_breakout(graphics_folder, linear):
         # sns.stripplot(x='score', y='Size', hue='Method', data=group, ax=ax,
         sns.stripplot(x='Size', y='score', hue='Method', data=group, ax=ax,
                     #   order=['100000', '25000', '10000', '2500'], s=4, jitter=1)#0.3)
-                      order=['2500', '10000', '25000', '100000'], s=4, jitter=1, linewidth=0.2, edgecolor='black')#0.3)
+                      order=['2500', '10000', '25000', '100000'], s=4, jitter=1)#, linewidth=0.2, edgecolor='black')#0.3)
         xlabels = {
             'roc_auc_score': 'AUC',
             'r2_score': '$r^2$',
