@@ -6,3 +6,6 @@ bagging:
 
 breakout:
 	python main.py figs breakout
+
+difficulty:
+	python main.py figs difficulty

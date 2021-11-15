@@ -106,17 +106,18 @@ def run_difficulty(graphics_folder, averaged_scores=True):
 
     # Build the color palette
     paired_colors = sns.color_palette('Paired').as_hex()
+    del paired_colors[10]
     boxplot_palette = sns.color_palette(['#525252']+paired_colors)
     sns.set_palette(boxplot_palette)
 
     # AUC figure
     sns.scatterplot(x='Score', y='Rank', hue='Method', data=scores_auc,
-                    ax=ax, hue_order=method_order, s=20)#, linewidth=0.2, edgecolor='black')
+                    ax=ax, hue_order=method_order, s=17)#, linewidth=0.2, edgecolor='black')
     palette = itertools.cycle(sns.color_palette())
 
     for _, group in scores_auc.groupby('Method', sort=False):
         z = sm.nonparametric.lowess(group['Rank'], group['Score'])
-        ax.plot(z[:, 0], z[:, 1], color=next(palette))
+        ax.plot(z[:, 0], z[:, 1], color=next(palette), lw=2)
 
     ax.legend(bbox_to_anchor=(1, 1))
     ax.set_xlabel('AUC score')
@@ -134,12 +135,12 @@ def run_difficulty(graphics_folder, averaged_scores=True):
     ax = plt.gca()
 
     sns.scatterplot(x='Score', y='Rank', hue='Method', data=scores_r2,
-                    ax=ax, hue_order=method_order, s=20)#, linewidth=0.2, edgecolor='black')
+                    ax=ax, hue_order=method_order, s=17)#, linewidth=0.2, edgecolor='black')
     palette = itertools.cycle(sns.color_palette())
 
     for _, group in scores_r2.groupby('Method', sort=False):
         z = sm.nonparametric.lowess(group['Rank'], group['Score'])
-        ax.plot(z[:, 0], z[:, 1], color=next(palette))
+        ax.plot(z[:, 0], z[:, 1], color=next(palette), lw=2)
 
     ax.legend(bbox_to_anchor=(1, 1))
     ax.set_xlabel('$r^2$ score')
