@@ -101,8 +101,9 @@ method_order_all = [
 
 method_order_bagging = [
     'MIA',
+    'Mean+mask',
     'Mean+mask+bagging',
-    'MI',
+    # 'MI',
     'MI+mask',
     'MIA+bagging',
 ]
@@ -231,12 +232,21 @@ def run_multiple_imputation(graphics_folder, n=None, bagging_only=False):
         500: '$500\\times$',
     }
     legend_bbox = (4.22, 1.05)
-    comments_align = {
-        0: ['right']*9+['left']*3,
-        1: ['right']*9+['left']*3,
-        2: ['right']*9+['left']*3,
-        3: ['right']*7+['left']*5,
-    }
+    if bagging_only:
+        comments_align = {
+            0: ['right']*2+['left']*3,
+            1: ['right']*2+['left']*3,
+            2: ['right']*2+['left']*3,
+            3: ['right']*2+['left']*3,
+        }
+    else:
+        comments_align = {
+            0: ['right']*9+['left']*3,
+            1: ['right']*9+['left']*3,
+            2: ['right']*9+['left']*3,
+            3: ['right']*7+['left']*5,
+        }
+
     fig_time = PlotHelper.plot_times(
         scores, 'PT', xticks_dict=xticks, method_order=method_order,
         db_order=db_order, rename=rename_on_plot, y_labelsize=y_labelsize,

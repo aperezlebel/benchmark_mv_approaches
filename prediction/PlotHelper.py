@@ -816,15 +816,13 @@ class PlotHelper(object):
                 twinx.spines['right'].set_visible(False)
                 twinx_right.tick_params(left=False, labelleft=False)
 
-            # break
-
             # Add gray layouts in the background every other rows
             for k in range(0, n_methods, 2):
                 ax.axhspan(k-0.5, k+0.5, color='.93', zorder=0)
                 if broken_axis is not None:
                     ax_right.axhspan(k-0.5, k+0.5, color='.93', zorder=0)
                     ax_bg.axhspan(k-0.5, k+0.5, color='.93', zorder=0)
-                    ax_bg.set_ylim(-1.5, n_methods-1.5)
+                    ax_bg.set_ylim(-0.5-((n_methods+1) % 2), n_methods-0.5-((n_methods+1) % 2))
 
             mid = 1 if how == 'log' else 0
             ax.axvline(mid, ymin=0, ymax=n_methods, color='gray', zorder=0)
@@ -1007,8 +1005,8 @@ class PlotHelper(object):
                     if symbol is None:
                         continue
 
-                    ax.annotate(symbol, xy=(0.025, 0.94-.995*i/n_methods), color='black',
-                                xycoords='axes fraction', fontsize='x-large')
+                    ax.annotate(symbol, xy=(0.025, 1-(i+0.5)/n_methods), color='black',
+                                xycoords='axes fraction', fontsize='x-large', va='center')
 
             # Optionally adds comments on each line (for untractable)
             if comments is not None:
@@ -1036,11 +1034,9 @@ class PlotHelper(object):
                             ha = 'right'
                             ax_comment = ax_right if broken_axis is not None else ax_bg
 
-                    # ax.annotate(comment, xy=(0.5, 0.94-.995*i/n_methods), color='.3',
-                    #             xycoords='axes fraction', fontsize='x-large')
-                    ax_comment.text(x, 1-(m+0.5)/n_methods, comment, color='.4', fontsize='x-large', ha=ha, va='center', transform=ax_comment.transAxes)
-
-            # break
+                    ax_comment.text(x, 1-(m+0.5)/n_methods, comment,
+                                    color='.4', fontsize='x-large', ha=ha,
+                                    va='center', transform=ax_comment.transAxes)
 
         if broken_axis is not None:
             return fig, axes_bg, axes_left, axes_right
@@ -1249,17 +1245,21 @@ class PlotHelper(object):
 
         w_bag = 45
         n_bag = 1.5
+        bag_subsize = 'small'
 
         if n_methods <= 8:
             fs = 18
             w_const = 70
             w_cond = 70
+            w_bag = 110
             lw = 1.3
             dh = 1./n_methods
             l_tail = 0.03
-            pos_arrow = -0.3
-            n_cond = 2
-            n_const = 6
+            pos_arrow = -0.94
+            n_cond = None
+            n_const = None
+            n_bag = 1.5
+            bag_subsize = 'Large'
         if n_methods == 9:
             fs = 18
             w_const = 70
@@ -1305,21 +1305,23 @@ class PlotHelper(object):
             n_bag = 1.5
 
         # Here is the label and arrow code of interest
-        ax.annotate('Constant\nimputation\n\n', xy=(pos_arrow, n_const*dh), xytext=(pos_arrow-l_tail, n_const*dh), xycoords='axes fraction',
-                    fontsize=fs, ha='center', va='center',
-                    bbox=None,#dict(boxstyle='square', fc='white'),
-                    arrowprops=dict(arrowstyle=f'-[, widthB={w_const/fs}, lengthB=0.5', lw=lw),
-                    rotation=90,
-                    )
+        if n_const is not None:
+            ax.annotate('Constant\nimputation\n\n', xy=(pos_arrow, n_const*dh), xytext=(pos_arrow-l_tail, n_const*dh), xycoords='axes fraction',
+                        fontsize=fs, ha='center', va='center',
+                        bbox=None,#dict(boxstyle='square', fc='white'),
+                        arrowprops=dict(arrowstyle=f'-[, widthB={w_const/fs}, lengthB=0.5', lw=lw),
+                        rotation=90,
+                        )
 
-        ax.annotate('Conditional\nimputation\n\n', xy=(pos_arrow, n_cond*dh), xytext=(pos_arrow-l_tail, n_cond*dh), xycoords='axes fraction',
-                    fontsize=fs, ha='center', va='center',
-                    bbox=None,#dict(boxstyle='square', fc='white'),
-                    arrowprops=dict(arrowstyle=f'-[, widthB={w_cond/fs}, lengthB=0.5', lw=lw),
-                    rotation=90,
-                    )
+        if n_cond is not None:
+            ax.annotate('Conditional\nimputation\n\n', xy=(pos_arrow, n_cond*dh), xytext=(pos_arrow-l_tail, n_cond*dh), xycoords='axes fraction',
+                        fontsize=fs, ha='center', va='center',
+                        bbox=None,#dict(boxstyle='square', fc='white'),
+                        arrowprops=dict(arrowstyle=f'-[, widthB={w_cond/fs}, lengthB=0.5', lw=lw),
+                        rotation=90,
+                        )
 
-        ax.annotate('Bagging\n\\small{{(multiple imputation)}}\n\n', xy=(pos_arrow, n_bag*dh), xytext=(pos_arrow-l_tail, n_bag*dh), xycoords='axes fraction',
+        ax.annotate(f'Bagging\n\\{bag_subsize}{{(multiple imputation)}}\n\n', xy=(pos_arrow, n_bag*dh), xytext=(pos_arrow-l_tail, n_bag*dh), xycoords='axes fraction',
                     fontsize=fs, ha='center', va='center',
                     bbox=None,#dict(boxstyle='square', fc='white'),
                     arrowprops=dict(arrowstyle=f'-[, widthB={w_bag/fs}, lengthB=0.5', lw=lw),
@@ -1392,7 +1394,7 @@ class PlotHelper(object):
                                rowLabels=None,
                                colLabels=['CPU\ndays'],
                             #    bbox=[1.32, -0.11, .19, .87],
-                               bbox=[1.10, 0, .28, 13/12],
+                               bbox=[1.10, 0, .28, (n_methods+1)/n_methods],
                                #    bbox=[1.3, 0, .2, .735],
                                colWidths=[0.28],
                                cellColours=cellColours,
@@ -1408,17 +1410,23 @@ class PlotHelper(object):
 
         w_bag = 45
         n_bag = 1.5
+        bag_subsize = 'small'
 
         if n_methods <= 8:
             fs = 18
             w_const = 70
             w_cond = 70
+            w_bag = 110
             lw = 1.3
             dh = 1./n_methods
             l_tail = 0.03
-            pos_arrow = -0.3
             n_cond = 2
             n_const = 6
+            pos_arrow = -1.84
+            n_cond = None
+            n_const = None
+            n_bag = 1.5
+            bag_subsize = 'Large'
         if n_methods == 9:
             fs = 18
             w_const = 70
@@ -1474,21 +1482,23 @@ class PlotHelper(object):
         ax = axes_bg[0] if broken_axis is None else axes_left[0]
 
         # Here is the label and arrow code of interest
-        ax.annotate('Constant\nimputation\n\n', xy=(pos_arrow, n_const*dh), xytext=(pos_arrow-l_tail, n_const*dh), xycoords='axes fraction',
-                    fontsize=fs, ha='center', va='center',
-                    bbox=None,#dict(boxstyle='square', fc='white'),
-                    arrowprops=dict(arrowstyle=f'-[, widthB={w_const/fs}, lengthB=0.5', lw=lw),
-                    rotation=90,
-                    )
+        if n_const is not None:
+            ax.annotate('Constant\nimputation\n\n', xy=(pos_arrow, n_const*dh), xytext=(pos_arrow-l_tail, n_const*dh), xycoords='axes fraction',
+                        fontsize=fs, ha='center', va='center',
+                        bbox=None,#dict(boxstyle='square', fc='white'),
+                        arrowprops=dict(arrowstyle=f'-[, widthB={w_const/fs}, lengthB=0.5', lw=lw),
+                        rotation=90,
+                        )
 
-        ax.annotate('Conditional\nimputation\n\n', xy=(pos_arrow, n_cond*dh), xytext=(pos_arrow-l_tail, n_cond*dh), xycoords='axes fraction',
-                    fontsize=fs, ha='center', va='center',
-                    bbox=None,#dict(boxstyle='square', fc='white'),
-                    arrowprops=dict(arrowstyle=f'-[, widthB={w_cond/fs}, lengthB=0.5', lw=lw),
-                    rotation=90,
-                    )
+        if n_cond is not None:
+            ax.annotate('Conditional\nimputation\n\n', xy=(pos_arrow, n_cond*dh), xytext=(pos_arrow-l_tail, n_cond*dh), xycoords='axes fraction',
+                        fontsize=fs, ha='center', va='center',
+                        bbox=None,#dict(boxstyle='square', fc='white'),
+                        arrowprops=dict(arrowstyle=f'-[, widthB={w_cond/fs}, lengthB=0.5', lw=lw),
+                        rotation=90,
+                        )
 
-        ax.annotate('Bagging\n\\small{{(multiple imputation)}}\n\n', xy=(pos_arrow, n_bag*dh), xytext=(pos_arrow-l_tail, n_bag*dh), xycoords='axes fraction',
+        ax.annotate(f'Bagging\n\\{bag_subsize}{{(multiple imputation)}}\n\n', xy=(pos_arrow, n_bag*dh), xytext=(pos_arrow-l_tail, n_bag*dh), xycoords='axes fraction',
                     fontsize=fs, ha='center', va='center',
                     bbox=None,#dict(boxstyle='square', fc='white'),
                     arrowprops=dict(arrowstyle=f'-[, widthB={w_bag/fs}, lengthB=0.5', lw=lw),
