@@ -118,6 +118,7 @@ if __name__ == '__main__':
 
     p = subp.add_parser('mi', description='Plot multiple imputation results.')
     p.add_argument('-n', type=int, default=None)
+    p.add_argument('--bagging', type=bool, nargs='?', default=False, const=True, dest='bagging_only')
 
     p = subp.add_parser('imp', description='Plot feature importance results.')
     p.add_argument('-n', type=int, default=None)

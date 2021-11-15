@@ -65,7 +65,7 @@ def run(args):
         run_breakout(graphics_folder, linear=args.linear)
 
     elif args.action == 'mi':
-        run_multiple_imputation(graphics_folder, args.n)
+        run_multiple_imputation(graphics_folder, args.n, args.bagging_only)
 
     elif args.action == 'imp':
         run_feature_importance(graphics_folder, args.root, args.n,

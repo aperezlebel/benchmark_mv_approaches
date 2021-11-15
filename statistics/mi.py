@@ -84,7 +84,7 @@ rename_on_plot = {
     # 'MIA': 'Boosted trees+MIA'
 }
 
-method_order = [
+method_order_all = [
     'MIA',
     'Mean',
     'Mean+mask',
@@ -94,6 +94,14 @@ method_order = [
     'Iter+mask',
     'KNN',
     'KNN+mask',
+    'MI',
+    'MI+mask',
+    'MIA+bagging',
+]
+
+method_order_bagging = [
+    'MIA',
+    'Mean+mask+bagging',
     'MI',
     'MI+mask',
     'MIA+bagging',
@@ -112,7 +120,11 @@ tasks_to_drop = {
 }
 
 
-def run_multiple_imputation(graphics_folder, n=None):
+def run_multiple_imputation(graphics_folder, n=None, bagging_only=False):
+    method_order = method_order_bagging if bagging_only else method_order_all
+    # reference_method = None if bagging_only else 'MIA'
+    reference_method = 'MIA'
+
     filepaths = [
         'scores/scores.csv',
         'scores/scores_mi_2500.csv',
@@ -122,6 +134,7 @@ def run_multiple_imputation(graphics_folder, n=None):
         'scores/scores_mia_25000.csv',
         'scores/scores_mi_25000.csv',
         'scores/scores_mia_100000.csv',
+        'scores/scores_mean+mask+bagging_2500.csv',
     ]
     dfs = [pd.read_csv(path, index_col=0) for path in filepaths]
     scores = pd.concat(dfs, axis=0)
@@ -228,13 +241,15 @@ def run_multiple_imputation(graphics_folder, n=None):
         scores, 'PT', xticks_dict=xticks, method_order=method_order,
         db_order=db_order, rename=rename_on_plot, y_labelsize=y_labelsize,
         legend_bbox=legend_bbox, broken_axis=[(2.3, 55), (2.3, 55), (2.5, 25), (3.5, 25)],
-        only_full_samples=False, reference_method='MIA', figsize=figsize, comments=comments,
+        only_full_samples=False, reference_method=reference_method, figsize=figsize, comments=comments,
         comments_align=comments_align, comments_spacing=0.11)
 
     fig_folder = get_fig_folder(graphics_folder)
 
-    fig_name = f'boxplots_mi_scores_{n}'
-    fig_time_name = f'boxplots_mi_times_{n}'
+    name = 'bagging' if bagging_only else 'mi'
+
+    fig_name = f'boxplots_{name}_scores_{n}'
+    fig_time_name = f'boxplots_{name}_times_{n}'
 
     fig.savefig(join(fig_folder, f'{fig_name}.pdf'), bbox_inches='tight')
     fig_time.savefig(join(fig_folder, f'{fig_time_name}.pdf'), bbox_inches='tight')

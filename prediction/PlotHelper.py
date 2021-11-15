@@ -1248,6 +1248,16 @@ class PlotHelper(object):
         w_bag = 45
         n_bag = 1.5
 
+        if n_methods <= 8:
+            fs = 18
+            w_const = 70
+            w_cond = 70
+            lw = 1.3
+            dh = 1./n_methods
+            l_tail = 0.03
+            pos_arrow = -0.3
+            n_cond = 2
+            n_const = 6
         if n_methods == 9:
             fs = 18
             w_const = 70
@@ -1397,6 +1407,16 @@ class PlotHelper(object):
         w_bag = 45
         n_bag = 1.5
 
+        if n_methods <= 8:
+            fs = 18
+            w_const = 70
+            w_cond = 70
+            lw = 1.3
+            dh = 1./n_methods
+            l_tail = 0.03
+            pos_arrow = -0.3
+            n_cond = 2
+            n_const = 6
         if n_methods == 9:
             fs = 18
             w_const = 70
@@ -1404,6 +1424,7 @@ class PlotHelper(object):
             lw = 1.3
             dh = 1./n_methods
             l_tail = 0.03
+            pos_arrow = -0.3
             n_cond = 2
             n_const = 6
         elif n_methods == 10:
@@ -1413,6 +1434,7 @@ class PlotHelper(object):
             lw = 1.3
             dh = 1./n_methods
             l_tail = 0.03
+            pos_arrow = -0.3
             n_cond = 3
             n_const = 7
         elif n_methods == 11:
@@ -1422,6 +1444,7 @@ class PlotHelper(object):
             lw = 1.3
             dh = 1./n_methods
             l_tail = 0.03
+            pos_arrow = -0.3
             n_cond = 3
             n_const = 8
         # elif n_methods == 12:
