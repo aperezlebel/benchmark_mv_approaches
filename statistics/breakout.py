@@ -181,8 +181,8 @@ def run_breakout(graphics_folder, linear):
             # Rename methods in legend
             handles, labels = ax.get_legend_handles_labels()
             renamed_labels = [rename.get(label, label) for label in labels]
-            ax.legend(title='Method', ncol=2, bbox_to_anchor=(1.05, 1.0),
-                      handles=handles, labels=renamed_labels)
+            ax.legend(title='Method', ncol=2, bbox_to_anchor=(1.12, 1.06),
+                      handles=handles, labels=renamed_labels, loc='upper left')
         else:
             ax.get_legend().remove()
         if j >= 1:

@@ -144,7 +144,7 @@ def run_feature_importance(graphics_folder, results_folder, n, average_folds,
 
     if n is None:
         sizes = [2500, 10000, 25000, 100000]
-        fig, axes = plt.subplots(nrows=4, ncols=1, figsize=(6.25, 18))
+        fig, axes = plt.subplots(nrows=4, ncols=1, figsize=(13, 18))#(6.25, 18))
         legend_bbox = (0.4, 1.32)
 
     else:
@@ -188,12 +188,13 @@ def run_feature_importance(graphics_folder, results_folder, n, average_folds,
         if hue_by_task:
             sns.set_palette(sns.color_palette(colors))
             sns.scatterplot(x='mv_prop', y=y, hue='task', style='db',
-                            markers=markers_db, data=df, ax=ax, s=15,
+                            markers=markers_db, data=df, ax=ax, s=50,
                             hue_order=task_order_renamed, style_order=db_order,
-                            linewidth=0.2)  # , legend=False)
+                            linewidth=0.1)  # , legend=False)
 
             ncol = 3
-            legend_bbox = (0.4, 1.7)
+            legend_bbox = (0.5, 1.7)
+            # legend_bbox = (0.4, 1.7)
             title = '\\textbf{{Task}}'
         else:
             sns.set_palette(sns.color_palette('colorblind'))
@@ -298,7 +299,7 @@ def run_feature_importance(graphics_folder, results_folder, n, average_folds,
             for i, (index, group) in enumerate(df.groupby('task', sort=False)):
                 print(index)
                 z = sm.nonparametric.lowess(group[y], group['mv_prop'], frac=1)
-                ax.plot(z[:, 0], z[:, 1], color=colors[colors_index[index]], lw=0.8)
+                ax.plot(z[:, 0], z[:, 1], color=colors[colors_index[index]], lw=1.5)#lw=0.8)
 
             # exit()
 
