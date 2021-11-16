@@ -34,4 +34,24 @@ importance:
 importance-a:
 	python main.py figs imp --mode abs --task --root results_mia_importance -a
 
+friedman-trees:
+	python main.py figs friedman --ref MIA
+
+friedman-trees-a:
+	python main.py figs friedman --ref MIA -a
+
+friedman-linear:
+	python main.py figs friedman --linear
+
+friedman-linear-a:
+	python main.py figs friedman --linear -a
+
+friedman:
+	make friedman-trees
+	make friedman-linear
+
+friedman-a:
+	make friedman-trees-a
+	make friedman-linear-a
+
 all_article:

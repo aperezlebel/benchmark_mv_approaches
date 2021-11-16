@@ -101,8 +101,9 @@ if __name__ == '__main__':
     p.add_argument('--less', type=bool, default=False, const=True, nargs='?',
                    help='Whether to use greater or less one sided wilcoxon.')
 
-    subp.add_parser('friedman', parents=[parent_l, parent_csv, parent_a],
+    p = subp.add_parser('friedman', parents=[parent_l, parent_csv, parent_a],
                     description='Friedman & Nemenyi tests + crit. difference.')
+    p.add_argument('--ref', type=str, default=None, dest='ref')
 
     subp.add_parser('scores', parents=[parent_l, parent_csv, parent_a],
                     description='Compute scores and ranks.')

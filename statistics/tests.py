@@ -83,8 +83,29 @@ def critical_distance(k, N):
             Critical difference
 
     """
-    assert 2 <= k <= 10
-    q_05 = [1.960, 2.343, 2.569, 2.728, 2.850, 2.949, 3.031, 3.102, 3.164]
+    # q_05 = [1.960, 2.343, 2.569, 2.728, 2.850, 2.949, 3.031, 3.102, 3.164]
+    q_05 = [
+        1.959964233,
+        2.343700476,
+        2.569032073,
+        2.727774717,
+        2.849705382,
+        2.948319908,
+        3.030878867,
+        3.10173026,
+        3.16368342,
+        3.218653901,
+        3.268003591,
+        3.312738701,
+        3.353617959,
+        3.391230382,
+        3.426041249,
+        3.458424619,
+        3.488684546,
+        3.517072762,
+        3.543799277,
+    ]  # Values taken on https://kourentzes.com/forecasting/2014/05/01/critical-values-for-the-nemenyi-test/
+    assert 2 <= k < len(q_05)+2
     CD = q_05[k-2]*np.sqrt(k*(k+1)/(6*N))
 
     return CD
@@ -538,10 +559,24 @@ def run_wilcoxon(graphics_folder, linear=False, csv=False, greater=True, spacing
     return run_wilcoxon_mia(graphics_folder, csv=csv, greater=greater, spacing=spacing, no_rename=no_rename)
 
 
-def run_friedman(graphics_folder, linear=False, csv=False):
+def run_friedman(graphics_folder, linear=False, csv=False, ref=None):
     fontsize_subtitle = 13
-    path = os.path.abspath('scores/scores.csv')
-    df = pd.read_csv(path, index_col=0)
+    # path = os.path.abspath('scores/scores.csv')
+    # df = pd.read_csv(path, index_col=0)
+
+    filepaths = [
+        'scores/scores.csv',
+        'scores/scores_mi_2500.csv',
+        'scores/scores_mia_2500.csv',
+        'scores/scores_mi_10000.csv',
+        'scores/scores_mia_10000.csv',
+        'scores/scores_mia_25000.csv',
+        'scores/scores_mi_25000.csv',
+        'scores/scores_mia_100000.csv',
+        'scores/scores_mean+mask+bagging_2500.csv',
+    ]
+    dfs = [pd.read_csv(path, index_col=0) for path in filepaths]
+    df = pd.concat(dfs, axis=0)
 
     # Drop tasks
     for db, task in tasks_to_drop.items():
@@ -573,6 +608,9 @@ def run_friedman(graphics_folder, linear=False, csv=False):
             'Iter+mask',
             'KNN',
             'KNN+mask',
+            'MI',
+            'MI+mask',
+            'MIA+bagging',
         ]
 
     db_order = [
@@ -628,7 +666,7 @@ def run_friedman(graphics_folder, linear=False, csv=False):
         ranks = df.loc[size, ('Average', 'All')]
         critical_distances = df_statistic['CD'].astype(float)
 
-        plot_ranks(ranks, critical_distances[size], ax)
+        plot_ranks(ranks, critical_distances[size], ax, ref=ref)
         N = df_statistic.loc[size, 'N']
         ax.set_title(f'Size={size}, N={N}', {'fontsize': fontsize_subtitle})
 
@@ -665,16 +703,20 @@ def run_friedman(graphics_folder, linear=False, csv=False):
         {v: f'\hphantom{{-}}{v}' for v in df_statistic.columns}, axis=1, inplace=True)
 
     df_statistic.to_latex(join(
-        tab_folder, f'{tab_name}.tex'), na_rep='', escape=False, table_env='tabularx')
+        tab_folder, f'{tab_name}.tex'), na_rep='', escape=False)#, table_env='tabularx')
 
     return df_statistic
 
 
-def plot_ranks(average_ranks, critical_distance, ax):
+def plot_ranks(average_ranks, critical_distance, ax, ref=None):
     fontsize_method = 13
 
     average_ranks = average_ranks.sort_values()
-    min_rank = np.min(average_ranks)
+
+    if ref is None:
+        ref_rank = np.min(average_ranks)
+    else:
+        ref_rank = average_ranks[ref]
 
     # Move left y-axis and bottim x-axis to centre, passing through (0,0)
     ax.spines['left'].set_position('center')
@@ -687,22 +729,22 @@ def plot_ranks(average_ranks, critical_distance, ax):
     # Show ticks in the left and lower axes only
     ax.xaxis.set_visible(False)#.set_ticks_position('none')
     ax.yaxis.set_ticks_position('left')
-    ax.set_ylim(1, 9)
+    ax.set_ylim(1, len(average_ranks))
     ax.set_xlim(-.3, .3)
     ax.invert_yaxis()
 
-    cd1 = min_rank
-    cd2 = min_rank + critical_distance
-    colors = ['red' if r < cd2 else 'black' for r in average_ranks]
+    cd1 = ref_rank
+    # cd2 = ref_rank + critical_distance
+    colors = ['red' if abs(r - ref_rank) < critical_distance else 'black' for r in average_ranks]
     ax.scatter(np.zeros_like(average_ranks), average_ranks,
                color=colors, marker='.', clip_on=False, zorder=10)
-    ax.plot(-.1*np.ones(2), [cd1, cd2], color='red',
+    ax.plot(-.1*np.ones(2), [ref_rank, ref_rank+critical_distance], color='red',
             marker='_', markeredgewidth=1.5)
-    ax.text(-.12, (cd1+cd2)/2, 'critical distance', rotation=90,
+    ax.text(-.12, ref_rank+critical_distance/2, 'critical difference', rotation=90,
             ha='center', va='center', color='red', fontsize=12)
 
     texts = []
-    y_pos = np.linspace(1.5, 8.5, len(average_ranks))
+    y_pos = np.linspace(1.5, len(average_ranks)-.5, len(average_ranks))
     for i, (method, rank) in enumerate(average_ranks.iteritems()):
         t = ax.text(.12, y_pos[i], method, va='center',
                     fontsize=fontsize_method)

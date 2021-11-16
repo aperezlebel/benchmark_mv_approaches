@@ -35,7 +35,7 @@ def run(args):
                      csv=args.csv, greater=not args.less)
 
     elif args.action == 'friedman':
-        run_friedman(graphics_folder, linear=args.linear, csv=args.csv)
+        run_friedman(graphics_folder, linear=args.linear, csv=args.csv, ref=args.ref)
 
     elif args.action == 'scores':
         run_scores(graphics_folder, linear=args.linear, csv=args.csv)
