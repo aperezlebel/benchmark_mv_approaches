@@ -197,6 +197,8 @@ def run_multiple_imputation(graphics_folder, n=None, bagging_only=False, linear=
     comments[100000] = {}
     comments[100000]['KNN'] = 'Intractable'
     comments[100000]['KNN+mask'] = 'Intractable'
+    comments[100000]['Linear+KNN'] = 'Intractable'
+    comments[100000]['Linear+KNN+mask'] = 'Intractable'
 
     if n is not None:
         scores = scores.query(f'size == {n}')
@@ -277,10 +279,23 @@ def run_multiple_imputation(graphics_folder, n=None, bagging_only=False, linear=
         y_labelsize = 20
 
     elif linear:
-        comments_align = None
+        comments_align = {
+            0: ['right']*5+['left']*2+['right']*2,
+            1: ['right']*5+['left']*4,
+            2: ['right']*5+['left']*4,
+            3: ['right']*5+['left']*4,
+        }
         broken_axis = None
         legend_bbox = (2.02, 1.05)
         pos_arrow = -0.53
+        xticks = {
+            1: '$1\\times$',
+            1/2: '$\\frac{1}{2}\\times$',
+            1/5: '$\\frac{1}{5}\\times$',
+            1/10: '$\\frac{1}{10}\\times$',
+            1/100: '$\\frac{1}{100}\\times$',
+            1/500: '$\\frac{1}{500}\\times$',
+        }
 
     else:
         comments_align = {
