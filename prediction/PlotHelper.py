@@ -614,11 +614,11 @@ class PlotHelper(object):
 
         matplotlib.rcParams.update({
             'font.size': 10,
-            'legend.fontsize': 15,
+            'legend.fontsize': 16,
             'legend.title_fontsize': 18,
-            'axes.titlesize': 18,
+            'axes.titlesize': 20,
             'axes.labelsize': 18,
-            'xtick.labelsize': 12,
+            'xtick.labelsize': 16,
             'ytick.labelsize': y_labelsize,
             # 'mathtext.fontset': 'stixsans',
             'font.family': 'STIXGeneral',
