@@ -1195,7 +1195,7 @@ class PlotHelper(object):
     def plot_scores(filepath, db_order=None, method_order=None, rename=dict(),
                     reference_method=None, symbols=None, comments=None, only_full_samples=True,
                     legend_bbox=(4.22, 1.075), figsize=(18, 5.25), table_fontsize=13,
-                    y_labelsize=18):
+                    y_labelsize=18, pos_arrow=None, w_bag=None, w_const=None, w_cond=None):
         if not isinstance(filepath, pd.DataFrame):
             scores = pd.read_csv(filepath, index_col=0)
         else:
@@ -1243,63 +1243,47 @@ class PlotHelper(object):
         # Add brackets
         ax = axes[0]
 
-        w_bag = 45
+        w_bag = 45 if w_bag is None else w_bag
         n_bag = 1.5
         bag_subsize = 'small'
 
+        l_tail = 0.03
+        dh = 1./n_methods
+        lw = 1.3
+        fs = 18
+
         if n_methods <= 8:
-            fs = 18
-            w_const = 70
-            w_cond = 70
-            w_bag = 110
-            lw = 1.3
-            dh = 1./n_methods
-            l_tail = 0.03
-            pos_arrow = -0.94
+            w_const = 70 if w_const is None else w_const
+            w_cond = 70 if w_cond is None else w_cond
+            w_bag = 110 if w_bag is None else w_bag
+            pos_arrow = -0.94 if pos_arrow is None else pos_arrow
             n_cond = None
             n_const = None
             n_bag = 1.5
             bag_subsize = 'Large'
         if n_methods == 9:
-            fs = 18
-            w_const = 70
-            w_cond = 70
-            lw = 1.3
-            dh = 1./n_methods
-            l_tail = 0.03
-            pos_arrow = -0.3
+            w_const = 70 if w_const is None else w_const
+            w_cond = 70 if w_cond is None else w_cond
+            pos_arrow = -0.3 if pos_arrow is None else pos_arrow
             n_cond = 2
             n_const = 6
         elif n_methods == 10:
-            fs = 18
-            w_const = 55
-            w_cond = 70
-            lw = 1.3
-            dh = 1./n_methods
-            l_tail = 0.03
-            pos_arrow = -0.3
+            w_const = 55 if w_const is None else w_const
+            w_cond = 70 if w_cond is None else w_cond
+            pos_arrow = -0.3 if pos_arrow is None else pos_arrow
             n_cond = 3
             n_const = 7
         elif n_methods == 11:
-            fs = 18
-            w_const = 55
-            w_cond = 86
-            lw = 1.3
-            dh = 1./n_methods
-            l_tail = 0.03
-            pos_arrow = -0.3
+            w_const = 55 if w_const is None else w_const
+            w_cond = 86 if w_cond is None else w_cond
+            pos_arrow = -0.3 if pos_arrow is None else pos_arrow
             n_cond = 3
             n_const = 8
         elif n_methods == 12:
-            fs = 18
-            w_const = 60
-            w_cond = 60
-            w_bag = 45
-            lw = 1.3
-            dh = 1./n_methods
-            l_tail = 0.03
-            # pos_arrow = -0.43
-            pos_arrow = -0.74
+            w_const = 60 if w_const is None else w_const
+            w_cond = 60 if w_cond is None else w_cond
+            w_bag = 45 if w_bag is None else w_bag
+            pos_arrow = -0.74 if pos_arrow is None else pos_arrow
             n_cond = 5
             n_const = 9
             n_bag = 1.5
@@ -1321,12 +1305,13 @@ class PlotHelper(object):
                         rotation=90,
                         )
 
-        ax.annotate(f'Bagging\n\\{bag_subsize}{{(multiple imputation)}}\n\n', xy=(pos_arrow, n_bag*dh), xytext=(pos_arrow-l_tail, n_bag*dh), xycoords='axes fraction',
-                    fontsize=fs, ha='center', va='center',
-                    bbox=None,#dict(boxstyle='square', fc='white'),
-                    arrowprops=dict(arrowstyle=f'-[, widthB={w_bag/fs}, lengthB=0.5', lw=lw),
-                    rotation=90,
-                    )
+        if w_bag != 0:
+            ax.annotate(f'Bagging\n\\{bag_subsize}{{(multiple imputation)}}\n\n', xy=(pos_arrow, n_bag*dh), xytext=(pos_arrow-l_tail, n_bag*dh), xycoords='axes fraction',
+                        fontsize=fs, ha='center', va='center',
+                        bbox=None,#dict(boxstyle='square', fc='white'),
+                        arrowprops=dict(arrowstyle=f'-[, widthB={w_bag/fs}, lengthB=0.5', lw=lw),
+                        rotation=90,
+                        )
 
         plt.subplots_adjust(right=.88)
 
@@ -1337,7 +1322,7 @@ class PlotHelper(object):
                    method_order=None, rename=dict(), reference_method=None,
                    linear=False, only_full_samples=True, y_labelsize=18, comments=None, figsize=(18, 5.25),
                    legend_bbox=(4.22, 1.075), broken_axis=None, comments_align=None, comments_spacing=0.025,
-                   table_fontsize=13,):
+                   table_fontsize=13, pos_arrow=None, w_bag=None, w_const=None, w_cond=None):
         if not isinstance(filepath, pd.DataFrame):
             scores = pd.read_csv(filepath, index_col=0)
         else:
@@ -1414,73 +1399,49 @@ class PlotHelper(object):
         # l_tail = 0.03
         n_methods = 9 if method_order is None else len(method_order)
 
-        w_bag = 45
+        w_bag = 45 if w_bag is None else w_bag
         n_bag = 1.5
         bag_subsize = 'small'
 
+        l_tail = 0.03
+        dh = 1./n_methods
+        lw = 1.3
+        fs = 18
+
         if n_methods <= 8:
-            fs = 18
-            w_const = 70
-            w_cond = 70
-            w_bag = 110
-            lw = 1.3
-            dh = 1./n_methods
-            l_tail = 0.03
+            w_const = 70 if w_const is None else w_const
+            w_cond = 70 if w_cond is None else w_cond
+            w_bag = 110 if w_bag is None else w_bag
             n_cond = 2
             n_const = 6
-            pos_arrow = -1.84
+            pos_arrow = -1.84 if pos_arrow is None else pos_arrow
             n_cond = None
             n_const = None
             n_bag = 1.5
             bag_subsize = 'Large'
         if n_methods == 9:
-            fs = 18
-            w_const = 70
-            w_cond = 70
-            lw = 1.3
-            dh = 1./n_methods
-            l_tail = 0.03
-            pos_arrow = -0.3
+            w_const = 70 if w_const is None else w_const
+            w_cond = 70 if w_cond is None else w_cond
+            pos_arrow = -0.3 if pos_arrow is None else pos_arrow
             n_cond = 2
             n_const = 6
         elif n_methods == 10:
-            fs = 18
-            w_const = 55
-            w_cond = 70
-            lw = 1.3
-            dh = 1./n_methods
-            l_tail = 0.03
-            pos_arrow = -0.3
+            w_const = 55 if w_const is None else w_const
+            w_cond = 70 if w_cond is None else w_cond
+            pos_arrow = -0.3 if pos_arrow is None else pos_arrow
             n_cond = 3
             n_const = 7
         elif n_methods == 11:
-            fs = 18
-            w_const = 55
-            w_cond = 86
-            lw = 1.3
-            dh = 1./n_methods
-            l_tail = 0.03
-            pos_arrow = -0.3
+            w_const = 55 if w_const is None else w_const
+            w_cond = 86 if w_cond is None else w_cond
+            pos_arrow = -0.3 if pos_arrow is None else pos_arrow
             n_cond = 3
             n_const = 8
-        # elif n_methods == 12:
-        #     fs = 18
-        #     w_const = 50
-        #     w_cond = 80
-        #     lw = 1.3
-        #     dh = 1./n_methods
-        #     l_tail = 0.03
-        #     n_cond = 4
-        #     n_const = 9
         elif n_methods == 12:
-            fs = 18
-            w_const = 60
-            w_cond = 60
-            w_bag = 45
-            lw = 1.3
-            dh = 1./n_methods
-            l_tail = 0.03
-            pos_arrow = -1.575
+            w_const = 60 if w_const is None else w_const
+            w_cond = 60 if w_cond is None else w_cond
+            w_bag = 45 if w_bag is None else w_bag
+            pos_arrow = -1.575 if pos_arrow is None else pos_arrow
             n_cond = 5
             n_const = 9
             n_bag = 1.5
@@ -1504,12 +1465,13 @@ class PlotHelper(object):
                         rotation=90,
                         )
 
-        ax.annotate(f'Bagging\n\\{bag_subsize}{{(multiple imputation)}}\n\n', xy=(pos_arrow, n_bag*dh), xytext=(pos_arrow-l_tail, n_bag*dh), xycoords='axes fraction',
-                    fontsize=fs, ha='center', va='center',
-                    bbox=None,#dict(boxstyle='square', fc='white'),
-                    arrowprops=dict(arrowstyle=f'-[, widthB={w_bag/fs}, lengthB=0.5', lw=lw),
-                    rotation=90,
-                    )
+        if w_bag != 0:
+            ax.annotate(f'Bagging\n\\{bag_subsize}{{(multiple imputation)}}\n\n', xy=(pos_arrow, n_bag*dh), xytext=(pos_arrow-l_tail, n_bag*dh), xycoords='axes fraction',
+                        fontsize=fs, ha='center', va='center',
+                        bbox=None,#dict(boxstyle='square', fc='white'),
+                        arrowprops=dict(arrowstyle=f'-[, widthB={w_bag/fs}, lengthB=0.5', lw=lw),
+                        rotation=90,
+                        )
 
         return fig
 

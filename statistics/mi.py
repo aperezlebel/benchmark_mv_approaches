@@ -213,11 +213,22 @@ def run_multiple_imputation(graphics_folder, n=None, bagging_only=False, linear=
     else:
         y_labelsize = 18
 
+    pos_arrow = None
+    w_bag = None
+
+    if linear:
+        pos_arrow = -0.58
+        y_labelsize = 15.5
+        w_bag = 0
+        w_const = 80
+        w_cond = 80
+
     fig = PlotHelper.plot_scores(
         scores, method_order=method_order, db_order=db_order,
         rename=rename_on_plot, reference_method=None, symbols=symbols,
         only_full_samples=False, legend_bbox=legend_bbox, figsize=figsize,
-        table_fontsize=13, y_labelsize=y_labelsize, comments=comments)
+        table_fontsize=13, y_labelsize=y_labelsize, comments=comments,
+        pos_arrow=pos_arrow, w_bag=w_bag, w_const=w_const, w_cond=w_cond)
 
     scores['total_PT'] = scores['imputation_PT'].fillna(0) + scores['tuning_PT']
     scores['tag'] = scores['db'] + '/' + scores['task']
@@ -255,6 +266,7 @@ def run_multiple_imputation(graphics_folder, n=None, bagging_only=False, linear=
     legend_bbox = (4.16, 1.05)
     broken_axis = [(2.3, 55), (2.3, 55), (2.5, 25), (3.5, 25)]
     y_labelsize = 15.5
+
     if bagging_only:
         comments_align = {
             0: ['right']*2+['left']*3,
@@ -268,6 +280,7 @@ def run_multiple_imputation(graphics_folder, n=None, bagging_only=False, linear=
         comments_align = None
         broken_axis = None
         legend_bbox = (2.02, 1.05)
+        pos_arrow = -0.53
 
     else:
         comments_align = {
@@ -284,7 +297,7 @@ def run_multiple_imputation(graphics_folder, n=None, bagging_only=False, linear=
         db_order=db_order, rename=rename_on_plot, y_labelsize=y_labelsize,
         legend_bbox=legend_bbox, broken_axis=broken_axis,
         only_full_samples=False, reference_method=reference_method, figsize=figsize, comments=comments,
-        comments_align=comments_align, comments_spacing=0.11)
+        comments_align=comments_align, comments_spacing=0.11, pos_arrow=pos_arrow, w_bag=w_bag, w_const=w_const, w_cond=w_cond)
 
     fig.subplots_adjust(wspace=0.02)
     fig_time.subplots_adjust(wspace=0.02)
