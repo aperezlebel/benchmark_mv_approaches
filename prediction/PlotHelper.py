@@ -1390,13 +1390,19 @@ class PlotHelper(object):
 
         axes_table = axes_bg if broken_axis is None else axes_right
 
+        if broken_axis:
+            bbox = [1.042, 0, .28, (n_methods+1)/n_methods]
+            colWidths = [0.28]
+
+        else:
+            bbox = [1.02, 0, .14, (n_methods+1)/n_methods]
+            colWidths = [0.14]
+
         table = axes_table[-1].table(cellText=cellText, loc='right',
                                rowLabels=None,
                                colLabels=['CPU\ndays'],
-                            #    bbox=[1.32, -0.11, .19, .87],
-                               bbox=[1.042, 0, .28, (n_methods+1)/n_methods],
-                               #    bbox=[1.3, 0, .2, .735],
-                               colWidths=[0.28],
+                               bbox=bbox,
+                               colWidths=colWidths,
                                cellColours=cellColours,
                                )
         table.set_fontsize(table_fontsize)

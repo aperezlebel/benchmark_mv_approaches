@@ -10,6 +10,12 @@ bagging:
 bagging-a:
 	python main.py figs mi --bagging -a
 
+linear:
+	python main.py figs mi --linear
+
+linear-a:
+	python main.py figs mi --linear -a
+
 breakout:
 	python main.py figs breakout
 

@@ -93,8 +93,8 @@ if __name__ == '__main__':
                             help='Whether to dump into csv as well.')
     parent_a = argparse.ArgumentParser(add_help=False)
     parent_a.add_argument('-a', dest='article', default=False, const=True,
-                            nargs='?',
-                            help='Whether to dump in article folder.')
+                          nargs='?',
+                          help='Whether to dump in article folder.')
 
     p = subp.add_parser('wilcoxon', parents=[parent_l, parent_csv, parent_a],
                         description='Wilcoxon test.')
@@ -120,7 +120,7 @@ if __name__ == '__main__':
     p = subp.add_parser('breakout', parents=[parent_l, parent_a],
                         description='Plot broken out boxplots scores & times.')
 
-    p = subp.add_parser('mi', parents=[parent_a], description='Plot multiple imputation results.')
+    p = subp.add_parser('mi', parents=[parent_l, parent_a], description='Plot multiple imputation results.')
     p.add_argument('-n', type=int, default=None)
     p.add_argument('--bagging', type=bool, nargs='?', default=False, const=True, dest='bagging_only')
 

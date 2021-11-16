@@ -108,6 +108,19 @@ method_order_bagging = [
     'MIA+bagging',
 ]
 
+method_order_linear = [
+    # 'MIA', 'Linear+Iter', 'Linear+Iter+mask',
+    'MIA',
+    'Linear+Mean',
+    'Linear+Mean+mask',
+    'Linear+Med',
+    'Linear+Med+mask',
+    'Linear+Iter',
+    'Linear+Iter+mask',
+    'Linear+KNN',
+    'Linear+KNN+mask',
+]
+
 db_order = [
     'TB',
     'UKBB',
@@ -121,8 +134,16 @@ tasks_to_drop = {
 }
 
 
-def run_multiple_imputation(graphics_folder, n=None, bagging_only=False):
-    method_order = method_order_bagging if bagging_only else method_order_all
+def run_multiple_imputation(graphics_folder, n=None, bagging_only=False, linear=False):
+    if bagging_only and linear:
+        raise ValueError('No linear for bagging')
+    elif bagging_only:
+        method_order = method_order_bagging
+    elif linear:
+        method_order = method_order_linear
+    else:
+        method_order = method_order_all
+
     # reference_method = None if bagging_only else 'MIA'
     reference_method = 'MIA'
 
@@ -232,6 +253,8 @@ def run_multiple_imputation(graphics_folder, n=None, bagging_only=False):
         500: '$500\\times$',
     }
     legend_bbox = (4.16, 1.05)
+    broken_axis = [(2.3, 55), (2.3, 55), (2.5, 25), (3.5, 25)]
+    y_labelsize = 15.5
     if bagging_only:
         comments_align = {
             0: ['right']*2+['left']*3,
@@ -239,6 +262,13 @@ def run_multiple_imputation(graphics_folder, n=None, bagging_only=False):
             2: ['right']*2+['left']*3,
             3: ['right']*2+['left']*3,
         }
+        y_labelsize = 20
+
+    elif linear:
+        comments_align = None
+        broken_axis = None
+        legend_bbox = (2.02, 1.05)
+
     else:
         comments_align = {
             0: ['right']*9+['left']*3,
@@ -248,18 +278,23 @@ def run_multiple_imputation(graphics_folder, n=None, bagging_only=False):
         }
 
     # figsize = (18, 6)
-    y_labelsize = 15.5
+
     fig_time = PlotHelper.plot_times(
         scores, 'PT', xticks_dict=xticks, method_order=method_order,
         db_order=db_order, rename=rename_on_plot, y_labelsize=y_labelsize,
-        legend_bbox=legend_bbox, broken_axis=[(2.3, 55), (2.3, 55), (2.5, 25), (3.5, 25)],
+        legend_bbox=legend_bbox, broken_axis=broken_axis,
         only_full_samples=False, reference_method=reference_method, figsize=figsize, comments=comments,
         comments_align=comments_align, comments_spacing=0.11)
 
     fig.subplots_adjust(wspace=0.02)
     fig_time.subplots_adjust(wspace=0.02)
     fig_folder = get_fig_folder(graphics_folder)
-    name = 'bagging' if bagging_only else 'mi'
+    if bagging_only:
+        name = 'bagging'
+    elif linear:
+        name = 'linear'
+    else:
+        name = 'mi'
 
     fig_name = f'boxplots_{name}_scores_{n}'
     fig_time_name = f'boxplots_{name}_times_{n}'
