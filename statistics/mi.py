@@ -165,6 +165,8 @@ def run_multiple_imputation(graphics_folder, n=None, bagging_only=False, linear=
     for db, task in tasks_to_drop.items():
         scores.drop(index=scores[(scores['db'] == db) & (scores['task'] == task)].index, inplace=True)
 
+    scores = scores.query('size != 100000 or (method not in ["Linear+KNN", "Linear+KNN+mask"])')
+
     scores['task'] = scores['task'].str.replace('_pvals', '_screening')
 
     # Get Wilcoxon table for symbol annotation
@@ -268,6 +270,7 @@ def run_multiple_imputation(graphics_folder, n=None, bagging_only=False, linear=
     legend_bbox = (4.16, 1.05)
     broken_axis = [(2.3, 55), (2.3, 55), (2.5, 25), (3.5, 25)]
     y_labelsize = 15.5
+    comments_spacing = 0.11
 
     if bagging_only:
         comments_align = {
@@ -296,6 +299,7 @@ def run_multiple_imputation(graphics_folder, n=None, bagging_only=False, linear=
             1/100: '$\\frac{1}{100}\\times$',
             1/500: '$\\frac{1}{500}\\times$',
         }
+        comments_spacing = 0.06
 
     else:
         comments_align = {
@@ -312,7 +316,8 @@ def run_multiple_imputation(graphics_folder, n=None, bagging_only=False, linear=
         db_order=db_order, rename=rename_on_plot, y_labelsize=y_labelsize,
         legend_bbox=legend_bbox, broken_axis=broken_axis,
         only_full_samples=False, reference_method=reference_method, figsize=figsize, comments=comments,
-        comments_align=comments_align, comments_spacing=0.11, pos_arrow=pos_arrow, w_bag=w_bag, w_const=w_const, w_cond=w_cond)
+        comments_align=comments_align, comments_spacing=comments_spacing,
+        pos_arrow=pos_arrow, w_bag=w_bag, w_const=w_const, w_cond=w_cond)
 
     fig.subplots_adjust(wspace=0.02)
     fig_time.subplots_adjust(wspace=0.02)
