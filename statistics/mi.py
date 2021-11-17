@@ -156,7 +156,10 @@ def run_multiple_imputation(graphics_folder, n=None, bagging_only=False, linear=
         'scores/scores_mia_25000.csv',
         'scores/scores_mi_25000.csv',
         'scores/scores_mia_100000.csv',
+        'scores/scores_mi_100000.csv',
         'scores/scores_mean+mask+bagging_2500.csv',
+        'scores/scores_mean+mask+bagging_10000.csv',
+        'scores/scores_mean+mask+bagging_25000.csv',
     ]
     dfs = [pd.read_csv(path, index_col=0) for path in filepaths]
     scores = pd.concat(dfs, axis=0)
@@ -219,6 +222,8 @@ def run_multiple_imputation(graphics_folder, n=None, bagging_only=False, linear=
 
     pos_arrow = None
     w_bag = None
+    w_const = None
+    w_cond = None
 
     if linear:
         pos_arrow = -0.58
