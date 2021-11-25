@@ -54,4 +54,11 @@ friedman-a:
 	make friedman-trees-a
 	make friedman-linear-a
 
+
+scores:
+	python main.py figs scores
+
+scores-a:
+	python main.py figs scores -a
+
 all_article:

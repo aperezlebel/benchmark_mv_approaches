@@ -9,9 +9,26 @@ from prediction.df_utils import get_scores_tab, get_ranks_tab
 from custom.const import get_tab_folder
 
 
-def run_scores(graphics_folder, linear, csv=False):
-    path = os.path.abspath('scores/scores.csv')
-    df = pd.read_csv(path, index_col=0)
+def run_scores(graphics_folder, linear, csv=False, relative=True):
+    # path = os.path.abspath('scores/scores.csv')
+    # df = pd.read_csv(path, index_col=0)
+
+    filepaths = [
+        'scores/scores.csv',
+        'scores/scores_mi_2500.csv',
+        'scores/scores_mia_2500.csv',
+        'scores/scores_mi_10000.csv',
+        'scores/scores_mia_10000.csv',
+        'scores/scores_mia_25000.csv',
+        'scores/scores_mi_25000.csv',
+        'scores/scores_mia_100000.csv',
+        'scores/scores_mi_100000.csv',
+        'scores/scores_mean+mask+bagging_2500.csv',
+        'scores/scores_mean+mask+bagging_10000.csv',
+        'scores/scores_mean+mask+bagging_25000.csv',
+    ]
+    dfs = [pd.read_csv(path, index_col=0) for path in filepaths]
+    df = pd.concat(dfs, axis=0)
 
     # Drop tasks
     for db, task in tasks_to_drop.items():
@@ -43,6 +60,9 @@ def run_scores(graphics_folder, linear, csv=False):
             'Iter+mask',
             'KNN',
             'KNN+mask',
+            'MI',
+            'MI+mask',
+            'MIA+bagging',
         ]
 
     db_order = [
@@ -52,7 +72,7 @@ def run_scores(graphics_folder, linear, csv=False):
         'NHIS',
     ]
 
-    scores = get_scores_tab(df, method_order=method_order, db_order=db_order, relative=True)
+    scores = get_scores_tab(df, method_order=method_order, db_order=db_order, relative=relative)
     ranks = get_ranks_tab(df, method_order=method_order, db_order=db_order)
 
     rename = {
@@ -60,6 +80,9 @@ def run_scores(graphics_folder, linear, csv=False):
         'Med+mask': 'Median+mask',
         'Iter': 'Iterative',
         'Iter+mask': 'Iterative+mask',
+        'MIA+bagging': 'MIA+Bagging',
+        'MI': 'Iterative+Bagging',
+        'MI+mask': 'Iterative+mask+Bagging',
     }
 
     if linear:
@@ -124,12 +147,14 @@ def run_scores(graphics_folder, linear, csv=False):
     column_format = 'l'*(n_latex_columns-5)+f'@{{\\hskip {smallskip}}}'+'l'*4+f'@{{\\hskip {medskip}}}'+'l'
 
     tab_folder = get_tab_folder(graphics_folder)
-    tab1_name = 'scores_linear' if linear else 'scores'
-    tab2_name = 'ranks_linear' if linear else 'ranks'
+    abs = '_absolute' if not relative else ''
+    tab1_name = f'scores_linear{abs}' if linear else f'scores{abs}'
+    tab2_name = f'ranks_linear{abs}' if linear else f'ranks{abs}'
 
-    scores.to_latex(join(tab_folder, f'{tab1_name}.tex'), na_rep='', escape=False, table_env='tabularx') #, column_format='L'*scores.shape[1])
+    scores.to_latex(join(tab_folder, f'{tab1_name}.tex'), na_rep='', escape=False)#, table_env='tabularx') #, column_format='L'*scores.shape[1])
     ranks.to_latex(join(tab_folder, f'{tab2_name}.tex'), na_rep='', escape=False,
-    table_env='tabularx', column_format=column_format)
+    #table_env='tabularx',
+    column_format=column_format)
 
     if csv:
         scores.to_csv(join(tab_folder, f'{tab1_name}.csv'))
