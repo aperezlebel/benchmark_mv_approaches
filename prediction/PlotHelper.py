@@ -560,7 +560,7 @@ class PlotHelper(object):
               method_order=None, rename=dict(), reference_method=None,
               figsize=None, legend_bbox=None, xlabel=None, symbols=None, comments=None,
               only_full_samples=True, y_labelsize=18, broken_axis=None, comments_align=None,
-              comments_spacing=0.025):
+              comments_spacing=0.025, colors=None):
         """Plot the full available results."""
         if not isinstance(filepath, pd.DataFrame):
             df = pd.read_csv(filepath, index_col=0)
@@ -830,10 +830,15 @@ class PlotHelper(object):
                 ax.axvline(mid, ymin=0, ymax=n_methods, color='gray', zorder=0)
 
             # Build the color palette for the boxplot
-            paired_colors = sns.color_palette('Paired').as_hex()
-            # del paired_colors[10]
-            paired_colors[10] = sns.color_palette("Set2").as_hex()[5]
-            boxplot_palette = sns.color_palette(['#525252']+paired_colors)
+            if colors is None:
+                paired_colors = sns.color_palette('Paired').as_hex()
+                # del paired_colors[10]
+                paired_colors[10] = sns.color_palette("Set2").as_hex()[5]
+                boxplot_palette = sns.color_palette(['#525252']+paired_colors)
+
+            else:
+                boxplot_palette = sns.color_palette(colors)
+
 
             # Boxplot
             sns.set_palette(boxplot_palette)
@@ -1195,23 +1200,25 @@ class PlotHelper(object):
     def plot_scores(filepath, db_order=None, method_order=None, rename=dict(),
                     reference_method=None, symbols=None, comments=None, only_full_samples=True,
                     legend_bbox=(4.22, 1.075), figsize=(18, 5.25), table_fontsize=13,
-                    y_labelsize=18, pos_arrow=None, w_bag=None, w_const=None, w_cond=None):
+                    y_labelsize=18, pos_arrow=None, w_bag=None, w_const=None,
+                    w_cond=None, colors=None):
         if not isinstance(filepath, pd.DataFrame):
             scores = pd.read_csv(filepath, index_col=0)
         else:
             scores = filepath
 
         fig, axes, _, _ = PlotHelper._plot(scores, 'score', how='no-norm',
-                                     method_order=method_order,
-                                     db_order=db_order, rename=rename,
-                                     reference_method=reference_method,
-                                     figsize=figsize,
-                                     legend_bbox=legend_bbox,
-                                     symbols=symbols,
-                                     comments=comments,
-                                     only_full_samples=only_full_samples,
-                                     y_labelsize=y_labelsize,
-                                     )
+                                           method_order=method_order,
+                                           db_order=db_order, rename=rename,
+                                           reference_method=reference_method,
+                                           figsize=figsize,
+                                           legend_bbox=legend_bbox,
+                                           symbols=symbols,
+                                           comments=comments,
+                                           only_full_samples=only_full_samples,
+                                           y_labelsize=y_labelsize,
+                                           colors=colors,
+                                           )
 
         df_ranks = get_ranks_tab(scores, method_order=method_order, db_order=db_order, average_sizes=True)
 
@@ -1322,7 +1329,8 @@ class PlotHelper(object):
                    method_order=None, rename=dict(), reference_method=None,
                    linear=False, only_full_samples=True, y_labelsize=18, comments=None, figsize=(18, 5.25),
                    legend_bbox=(4.22, 1.075), broken_axis=None, comments_align=None, comments_spacing=0.025,
-                   table_fontsize=13, pos_arrow=None, w_bag=None, w_const=None, w_cond=None):
+                   table_fontsize=13, pos_arrow=None, w_bag=None, w_const=None,
+                   w_cond=None, colors=None):
         if not isinstance(filepath, pd.DataFrame):
             scores = pd.read_csv(filepath, index_col=0)
         else:
@@ -1350,6 +1358,7 @@ class PlotHelper(object):
                                      broken_axis=broken_axis,
                                      comments_align=comments_align,
                                      comments_spacing=comments_spacing,
+                                     colors=colors,
                                      )
 
         # df_ranks = get_ranks_tab(scores, method_order=method_order, db_order=db_order, average_sizes=True)
