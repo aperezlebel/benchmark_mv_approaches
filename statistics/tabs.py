@@ -177,7 +177,8 @@ def run_desc(graphics_folder):
         'Total time (s)': 'Time - Total (s)',
     }
 
-    df.rename(columns=time_columns, inplace=True)
+    df.drop(time_columns.keys(), inplace=True, axis=1)
+    # df.rename(columns=time_columns, inplace=True)
 
     for db, task in tasks_to_drop.items():
         df = df.drop((db, task), axis=0)
@@ -234,7 +235,7 @@ def run_desc(graphics_folder):
 
     with pd.option_context("max_colwidth", None):
         df.to_latex(join(tab_folder, 'task_description.tex'),
-                    table_env='tabularx',
+                    # table_env='tabularx',
                     bold_rows=False, na_rep=None, escape=False,
                     column_format=column_format,
                     multirow=False)
