@@ -689,6 +689,9 @@ def run_friedman(graphics_folder, linear=False, csv=False, ref=None):
             'Med+mask': 'Median+mask',
             'Iter': 'Iterative',
             'Iter+mask': 'Iterative+mask',
+            'MIA+bagging': 'MIA+Bagging',
+            'MI': 'Iterative+Bagging',
+            'MI+mask': 'Iterative+mask+Bagging',
         }
         df.rename(rename, axis=0, level=1, inplace=True)
 
@@ -749,8 +752,13 @@ def plot_ranks(average_ranks, critical_distance, ax, ref=None):
     else:
         ref_rank = average_ranks[ref]
 
+    ref_rank_colors = ref_rank
+    ref_rank_difference = np.min(average_ranks)
+
     # Move left y-axis and bottim x-axis to centre, passing through (0,0)
-    ax.spines['left'].set_position('center')
+    xmin = -.11
+    xmax = .5
+    ax.spines['left'].set_position(('axes', abs(xmin)/(xmax-xmin)))
     ax.spines['bottom'].set_color('none')
 
     # Eliminate upper and right axes
@@ -761,17 +769,15 @@ def plot_ranks(average_ranks, critical_distance, ax, ref=None):
     ax.xaxis.set_visible(False)#.set_ticks_position('none')
     ax.yaxis.set_ticks_position('left')
     ax.set_ylim(1, len(average_ranks))
-    ax.set_xlim(-.3, .3)
+    ax.set_xlim(xmin, xmax)
     ax.invert_yaxis()
 
-    cd1 = ref_rank
-    # cd2 = ref_rank + critical_distance
-    colors = ['red' if abs(r - ref_rank) < critical_distance else 'black' for r in average_ranks]
+    colors = ['red' if abs(r - ref_rank_colors) < critical_distance else 'black' for r in average_ranks]
     ax.scatter(np.zeros_like(average_ranks), average_ranks,
                color=colors, marker='.', clip_on=False, zorder=10)
-    ax.plot(-.1*np.ones(2), [ref_rank, ref_rank+critical_distance], color='red',
+    ax.plot(-.06*np.ones(2), [ref_rank_difference, ref_rank_difference+critical_distance], color='red',
             marker='_', markeredgewidth=1.5)
-    ax.text(-.12, ref_rank+critical_distance/2, 'critical difference', rotation=90,
+    ax.text(-.08, ref_rank_difference+critical_distance/2, 'critical difference', rotation=90,
             ha='center', va='center', color='red', fontsize=12)
 
     texts = []
