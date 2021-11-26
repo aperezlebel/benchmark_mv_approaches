@@ -244,13 +244,15 @@ def run_multiple_imputation(graphics_folder, n=None, bagging_only=False, linear=
         colors = [colors_dict.get(m, colors_all[-1]) for m in method_order_bagging]
         hline_pos = [2, 4]
 
+    ref_vline = 'MIA'
+
     fig = PlotHelper.plot_scores(
         scores, method_order=method_order, db_order=db_order,
         rename=rename_on_plot, reference_method=None, symbols=symbols,
         only_full_samples=False, legend_bbox=legend_bbox, figsize=figsize,
         table_fontsize=13, y_labelsize=y_labelsize, comments=comments,
         pos_arrow=pos_arrow, w_bag=w_bag, w_const=w_const, w_cond=w_cond,
-        colors=colors, hline_pos=hline_pos)
+        colors=colors, hline_pos=hline_pos, ref_vline=ref_vline)
 
     scores['total_PT'] = scores['imputation_PT'].fillna(0) + scores['tuning_PT']
     scores['tag'] = scores['db'] + '/' + scores['task']

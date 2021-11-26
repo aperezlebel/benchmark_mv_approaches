@@ -560,7 +560,7 @@ class PlotHelper(object):
               method_order=None, rename=dict(), reference_method=None,
               figsize=None, legend_bbox=None, xlabel=None, symbols=None, comments=None,
               only_full_samples=True, y_labelsize=18, broken_axis=None, comments_align=None,
-              comments_spacing=0.025, colors=None):
+              comments_spacing=0.025, colors=None, ref_vline=None):
         """Plot the full available results."""
         if not isinstance(filepath, pd.DataFrame):
             df = pd.read_csv(filepath, index_col=0)
@@ -839,6 +839,10 @@ class PlotHelper(object):
             else:
                 boxplot_palette = sns.color_palette(colors)
 
+            # Add axvline for reference method
+            if ref_vline is not None:
+                ref_med = df_valid.query('method == @ref_vline')[f'relative_{value}'].median()
+                ax.axvline(ref_med, ymin=0, ymax=n_methods, color='gray', zorder=0, ls='--', lw=1)
 
             # Boxplot
             sns.set_palette(boxplot_palette)
@@ -1203,7 +1207,7 @@ class PlotHelper(object):
                     reference_method=None, symbols=None, comments=None, only_full_samples=True,
                     legend_bbox=(4.22, 1.075), figsize=(18, 5.25), table_fontsize=13,
                     y_labelsize=18, pos_arrow=None, w_bag=None, w_const=None,
-                    w_cond=None, colors=None, hline_pos=None):
+                    w_cond=None, colors=None, hline_pos=None, ref_vline=None):
         if not isinstance(filepath, pd.DataFrame):
             scores = pd.read_csv(filepath, index_col=0)
         else:
@@ -1220,6 +1224,7 @@ class PlotHelper(object):
                                            only_full_samples=only_full_samples,
                                            y_labelsize=y_labelsize,
                                            colors=colors,
+                                           ref_vline=ref_vline,
                                            )
 
         df_ranks = get_ranks_tab(scores, method_order=method_order, db_order=db_order, average_sizes=True)
