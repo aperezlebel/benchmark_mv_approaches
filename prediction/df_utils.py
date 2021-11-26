@@ -71,6 +71,12 @@ def get_scores_tab(scores_raw, method_order=None, db_order=None, relative=False,
     df = pd.pivot_table(df, values='score', index=['size', 'method'], columns=['db', 'task'])
 
     if method_order is not None:
+        # Add methods that have no results at specified size (eg KNN for n = 100000)
+        for size, subdf in df.groupby('size'):
+            for m in method_order:
+                if (size, m) not in subdf.index:
+                    df.loc[(size, m), :] = np.nan
+
         df = df.reindex(method_order, level=1)
 
     if db_order is not None:
@@ -151,6 +157,12 @@ def get_ranks_tab(scores_raw, method_order=None, db_order=None, average_sizes=Tr
     df = pd.pivot_table(df, values='rank', index=['size', 'method'], columns=['db', 'task'])
 
     if method_order is not None:
+        # Add methods that have no results at specified size (eg KNN for n = 100000)
+        for size, subdf in df.groupby('size'):
+            for m in method_order:
+                if (size, m) not in subdf.index:
+                    df.loc[(size, m), :] = np.nan
+
         df = df.reindex(method_order, level=1)
 
     if db_order is not None:
