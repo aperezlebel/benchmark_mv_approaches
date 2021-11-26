@@ -415,7 +415,7 @@ def every_mv_distribution():
     # for i in range(0,7):
     for i in [1.05, 2.02, 3.96]:
         y = i*dh
-        line = matplotlib.lines.Line2D([0, 1], [y, y], lw=0.5, ls='-', color='black',
+        line = matplotlib.lines.Line2D([0, 1], [y, y], lw=1, ls='-', color='silver',
             alpha=1, transform=fig.transFigure)
     # axes[1, 0].add_line(line)
         fig.add_artist(line)
