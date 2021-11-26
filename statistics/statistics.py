@@ -421,7 +421,9 @@ def every_mv_distribution():
         fig.add_artist(line)
 
     axes[-1, 0].set_xlabel('Features')
-    axes[-1, 0].set_ylabel('Proportion')
+    for ax in axes[:, 0]:
+        ax.set_ylabel('Proportion')
+    # axes[-1, 0].set_ylabel('Proportion')
 
     return fig, axes
 
