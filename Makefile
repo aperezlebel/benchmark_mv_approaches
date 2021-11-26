@@ -74,10 +74,36 @@ wilcoxon-a:
 	make wilcoxon-trees-a
 	make wilcoxon-linear-a
 
-scores:
+scores-trees:
 	python main.py figs scores
 
-scores-a:
+scores-trees-a:
 	python main.py figs scores -a
+
+scores-linear:
+	python main.py figs scores --linear
+
+scores-linear-a:
+	python main.py figs scores --linear -a
+
+scores:
+	make scores-trees
+	make scores-linear
+
+scores-a:
+	make scores-trees-a
+	make scores-linear-a
+
+mv:
+	python main.py datastats mv
+
+mv:
+	python main.py datastats mv -a
+
+desc:
+	python main.py figs desc
+
+desc-a:
+	python main.py figs desc -a
 
 all_article:
