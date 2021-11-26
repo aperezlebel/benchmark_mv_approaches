@@ -129,8 +129,11 @@ def run_scores(graphics_folder, linear, csv=False, relative=True):
             return f'\\textbf{{{x}}}'
 
     smallskip = '0.15in'
-    bigskip = '0.3in'
-    medskip = '0.23in'
+    bigskip = '0.23in'
+    medskip = '0.20in'
+    # smallskip = '0.15in'
+    # bigskip = '0.3in'
+    # medskip = '0.23in'
     index_rename = {}
 
     for size in [2500, 10000, 25000, 100000, 'Average']:
