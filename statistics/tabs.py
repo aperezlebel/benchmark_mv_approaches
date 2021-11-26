@@ -137,10 +137,11 @@ def run_scores(graphics_folder, linear, csv=False, relative=True):
         scores.loc[(size, 'Reference score')] = scores.loc[(size, 'Reference score')].apply(boldify)
         if size == 2500:
             continue
-        skip = bigskip if size == 'Average' else smallskip
+        skip = bigskip if size == 'Average' else medskip
         index_rename[size] = f'\\rule{{0pt}}{{{skip}}}{size}'
 
     scores.rename(index_rename, axis=0, level=0, inplace=True)
+    scores.rename({'Reference score': f'\\rule{{0pt}}{{{smallskip}}}Reference score'}, axis=0, level=1, inplace=True)
     ranks.rename(index_rename, axis=0, level=0, inplace=True)
 
     n_latex_columns = len(ranks.columns)+2

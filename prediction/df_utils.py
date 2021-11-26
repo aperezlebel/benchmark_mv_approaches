@@ -58,7 +58,7 @@ def aggregate(df, value):
     return df
 
 
-def get_scores_tab(scores_raw, method_order=None, db_order=None, relative=False, average_sizes=True, formatting=True):
+def get_scores_tab(scores_raw, method_order=None, db_order=None, relative=False, average_sizes=True, formatting=True, positive=True):
     """Compute article scores tab from raw scores."""
     df = scores_raw.copy()
 
@@ -107,21 +107,23 @@ def get_scores_tab(scores_raw, method_order=None, db_order=None, relative=False,
         else:
             df = df.applymap(lambda x: x if pd.isnull(x) else f'{x:.2f}')
 
-    if average_sizes:
-        if formatting:
-            avg_by_size = avg_by_size.applymap(lambda x: x if pd.isnull(x) else f'{x:.2f}')
-        df = pd.concat([df, avg_by_size], axis=0)
-        df = df.reindex(list(size_order)+['Average'], level=0)
-
-    def space(x):
+    def space(x, positive=True):
         if pd.isnull(x):
             return x
         else:
-            space = '' if float(x) < 0 else r'\hphantom{-}'
+            positive_str = '+' if positive else r'\hphantom{-}'
+            space = '' if float(x) < 0 else positive_str
             return f'{space}{x}'
 
     if formatting:
         df = df.applymap(space)
+
+    if average_sizes:
+        if formatting:
+            avg_by_size = avg_by_size.applymap(lambda x: x if pd.isnull(x) else f'{x:.2f}')
+            avg_by_size = avg_by_size.applymap(lambda x: space(x, positive=False))
+        df = pd.concat([df, avg_by_size], axis=0)
+        df = df.reindex(list(size_order)+['Average'], level=0)
 
     df.index.rename(['Size', 'Method'], inplace=True)
     df.columns.rename(['Database', 'Task'], inplace=True)
