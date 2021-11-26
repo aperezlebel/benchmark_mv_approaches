@@ -1499,6 +1499,16 @@ class PlotHelper(object):
                         rotation=90,
                         )
 
+        # Add arrow on top right comment
+        ax = axes_bg[-1] if broken_axis is None else axes_right[-1]
+        xpos = 0.7 if broken_axis is not None else 0.85
+        ypos = 0.94 if n_methods < 7 else 0.964
+        ax.annotate('Mean time\nper task', xy=(xpos, ypos), xytext=(xpos, 1.1),
+                    xycoords='axes fraction', ha='center', va='center',
+                    fontsize=fs,
+                    arrowprops=dict(arrowstyle=f'->', lw=1, color='gray'),
+                    )
+
         if hline_pos is not None:
             for axes in [axes_bg, axes_left, axes_right]:
                 if axes is None:
