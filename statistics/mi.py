@@ -259,20 +259,23 @@ def run_multiple_imputation(graphics_folder, n=None, bagging_only=False, linear=
     print(scores)
     for index, subdf in scores.groupby(['size', 'method']):
         size, method = index
-        # print(subdf)
-        # print(subdf['tag'])
-        # print(subdf['tag'].unique())
-        # print(len(subdf['tag'].unique()))
         n_tasks = len(subdf['tag'].unique())
         total_pt_time = subdf['total_PT'].sum()/n_tasks
-        # exit()
-        # print(index)
+
         comments_size = comments.get(size, {})
         if comments_size.get(method, None) is None:
-            comments_size[method] = f'{int(total_pt_time/3600):,d} hours'.replace(',', '\\,')
+            time = total_pt_time/3600
+            if time < 10:
+                time_str = f'{time:.2g} hours'
+            elif time < 100:
+                time_str = f'{int(time):,d} hours'
+            else:
+                time_str = f'{int(time/24):,d} days'
+            print(time, time_str)
+            comments_size[method] = time_str.replace(',', '\\,')
         comments[size] = comments_size
     print(comments)
-    # exit()
+
     xticks = {
         # 1/10: '$\\frac{1}{10}\\times$',
         # 2/3: '$\\frac{2}{3}\\times$',
@@ -300,6 +303,7 @@ def run_multiple_imputation(graphics_folder, n=None, bagging_only=False, linear=
             3: ['right']+['left']+['right']+['left']+['right']+['left'],
         }
         y_labelsize = 20
+        comments_spacing = 0.13
 
     elif linear:
         comments_align = {
@@ -328,6 +332,7 @@ def run_multiple_imputation(graphics_folder, n=None, bagging_only=False, linear=
             2: ['right']*9+['left']*3,
             3: ['right']*7+['left']*5,
         }
+        comments_spacing = 0.13
 
     # figsize = (18, 6)
 
