@@ -560,7 +560,7 @@ class PlotHelper(object):
               method_order=None, rename=dict(), reference_method=None,
               figsize=None, legend_bbox=None, xlabel=None, symbols=None, comments=None,
               only_full_samples=True, y_labelsize=18, broken_axis=None, comments_align=None,
-              comments_spacing=0.025, colors=None, ref_vline=None):
+              comments_spacing=0.025, colors=None, ref_vline=None, non_ref_vline=False):
         """Plot the full available results."""
         if not isinstance(filepath, pd.DataFrame):
             df = pd.read_csv(filepath, index_col=0)
@@ -843,6 +843,11 @@ class PlotHelper(object):
             if ref_vline is not None:
                 ref_med = df_valid.query('method == @ref_vline')[f'relative_{value}'].median()
                 ax.axvline(ref_med, ymin=0, ymax=n_methods, color='gray', zorder=0, ls='--', lw=1)
+
+            # Add mean of methods other than reference
+            if non_ref_vline:
+                non_ref_mean = df_valid.query('method != @ref_vline and method != "MI" and method != "MI+mask" and method != "MIA+mask"')[f'relative_{value}'].median()
+                ax.axvline(non_ref_mean, ymin=0, ymax=n_methods, color='gray', zorder=0, ls='--', lw=1)
 
             # Boxplot
             sns.set_palette(boxplot_palette)
@@ -1341,7 +1346,7 @@ class PlotHelper(object):
                    linear=False, only_full_samples=True, y_labelsize=18, comments=None, figsize=(18, 5.25),
                    legend_bbox=(4.22, 1.075), broken_axis=None, comments_align=None, comments_spacing=0.025,
                    table_fontsize=13, pos_arrow=None, w_bag=None, w_const=None,
-                   w_cond=None, colors=None, hline_pos=None):
+                   w_cond=None, colors=None, hline_pos=None, non_ref_vline=False):
         if not isinstance(filepath, pd.DataFrame):
             scores = pd.read_csv(filepath, index_col=0)
         else:
@@ -1370,6 +1375,7 @@ class PlotHelper(object):
                                      comments_align=comments_align,
                                      comments_spacing=comments_spacing,
                                      colors=colors,
+                                     non_ref_vline=non_ref_vline,
                                      )
 
         # df_ranks = get_ranks_tab(scores, method_order=method_order, db_order=db_order, average_sizes=True)
