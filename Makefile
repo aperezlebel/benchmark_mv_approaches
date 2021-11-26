@@ -97,7 +97,7 @@ scores-a:
 mv:
 	python main.py datastats mv
 
-mv:
+mv-a:
 	python main.py datastats mv -a
 
 desc:
