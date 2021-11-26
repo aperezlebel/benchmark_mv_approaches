@@ -54,6 +54,25 @@ friedman-a:
 	make friedman-trees-a
 	make friedman-linear-a
 
+wilcoxon-trees:
+	python main.py figs wilcoxon
+
+wilcoxon-trees-a:
+	python main.py figs wilcoxon -a
+
+wilcoxon-linear:
+	python main.py figs wilcoxon --linear
+
+wilcoxon-linear-a:
+	python main.py figs wilcoxon --linear -a
+
+wilcoxon:
+	make wilcoxon-trees
+	make wilcoxon-linear
+
+wilcoxon-a:
+	make wilcoxon-trees-a
+	make wilcoxon-linear-a
 
 scores:
 	python main.py figs scores
