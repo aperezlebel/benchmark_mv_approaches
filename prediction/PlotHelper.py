@@ -993,6 +993,8 @@ class PlotHelper(object):
                 ax.set_xlim((xlim[0], ba_lims[0]))
                 ax_right.set_xlim((ba_lims[1], xlim2[1]))
 
+                ax_bg.set_ylim(ax.get_ylim())
+
             # break
 
             # Optionally adds symbols on each line (for significance)
@@ -1201,7 +1203,7 @@ class PlotHelper(object):
                     reference_method=None, symbols=None, comments=None, only_full_samples=True,
                     legend_bbox=(4.22, 1.075), figsize=(18, 5.25), table_fontsize=13,
                     y_labelsize=18, pos_arrow=None, w_bag=None, w_const=None,
-                    w_cond=None, colors=None):
+                    w_cond=None, colors=None, hline_pos=None):
         if not isinstance(filepath, pd.DataFrame):
             scores = pd.read_csv(filepath, index_col=0)
         else:
@@ -1243,7 +1245,6 @@ class PlotHelper(object):
                                cellColours=cellColours,
                                )
         table.set_fontsize(table_fontsize)
-
 
         n_methods = 9 if method_order is None else len(method_order)
 
@@ -1322,6 +1323,11 @@ class PlotHelper(object):
 
         plt.subplots_adjust(right=.88)
 
+        if hline_pos is not None:
+            for ax in axes:
+                for pos in hline_pos:
+                    ax.axhline(pos-0.5, color='black', lw=1)
+
         return fig
 
     @staticmethod
@@ -1330,7 +1336,7 @@ class PlotHelper(object):
                    linear=False, only_full_samples=True, y_labelsize=18, comments=None, figsize=(18, 5.25),
                    legend_bbox=(4.22, 1.075), broken_axis=None, comments_align=None, comments_spacing=0.025,
                    table_fontsize=13, pos_arrow=None, w_bag=None, w_const=None,
-                   w_cond=None, colors=None):
+                   w_cond=None, colors=None, hline_pos=None):
         if not isinstance(filepath, pd.DataFrame):
             scores = pd.read_csv(filepath, index_col=0)
         else:
@@ -1481,6 +1487,14 @@ class PlotHelper(object):
                         arrowprops=dict(arrowstyle=f'-[, widthB={w_bag/fs}, lengthB=0.5', lw=lw),
                         rotation=90,
                         )
+
+        if hline_pos is not None:
+            for axes in [axes_bg, axes_left, axes_right]:
+                if axes is None:
+                    continue
+                for ax in axes:
+                    for pos in hline_pos:
+                        ax.axhline(pos-0.5, color='black', lw=1)
 
         return fig
 

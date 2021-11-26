@@ -226,6 +226,7 @@ def run_multiple_imputation(graphics_folder, n=None, bagging_only=False, linear=
     w_const = None
     w_cond = None
     colors = None
+    hline_pos = None
 
     if linear:
         pos_arrow = -0.58
@@ -241,6 +242,7 @@ def run_multiple_imputation(graphics_folder, n=None, bagging_only=False, linear=
         colors_all = ['#525252']+paired_colors
         colors_dict = {m: c for m, c in zip(method_order_all, colors_all)}
         colors = [colors_dict.get(m, colors_all[-1]) for m in method_order_bagging]
+        hline_pos = [2, 4]
 
     fig = PlotHelper.plot_scores(
         scores, method_order=method_order, db_order=db_order,
@@ -248,7 +250,7 @@ def run_multiple_imputation(graphics_folder, n=None, bagging_only=False, linear=
         only_full_samples=False, legend_bbox=legend_bbox, figsize=figsize,
         table_fontsize=13, y_labelsize=y_labelsize, comments=comments,
         pos_arrow=pos_arrow, w_bag=w_bag, w_const=w_const, w_cond=w_cond,
-        colors=colors)
+        colors=colors, hline_pos=hline_pos)
 
     scores['total_PT'] = scores['imputation_PT'].fillna(0) + scores['tuning_PT']
     scores['tag'] = scores['db'] + '/' + scores['task']
@@ -290,10 +292,10 @@ def run_multiple_imputation(graphics_folder, n=None, bagging_only=False, linear=
 
     if bagging_only:
         comments_align = {
-            0: ['right']*3+['left']*3,
-            1: ['right']*3+['left']*3,
-            2: ['right']*3+['left']*3,
-            3: ['right']*3+['left']*3,
+            0: ['right']+['left']+['right']+['left']+['right']+['left'],
+            1: ['right']+['left']+['right']+['left']+['right']+['left'],
+            2: ['right']+['left']+['right']+['left']+['right']+['left'],
+            3: ['right']+['left']+['right']+['left']+['right']+['left'],
         }
         y_labelsize = 20
 
@@ -334,7 +336,7 @@ def run_multiple_imputation(graphics_folder, n=None, bagging_only=False, linear=
         only_full_samples=False, reference_method=reference_method, figsize=figsize, comments=comments,
         comments_align=comments_align, comments_spacing=comments_spacing,
         pos_arrow=pos_arrow, w_bag=w_bag, w_const=w_const, w_cond=w_cond,
-        colors=colors,)
+        colors=colors, hline_pos=hline_pos)
 
     fig.subplots_adjust(wspace=0.02)
     fig_time.subplots_adjust(wspace=0.02)
