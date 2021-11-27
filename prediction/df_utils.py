@@ -58,7 +58,9 @@ def aggregate(df, value):
     return df
 
 
-def get_scores_tab(scores_raw, method_order=None, db_order=None, relative=False, average_sizes=True, formatting=True, positive=True):
+def get_scores_tab(scores_raw, method_order=None, db_order=None, relative=False,
+                   average_sizes=True, formatting=True, positive=True,
+                   add_empty_methods=True):
     """Compute article scores tab from raw scores."""
     df = scores_raw.copy()
 
@@ -70,7 +72,7 @@ def get_scores_tab(scores_raw, method_order=None, db_order=None, relative=False,
 
     df = pd.pivot_table(df, values='score', index=['size', 'method'], columns=['db', 'task'])
 
-    if method_order is not None:
+    if add_empty_methods and method_order is not None:
         # Add methods that have no results at specified size (eg KNN for n = 100000)
         for size, subdf in df.groupby('size'):
             for m in method_order:
