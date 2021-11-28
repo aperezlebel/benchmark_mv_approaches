@@ -748,16 +748,17 @@ def run_time():
     filepaths = [
         'scores/scores.csv',
         'scores/scores_mi_2500.csv',
-        'scores/scores_mia_2500.csv',
         'scores/scores_mi_10000.csv',
+        'scores/scores_mi_25000.csv',
+        'scores/scores_mi_100000.csv',
+        'scores/scores_mia_2500.csv',
         'scores/scores_mia_10000.csv',
         'scores/scores_mia_25000.csv',
-        'scores/scores_mi_25000.csv',
         'scores/scores_mia_100000.csv',
-        'scores/scores_mi_100000.csv',
         'scores/scores_mean+mask+bagging_2500.csv',
         'scores/scores_mean+mask+bagging_10000.csv',
         'scores/scores_mean+mask+bagging_25000.csv',
+        'scores/scores_mean+mask+bagging_100000.csv',
     ]
     dfs = [pd.read_csv(path, index_col=0) for path in filepaths]
     df = pd.concat(dfs, axis=0)
