@@ -800,6 +800,18 @@ def run_time():
     )
 
 
+def run_score_check():
+     for path in filepaths:
+        df = pd.read_csv(path, index_col=0)
+        # print(df)
+
+        dfgb = df.groupby(['size', 'db', 'task', 'method'])
+        print(f'\n{path}', len(dfgb))
+        for index, subdf in dfgb:
+            print(index, subdf.shape[0])
+
+
+
 # 150 000 heures CPU, noeuds de 40 CPU, 3750 heures noeuds, 156 jours noeuds, 20 noeuds : 8 jours
 
 # iter : 1486 CPU hours

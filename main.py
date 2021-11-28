@@ -115,6 +115,8 @@ if __name__ == '__main__':
 
     p = subp.add_parser('time', parents=[parent_a], description='Total time of fit.')
 
+    p = subp.add_parser('check', parents=[parent_a], description='Check score files.')
+
     p = subp.add_parser('difficulty', parents=[parent_a], description='Plot rank vs difficulty.')
     p.add_argument('--no-avg', type=bool, nargs='?', const=False, default=True, dest='avg')
 

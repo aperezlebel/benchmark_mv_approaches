@@ -3,7 +3,7 @@ import matplotlib.pyplot as plt
 
 from custom.const import local_graphics_folder, remote_graphics_folder
 from .tests import run_friedman, run_wilcoxon
-from .statistics import run_mv, run_prop, run_cor, run_time
+from .statistics import run_mv, run_prop, run_cor, run_time, run_score_check
 from .boxplots import run_boxplot
 from .tabs import run_desc, run_scores
 from .difficulty import run_difficulty
@@ -57,6 +57,9 @@ def run(args):
 
     elif args.action == 'time':
         run_time()
+
+    elif args.action == 'check':
+        run_score_check()
 
     elif args.action == 'difficulty':
         run_difficulty(graphics_folder, args.avg)
