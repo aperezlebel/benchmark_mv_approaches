@@ -1,15 +1,16 @@
 """Run some statistical tests on the results."""
 import os
 from os.path import join
+
+import matplotlib.pyplot as plt
 import numpy as np
 import pandas as pd
-from scipy.stats import f, chi2, wilcoxon
-import matplotlib.pyplot as plt
-
-from prediction.PlotHelper import PlotHelper
-from prediction.df_utils import get_scores_tab, get_ranks_tab
 from custom.const import get_fig_folder, get_tab_folder
+from prediction.df_utils import get_ranks_tab, get_scores_tab
+from prediction.PlotHelper import PlotHelper
+from scipy.stats import chi2, f, wilcoxon
 
+from .common import filepaths
 
 tasks_to_drop = {
     'TB': 'platelet',
@@ -250,21 +251,21 @@ def run_wilcoxon_mia(graphics_folder, csv=False, greater=True, spacing=True, no_
     # path = os.path.abspath('scores/scores.csv')
     # df = pd.read_csv(path, index_col=0)
 
-    filepaths = [
-        'scores/scores.csv',
-        'scores/scores_mi_2500.csv',
-        'scores/scores_mi_10000.csv',
-        'scores/scores_mi_25000.csv',
-        'scores/scores_mi_100000.csv',
-        'scores/scores_mia_2500.csv',
-        'scores/scores_mia_10000.csv',
-        'scores/scores_mia_25000.csv',
-        'scores/scores_mia_100000.csv',
-        'scores/scores_mean+mask+bagging_2500.csv',
-        'scores/scores_mean+mask+bagging_10000.csv',
-        'scores/scores_mean+mask+bagging_25000.csv',
-        'scores/scores_mean+mask+bagging_100000.csv',
-    ]
+    # filepaths = [
+    #     'scores/scores.csv',
+    #     'scores/scores_mi_2500.csv',
+    #     'scores/scores_mi_10000.csv',
+    #     'scores/scores_mi_25000.csv',
+    #     'scores/scores_mi_100000.csv',
+    #     'scores/scores_mia_2500.csv',
+    #     'scores/scores_mia_10000.csv',
+    #     'scores/scores_mia_25000.csv',
+    #     'scores/scores_mia_100000.csv',
+    #     'scores/scores_mean+mask+bagging_2500.csv',
+    #     'scores/scores_mean+mask+bagging_10000.csv',
+    #     'scores/scores_mean+mask+bagging_25000.csv',
+    #     'scores/scores_mean+mask+bagging_100000.csv',
+    # ]
     dfs = [pd.read_csv(os.path.abspath(path), index_col=0) for path in filepaths]
     df = pd.concat(dfs, axis=0)
 
@@ -599,17 +600,17 @@ def run_friedman(graphics_folder, linear=False, csv=False, ref=None):
     # path = os.path.abspath('scores/scores.csv')
     # df = pd.read_csv(path, index_col=0)
 
-    filepaths = [
-        'scores/scores.csv',
-        'scores/scores_mi_2500.csv',
-        'scores/scores_mia_2500.csv',
-        'scores/scores_mi_10000.csv',
-        'scores/scores_mia_10000.csv',
-        'scores/scores_mia_25000.csv',
-        'scores/scores_mi_25000.csv',
-        'scores/scores_mia_100000.csv',
-        'scores/scores_mean+mask+bagging_2500.csv',
-    ]
+    # filepaths = [
+    #     'scores/scores.csv',
+    #     'scores/scores_mi_2500.csv',
+    #     'scores/scores_mia_2500.csv',
+    #     'scores/scores_mi_10000.csv',
+    #     'scores/scores_mia_10000.csv',
+    #     'scores/scores_mia_25000.csv',
+    #     'scores/scores_mi_25000.csv',
+    #     'scores/scores_mia_100000.csv',
+    #     'scores/scores_mean+mask+bagging_2500.csv',
+    # ]
     dfs = [pd.read_csv(path, index_col=0) for path in filepaths]
     df = pd.concat(dfs, axis=0)
 

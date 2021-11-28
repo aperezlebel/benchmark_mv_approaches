@@ -7,26 +7,27 @@ from prediction.PlotHelper import PlotHelper
 from .tests import tasks_to_drop, db_rename, db_order
 from prediction.df_utils import get_scores_tab, get_ranks_tab
 from custom.const import get_tab_folder
+from .common import filepaths
 
 
 def run_scores(graphics_folder, linear, csv=False, relative=True):
     # path = os.path.abspath('scores/scores.csv')
     # df = pd.read_csv(path, index_col=0)
 
-    filepaths = [
-        'scores/scores.csv',
-        'scores/scores_mi_2500.csv',
-        'scores/scores_mia_2500.csv',
-        'scores/scores_mi_10000.csv',
-        'scores/scores_mia_10000.csv',
-        'scores/scores_mia_25000.csv',
-        'scores/scores_mi_25000.csv',
-        'scores/scores_mia_100000.csv',
-        'scores/scores_mi_100000.csv',
-        'scores/scores_mean+mask+bagging_2500.csv',
-        'scores/scores_mean+mask+bagging_10000.csv',
-        'scores/scores_mean+mask+bagging_25000.csv',
-    ]
+    # filepaths = [
+    #     'scores/scores.csv',
+    #     'scores/scores_mi_2500.csv',
+    #     'scores/scores_mia_2500.csv',
+    #     'scores/scores_mi_10000.csv',
+    #     'scores/scores_mia_10000.csv',
+    #     'scores/scores_mia_25000.csv',
+    #     'scores/scores_mi_25000.csv',
+    #     'scores/scores_mia_100000.csv',
+    #     'scores/scores_mi_100000.csv',
+    #     'scores/scores_mean+mask+bagging_2500.csv',
+    #     'scores/scores_mean+mask+bagging_10000.csv',
+    #     'scores/scores_mean+mask+bagging_25000.csv',
+    # ]
     dfs = [pd.read_csv(path, index_col=0) for path in filepaths]
     df = pd.concat(dfs, axis=0)
 

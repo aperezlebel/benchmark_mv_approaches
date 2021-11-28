@@ -8,6 +8,7 @@ import seaborn as sns
 
 from custom.const import get_fig_folder
 from prediction.df_utils import aggregate
+from .common import filepaths
 
 tasks_to_drop = {
     'TB': 'platelet',
@@ -18,16 +19,16 @@ tasks_to_drop = {
 def run_breakout(graphics_folder, linear):
     # filepath = 'scores/scores.csv'
     # scores = pd.read_csv(filepath, index_col=0)
-    filepaths = [
-        'scores/scores.csv',
-        'scores/scores_mi_2500.csv',
-        'scores/scores_mia_2500.csv',
-        'scores/scores_mi_10000.csv',
-        'scores/scores_mia_10000.csv',
-        'scores/scores_mia_25000.csv',
-        'scores/scores_mi_25000.csv',
-        'scores/scores_mia_100000.csv',
-    ]
+    # filepaths = [
+    #     'scores/scores.csv',
+    #     'scores/scores_mi_2500.csv',
+    #     'scores/scores_mia_2500.csv',
+    #     'scores/scores_mi_10000.csv',
+    #     'scores/scores_mia_10000.csv',
+    #     'scores/scores_mia_25000.csv',
+    #     'scores/scores_mi_25000.csv',
+    #     'scores/scores_mia_100000.csv',
+    # ]
     dfs = [pd.read_csv(path, index_col=0) for path in filepaths]
     scores = pd.concat(dfs, axis=0)
 

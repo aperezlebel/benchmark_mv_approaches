@@ -7,6 +7,7 @@ import itertools
 
 from prediction.df_utils import get_ranks_tab, aggregate
 from custom.const import get_fig_folder, get_tab_folder
+from .common import filepaths
 
 
 tasks_to_drop = {

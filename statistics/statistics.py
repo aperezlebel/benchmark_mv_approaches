@@ -15,6 +15,7 @@ from joblib import Memory
 from prediction.tasks import tasks
 from tqdm import tqdm
 
+from .common import filepaths
 from .plot_statistics import (figure1, figure2, figure2bis, figure3,
                               plot_feature_types, plot_feature_wise_v2)
 from .tests import tasks_to_drop
@@ -745,21 +746,21 @@ def run_cor(args, graphics_folder, absolute=False, csv=False, prop_only=True):
 def run_time():
     # path = os.path.abspath('scores/scores.csv')
     # df = pd.read_csv(path, index_col=0)
-    filepaths = [
-        'scores/scores.csv',
-        'scores/scores_mi_2500.csv',
-        'scores/scores_mi_10000.csv',
-        'scores/scores_mi_25000.csv',
-        'scores/scores_mi_100000.csv',
-        'scores/scores_mia_2500.csv',
-        'scores/scores_mia_10000.csv',
-        'scores/scores_mia_25000.csv',
-        'scores/scores_mia_100000.csv',
-        'scores/scores_mean+mask+bagging_2500.csv',
-        'scores/scores_mean+mask+bagging_10000.csv',
-        'scores/scores_mean+mask+bagging_25000.csv',
-        'scores/scores_mean+mask+bagging_100000.csv',
-    ]
+    # filepaths = [
+    #     'scores/scores.csv',
+    #     'scores/scores_mi_2500.csv',
+    #     'scores/scores_mi_10000.csv',
+    #     'scores/scores_mi_25000.csv',
+    #     'scores/scores_mi_100000.csv',
+    #     'scores/scores_mia_2500.csv',
+    #     'scores/scores_mia_10000.csv',
+    #     'scores/scores_mia_25000.csv',
+    #     'scores/scores_mia_100000.csv',
+    #     'scores/scores_mean+mask+bagging_2500.csv',
+    #     'scores/scores_mean+mask+bagging_10000.csv',
+    #     'scores/scores_mean+mask+bagging_25000.csv',
+    #     'scores/scores_mean+mask+bagging_100000.csv',
+    # ]
     dfs = [pd.read_csv(path, index_col=0) for path in filepaths]
     df = pd.concat(dfs, axis=0)
 

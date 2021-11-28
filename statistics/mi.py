@@ -5,6 +5,7 @@ import seaborn as sns
 from custom.const import get_fig_folder
 from prediction.PlotHelper import PlotHelper
 
+from .common import filepaths
 from .tests import run_wilcoxon
 
 rename = {
@@ -148,21 +149,21 @@ def run_multiple_imputation(graphics_folder, n=None, bagging_only=False, linear=
     # reference_method = None if bagging_only else 'MIA'
     reference_method = 'MIA'
 
-    filepaths = [
-        'scores/scores.csv',
-        'scores/scores_mi_2500.csv',
-        'scores/scores_mi_10000.csv',
-        'scores/scores_mi_25000.csv',
-        'scores/scores_mi_100000.csv',
-        'scores/scores_mia_2500.csv',
-        'scores/scores_mia_10000.csv',
-        'scores/scores_mia_25000.csv',
-        'scores/scores_mia_100000.csv',
-        'scores/scores_mean+mask+bagging_2500.csv',
-        'scores/scores_mean+mask+bagging_10000.csv',
-        'scores/scores_mean+mask+bagging_25000.csv',
-        'scores/scores_mean+mask+bagging_100000.csv',
-    ]
+    # filepaths = [
+    #     'scores/scores.csv',
+    #     'scores/scores_mi_2500.csv',
+    #     'scores/scores_mi_10000.csv',
+    #     'scores/scores_mi_25000.csv',
+    #     'scores/scores_mi_100000.csv',
+    #     'scores/scores_mia_2500.csv',
+    #     'scores/scores_mia_10000.csv',
+    #     'scores/scores_mia_25000.csv',
+    #     'scores/scores_mia_100000.csv',
+    #     'scores/scores_mean+mask+bagging_2500.csv',
+    #     'scores/scores_mean+mask+bagging_10000.csv',
+    #     'scores/scores_mean+mask+bagging_25000.csv',
+    #     'scores/scores_mean+mask+bagging_100000.csv',
+    # ]
     dfs = [pd.read_csv(path, index_col=0) for path in filepaths]
     scores = pd.concat(dfs, axis=0)
 
