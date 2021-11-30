@@ -139,7 +139,8 @@ def get_scores_tab(scores_raw, method_order=None, db_order=None, relative=False,
     return df
 
 
-def get_ranks_tab(scores_raw, method_order=None, db_order=None, average_sizes=True, average_on_dbs=True):
+def get_ranks_tab(scores_raw, method_order=None, db_order=None, average_sizes=True,
+                  average_on_dbs=True, add_empty_methods=True):
     """Compute article ranks tab from raw scores."""
 
     df = scores_raw.copy()
@@ -158,7 +159,7 @@ def get_ranks_tab(scores_raw, method_order=None, db_order=None, average_sizes=Tr
 
     df = pd.pivot_table(df, values='rank', index=['size', 'method'], columns=['db', 'task'])
 
-    if method_order is not None:
+    if add_empty_methods and method_order is not None:
         # Add methods that have no results at specified size (eg KNN for n = 100000)
         for size, subdf in df.groupby('size'):
             for m in method_order:

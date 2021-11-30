@@ -656,7 +656,8 @@ def run_friedman(graphics_folder, linear=False, csv=False, ref=None):
         'NHIS',
     ]
 
-    df = get_ranks_tab(df, method_order=method_order, db_order=db_order, average_sizes=False)
+    df = get_ranks_tab(df, method_order=method_order, db_order=db_order,
+                       average_sizes=False, add_empty_methods=False)
     sizes = df.index.get_level_values(0).unique()
 
     ranks_by_db = df.drop('Average', level=0, axis=1)
