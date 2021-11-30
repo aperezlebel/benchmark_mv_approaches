@@ -106,4 +106,20 @@ desc:
 desc-a:
 	python main.py figs desc -a
 
-all_article:
+all-a:
+	make boxplot-a
+	make bagging-a
+	make linear-a
+	make breakout-a
+	make difficulty-a
+	make importance-a
+	make friedman-trees-a
+	make friedman-linear-a
+	make friedman-a
+	make wilcoxon-trees-a
+	make wilcoxon-linear-a
+	make wilcoxon-a
+	make scores-trees-a
+	make scores-linear-a
+	make scores-a
+	make desc-a
