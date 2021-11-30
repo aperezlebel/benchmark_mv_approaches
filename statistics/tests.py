@@ -491,7 +491,7 @@ def run_wilcoxon_linear(graphics_folder, csv=False, greater=True):
     ]
 
     df = get_scores_tab(df, method_order=method_order, db_order=db_order,
-                        average_sizes=False, formatting=False)
+                        average_sizes=False, formatting=False, add_empty_methods=False)
     sizes = df.index.get_level_values(0).unique()
 
     rows = []
