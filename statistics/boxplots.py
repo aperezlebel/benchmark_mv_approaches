@@ -3,6 +3,7 @@ import pandas as pd
 
 from custom.const import get_fig_folder
 from prediction.PlotHelper import PlotHelper
+from .tests import run_wilcoxon
 
 rename = {
     '': 'MIA',
@@ -99,8 +100,29 @@ def run_boxplot(graphics_folder, linear):
 
     scores['task'] = scores['task'].str.replace('_pvals', '_screening')
 
+    # Get Wilcoxon table for symbol annotation
+    W_test = run_wilcoxon(graphics_folder=None, spacing=False, no_rename=True)
+
+    symbols = {}
+
+    def pvalue_to_symbol(pvalue, alpha, n_bonferroni):
+        if pvalue < alpha/n_bonferroni:
+            return '$\\star\\star$'
+        if pvalue < alpha:
+            return '$\\star$'
+        return None
+
+    alpha = 0.05
+    n_bonferroni = W_test.shape[0]
+
+    for size in W_test:
+        symbols[size] = {k: pvalue_to_symbol(v, alpha, n_bonferroni) for k, v in W_test[size].iteritems()}
+        symbols[size]['MIA'] = '$\\rightarrow$'
+
     if linear:
-        fig = PlotHelper.plot_MIA_linear(scores, db_order=db_order, method_order=linear_method_order, rename=rename_on_plot)
+        fig = PlotHelper.plot_MIA_linear(
+            scores, db_order=db_order, method_order=linear_method_order,
+            rename=rename_on_plot, symbols=symbols)
         xticks = {
             1/50: '$\\frac{1}{50}\\times$',
             1/10: '$\\frac{1}{10}\\times$',
@@ -109,16 +131,23 @@ def run_boxplot(graphics_folder, linear):
             3: '$3\\times$',
             10: '$10\\times$',
         }
-        fig_time = PlotHelper.plot_times(scores, 'PT', xticks_dict=xticks, xlims=(0.005, 15), method_order=linear_method_order, db_order=db_order, rename=rename_on_plot, linear=linear)
+        fig_time = PlotHelper.plot_times(
+            scores, 'PT', xticks_dict=xticks, xlims=(0.005, 15),
+            method_order=linear_method_order, db_order=db_order,
+            rename=rename_on_plot, linear=linear)
 
     else:
-        fig = PlotHelper.plot_scores(scores, method_order=method_order, db_order=db_order, rename=rename_on_plot, reference_method=None)
+        fig = PlotHelper.plot_scores(
+            scores, method_order=method_order, db_order=db_order,
+            rename=rename_on_plot, reference_method=None, symbols=symbols)
         xticks = {
             2/3: '$\\frac{2}{3}\\times$',
             1: '$1\\times$',
             3/2: '$\\frac{3}{2}\\times$',
         }
-        fig_time = PlotHelper.plot_times(scores, 'PT', xticks_dict=xticks, method_order=method_order, db_order=db_order, rename=rename_on_plot, linear=linear)
+        fig_time = PlotHelper.plot_times(
+            scores, 'PT', xticks_dict=xticks, method_order=method_order,
+            db_order=db_order, rename=rename_on_plot, linear=linear)
 
     fig_folder = get_fig_folder(graphics_folder)
 

@@ -154,5 +154,5 @@ def bmi_task(**kwargs):
 
 task_metas = {
     'income_pvals': income_task,
-    'bmi_pvals': bmi_task,
+    # 'bmi_pvals': bmi_task,
 }

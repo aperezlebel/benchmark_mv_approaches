@@ -11,6 +11,7 @@ import pandas as pd
 import seaborn as sns
 import yaml
 from sklearn.metrics import r2_score, roc_auc_score
+from mpl_toolkits.axes_grid1 import make_axes_locatable
 
 from prediction.df_utils import aggregate, assert_equal, get_ranks_tab
 
@@ -379,11 +380,18 @@ class PlotHelper(object):
                     r_subpath = subpath.replace('/', '_')
                     shutil.copyfile(df_path, dump_dir+r_subpath)
 
-    def dump(self, filepath):
+    def dump(self, filepath, n=None):
         """Scan results in result_folder and compute scores."""
         existing_sizes = self.existing_sizes()
+        if n is not None and str(n) not in existing_sizes:
+            raise ValueError(f'Asked n={n} not in existing sizes: {existing_sizes}')
+        elif n is not None:
+            sizes = [str(n)]
+        else:
+            sizes = existing_sizes
+
         rows = []
-        for i, size in enumerate(existing_sizes):
+        for i, size in enumerate(sizes):
             for db in self.databases():
                 for t in self.tasks(db):
                     methods = self.availale_methods_by_size(db, t, size)
@@ -550,7 +558,9 @@ class PlotHelper(object):
     @staticmethod
     def _plot(filepath, value, how, xticks_dict=None, xlims=None, db_order=None,
               method_order=None, rename=dict(), reference_method=None,
-              figsize=None, legend_bbox=None, xlabel=None):
+              figsize=None, legend_bbox=None, xlabel=None, symbols=None, comments=None,
+              only_full_samples=True, y_labelsize=18, broken_axis=None, comments_align=None,
+              comments_spacing=0.025, colors=None, ref_vline=None, non_ref_vline=False):
         """Plot the full available results."""
         if not isinstance(filepath, pd.DataFrame):
             df = pd.read_csv(filepath, index_col=0)
@@ -604,12 +614,12 @@ class PlotHelper(object):
 
         matplotlib.rcParams.update({
             'font.size': 10,
-            'legend.fontsize': 12,
-            'legend.title_fontsize': 14,
-            'axes.titlesize': 18,
+            'legend.fontsize': 16,
+            'legend.title_fontsize': 18,
+            'axes.titlesize': 20,
             'axes.labelsize': 18,
-            'xtick.labelsize': 12,
-            'ytick.labelsize': 18,
+            'xtick.labelsize': 16,
+            'ytick.labelsize': y_labelsize,
             # 'mathtext.fontset': 'stixsans',
             'font.family': 'STIXGeneral',
             'text.usetex': True,
@@ -626,6 +636,9 @@ class PlotHelper(object):
             top=0.95,
             wspace=0.05
         )
+
+        if n_sizes == 1:
+            axes = [axes]
 
         markers = ['o', '^', 'v', 's']
         renamed_db_order = [PlotHelper.rename_str(rename, db) for db in db_order]
@@ -700,8 +713,74 @@ class PlotHelper(object):
         # Uncomment this line to use same xlims constraint for all subplots
         # xlim_min, xlim_max, xticks, xtick_labels = xticks_params(df[f'relative_{value}'], xticks_dict=xticks_dict)
 
+        if broken_axis is not None:
+            axes_bg, axes_left, axes_right = [], [], []
+
         for i, size in enumerate(sizes):
             ax = axes[i]
+
+            ax_bg = ax
+            # ax_bg.axis('off')
+            # break
+            if broken_axis is not None:
+                divider = make_axes_locatable(ax)
+                # ax_right = divider.new_horizontal(size="2000%", pad=0.01)
+                # ax = divider.new_horizontal(size="2000%", pad=0.01, pack_start=True)
+                # ax.axis('off')
+                # ax_bg.axis('off')
+                ax_bg.spines['right'].set_visible(False)
+                ax_bg.spines['bottom'].set_visible(False)
+                ax_bg.spines['top'].set_visible(False)
+                ax_bg.spines['left'].set_visible(False)
+                ax_bg.tick_params(bottom=False, left=False, labelleft=False)#, labelbottom=False)
+                ax_bg.xaxis.set_ticks([0, 1])
+                ax_bg.xaxis.set_ticklabels([' ', ' '])
+                # ax_bg.set_xticks(xticks, minor=False)
+                ax_bg.set_xticklabels([' ', ' '], minor=False)
+                ax_right = divider.append_axes('right', size='2000%', pad=0.0)
+                ax_left = divider.append_axes('left', size='2000%', pad=0.0)
+                fig.add_axes(ax_right)
+                # fig.add_axes(ax)
+                fig.add_axes(ax_left)
+                ax = ax_left
+                ax_left.spines['right'].set_visible(False)
+                ax_right.spines['left'].set_visible(False)
+                ax_right.tick_params(left=False, labelleft=False)
+
+                axes_bg.append(ax_bg)
+                axes_left.append(ax_left)
+                axes_right.append(ax_right)
+
+                d = .01  # how big to make the diagonal lines in axes coordinates
+                # arguments to pass to plot, just so we don't keep repeating them
+                kwargs = dict(transform=ax_right.transAxes, color='k', clip_on=False)
+                ax_right.plot((-d, +d), (-d, +d), **kwargs)        # top-left diagonal
+                kwargs = dict(transform=ax_left.transAxes, color='k', clip_on=False)
+                ax_left.plot((1 - d, 1 + d), (-d, +d), **kwargs)  # top-right diagonal
+
+                kwargs.update(transform=ax_right.transAxes)  # switch to the bottom axes
+                ax_right.plot((-d, +d), (1 - d, 1 + d), **kwargs)  # bottom-left diagonal
+                kwargs.update(transform=ax_left.transAxes)  # switch to the bottom axes
+                ax_left.plot((1 - d, 1 + d), (1 - d, 1 + d), **kwargs)  # bottom-right diagonal
+
+                # ax_left.axis('off')
+                # ax_right.axis('off')
+                # ax_bg.axis('off')
+
+                # ax_left.spines['right'].set_visible(False)
+                # ax_left.spines['bottom'].set_visible(False)
+                # ax_left.spines['top'].set_visible(False)
+                # ax_left.spines['left'].set_visible(False)
+
+                # ax_right.spines['right'].set_visible(False)
+                # ax_right.spines['bottom'].set_visible(False)
+                # ax_right.spines['top'].set_visible(False)
+                # ax_right.spines['left'].set_visible(False)
+
+                # locator = divider.new_locator(nx=0, ny=1)
+                # ax.set_axes_locator(locator)
+
+            # break
 
             # Select the rows of interest
             subdf = df[df['size'] == size]
@@ -709,10 +788,15 @@ class PlotHelper(object):
             # Split in valid and invalid data
             # idx_valid = subdf.index[(subdf['selection'] == 'manual') | (
             #     (subdf['selection'] != 'manual') & (subdf['n_trials'] == 5))]
-            idx_valid = subdf.index[subdf['n_folds'] == 25]
-            idx_invalid = subdf.index.difference(idx_valid)
-            df_valid = subdf.loc[idx_valid]
-            df_invalid = subdf.loc[idx_invalid]
+            if only_full_samples:
+                idx_valid = subdf.index[subdf['n_folds'] == 25]
+                idx_invalid = subdf.index.difference(idx_valid)
+                df_valid = subdf.loc[idx_valid]
+                df_invalid = subdf.loc[idx_invalid]
+
+            else:
+                df_valid = subdf
+                df_invalid = pd.DataFrame(columns=subdf.columns)
 
             # Update parameters for plotting invalids
             dbs_having_invalids = list(df_invalid['Database'].unique())
@@ -724,21 +808,56 @@ class PlotHelper(object):
             twinx.set_ylim(0, n_methods)
             twinx.yaxis.set_visible(False)
 
+            if broken_axis is not None:
+                twinx_right = ax_right.twinx()
+                twinx_right.set_ylim(0, n_methods)
+                twinx_right.yaxis.set_visible(False)
+                twinx_right.spines['left'].set_visible(False)
+                twinx.spines['right'].set_visible(False)
+                twinx_right.tick_params(left=False, labelleft=False)
+
             # Add gray layouts in the background every other rows
             for k in range(0, n_methods, 2):
                 ax.axhspan(k-0.5, k+0.5, color='.93', zorder=0)
+                if broken_axis is not None:
+                    ax_right.axhspan(k-0.5, k+0.5, color='.93', zorder=0)
+                    ax_bg.axhspan(k-0.5, k+0.5, color='.93', zorder=0)
+                    ax_bg.set_ylim(-0.5-((n_methods+1) % 2), n_methods-0.5-((n_methods+1) % 2))
 
             mid = 1 if how == 'log' else 0
             ax.axvline(mid, ymin=0, ymax=n_methods, color='gray', zorder=0)
+            if broken_axis is not None:
+                ax.axvline(mid, ymin=0, ymax=n_methods, color='gray', zorder=0)
 
             # Build the color palette for the boxplot
-            paired_colors = sns.color_palette('Paired').as_hex()
-            boxplot_palette = sns.color_palette(['#525252']+paired_colors)
+            if colors is None:
+                paired_colors = sns.color_palette('Paired').as_hex()
+                # del paired_colors[10]
+                paired_colors[10] = sns.color_palette("Set2").as_hex()[5]
+                boxplot_palette = sns.color_palette(['#525252']+paired_colors)
+
+            else:
+                boxplot_palette = sns.color_palette(colors)
+
+            # Add axvline for reference method
+            if ref_vline is not None:
+                ref_med = df_valid.query('method == @ref_vline')[f'relative_{value}'].median()
+                ax.axvline(ref_med, ymin=0, ymax=n_methods, color='gray', zorder=0, ls='--', lw=1)
+
+            # Add mean of methods other than reference
+            if non_ref_vline:
+                non_ref_mean = df_valid.query('method != @ref_vline and method != "MI" and method != "MI+mask" and method != "MIA+mask"')[f'relative_{value}'].median()
+                ax.axvline(non_ref_mean, ymin=0, ymax=n_methods, color='gray', zorder=0, ls='--', lw=1)
 
             # Boxplot
             sns.set_palette(boxplot_palette)
             sns.boxplot(x=f'relative_{value}', y='method', data=df_valid, orient='h',
                         ax=ax, order=method_order, showfliers=False)
+            if broken_axis is not None:
+                sns.boxplot(x=f'relative_{value}', y='method', data=df_valid, orient='h',
+                            ax=ax_right, order=method_order, showfliers=False)
+                # sns.boxplot(x=f'relative_{value}', y='method', data=df_valid, orient='h',
+                #             ax=ax_bg, order=method_order, showfliers=False)
 
             # Scatter plot for valid data points
             sns.set_palette(sns.color_palette('colorblind'))
@@ -749,9 +868,26 @@ class PlotHelper(object):
                                  markers=db_markers,
                                  s=75,
                                  )
+            if broken_axis is not None:
+                g2_2 = sns.scatterplot(x=f'relative_{value}', y='y', hue='Database',
+                                     data=df_valid, ax=twinx_right,
+                                     hue_order=renamed_db_order,
+                                     style='Database',
+                                     markers=db_markers,
+                                     s=75,
+                                     )
 
             if legend_bbox:
-                g2.legend(loc='upper left', bbox_to_anchor=legend_bbox, ncol=1, title='Database')
+                # g2.legend(loc='upper left', bbox_to_anchor=legend_bbox, ncol=1, title='Database')
+                handles, labels = g2.get_legend_handles_labels()
+                r = matplotlib.patches.Rectangle((0,0), 1, 1, fill=False, edgecolor='none',
+                                 visible=False)
+                handles = [r] + handles
+                labels = ['\\textbf{{Database}}'] + labels
+                # g2.legend(loc='lower center', bbox_to_anchor=legend_bbox, ncol=4, title='\\textbf{{Database}}')
+                # g2.get_legend().get_title().set_position((-250, -20))
+                g2.legend(loc='lower center', bbox_to_anchor=legend_bbox, ncol=5, handles=handles, labels=labels)
+                # g2.legend(loc='lower center', bbox_to_anchor=legend_bbox, ncol=4, title='Database')
 
             # Scatter plot for invalid data points
             if n_dbs_invalid > 0:
@@ -768,10 +904,17 @@ class PlotHelper(object):
 
             if not legend_bbox and i < len(sizes)-1:
                 twinx.get_legend().remove()
+                if broken_axis is not None:
+                    twinx_right.get_legend().remove()
 
             elif legend_bbox and i > 0:
                 twinx.get_legend().remove()
 
+            if broken_axis is not None:
+                twinx_right.get_legend().remove()
+
+            if broken_axis is not None:
+                ax_right.yaxis.set_visible(False)
 
             if i > 0:  # if not the first axis
                 ax.yaxis.set_visible(False)
@@ -781,10 +924,17 @@ class PlotHelper(object):
                 labels = [item.get_text() for item in ax.get_yticklabels()]
                 r_labels = [PlotHelper.rename_str(rename, l) for l in labels]
                 ax.set_yticklabels(r_labels)
+                # ax.text(1.1, 1.1, '\\textbf{{Database}}', fontsize='x-large', ha='left', va='center', transform=ax.transAxes, zorder=10)
+                # if broken_axis is not None:
+                #     ax_right.set_yticklabels(r_labels)
 
             if how == 'log':
                 ax.set_xscale('log')
                 twinx.set_xscale('log')
+
+                if broken_axis is not None:
+                    ax_right.set_xscale('log')
+                    twinx_right.set_xscale('log')
 
             # Comment this line to use same xlims constraint for all subplots
             xlim_min, xlim_max, xticks, xtick_labels = xticks_params(subdf[f'relative_{value}'], xticks_dict=xticks_dict)
@@ -805,15 +955,109 @@ class PlotHelper(object):
             ax.set_xlim(left=xlim_min, right=xlim_max)
             # twinx.set_xlim(left=xlim_min, right=xlim_max)
 
-            ax.set_title(f'n={size}')
+            if broken_axis is not None:
+                if xtick_labels is not None:
+                    xlim = ax_right.get_xlim()
+                    ax_right.set_xticks(xticks, minor=False)
+                    ax_right.set_xticklabels(xtick_labels, minor=False)
+                    ax_right.xaxis.set_minor_locator(matplotlib.ticker.NullLocator())
+                    ax_right.set_xlim(xlim)
+
+                    xlim = twinx_right.get_xlim()
+                    twinx_right.set_xticks(xticks, minor=False)
+                    twinx_right.set_xticklabels(xtick_labels, minor=False)
+                    twinx_right.xaxis.set_minor_locator(matplotlib.ticker.NullLocator())
+                    twinx_right.set_xlim(xlim)
+
+                else:
+                    ax_right.set_xticks(xticks)
+                    twinx_right.set_xticks(xticks)
+
+                ax.set_xlim(left=xlim_min, right=xlim_max)
+
+            ax_bg.set_title(f'n={size:,d}'.replace(',', '\\,'))
             if xlabel is None:
                 xlabel = ax.get_xlabel()
-            ax.set_xlabel(PlotHelper.rename_str(rename, xlabel))
+            ax_bg.set_xlabel(PlotHelper.rename_str(rename, xlabel))
             ax.set_ylabel(None)
             ax.set_axisbelow(True)
             ax.grid(True, axis='x')
+            if broken_axis is not None:
+                if xlabel is None:
+                    xlabel = ax_right.get_xlabel()
+                # ax_right.set_xlabel(PlotHelper.rename_str(rename, xlabel))
+                ax_right.set_xlabel(None)
+                ax_left.set_xlabel(None)
+                ax_right.set_ylabel(None)
+                ax_right.set_axisbelow(True)
+                ax_right.grid(True, axis='x')
 
-        return fig, axes
+            if broken_axis is not None:
+                xlim = ax.get_xlim()
+                xlim2 = ax_right.get_xlim()
+                if isinstance(broken_axis, list):
+                    ba_lims = broken_axis[i]
+                else:
+                    ba_lims = broken_axis
+                ax.set_xlim((xlim[0], ba_lims[0]))
+                ax_right.set_xlim((ba_lims[1], xlim2[1]))
+
+                ax_bg.set_ylim(ax.get_ylim())
+
+            # break
+
+            # Optionally adds symbols on each line (for significance)
+            if symbols is not None:
+                method_symbols = symbols.get(size, None)
+                if method_symbols is None:
+                    continue
+
+                xmin, xmax = ax.get_xlim()
+                ax.set_xlim((xmin - 0.08*(xmax - xmin), xmax))
+
+                for i, method in enumerate(method_order):
+                    symbol = method_symbols.get(method, None)
+
+                    if symbol is None:
+                        continue
+
+                    ax.annotate(symbol, xy=(0.025, 1-(i+0.5)/n_methods), color='black',
+                                xycoords='axes fraction', fontsize='x-large', va='center')
+
+            # Optionally adds comments on each line (for untractable)
+            if comments is not None:
+                method_comments = comments.get(size, None)
+                if method_comments is None:
+                    continue
+
+                for m, method in enumerate(method_order):
+                    comment = method_comments.get(method, None)
+
+                    if comment is None:
+                        continue
+
+                    x = comments_spacing
+                    ha = 'left'
+                    ax_comment = ax_left if broken_axis is not None else ax_bg
+                    if comments_align is not None:
+                        if isinstance(comments_align, dict):
+                            align = comments_align[i][m]
+                        else:
+                            align = comments_align[m]
+
+                        if align == 'right':
+                            x = 1 - comments_spacing
+                            ha = 'right'
+                            ax_comment = ax_right if broken_axis is not None else ax_bg
+
+                    ax_comment.text(x, 1-(m+0.5)/n_methods, comment,
+                                    color='.4', fontsize='x-large', ha=ha,
+                                    va='center', transform=ax_comment.transAxes)
+
+        if broken_axis is not None:
+            return fig, axes_bg, axes_left, axes_right
+
+        return fig, axes, None, None
 
     @staticmethod
     def mean_rank(filepath, method_order=None):
@@ -965,18 +1209,28 @@ class PlotHelper(object):
 
     @staticmethod
     def plot_scores(filepath, db_order=None, method_order=None, rename=dict(),
-                    reference_method=None,):
+                    reference_method=None, symbols=None, comments=None, only_full_samples=True,
+                    legend_bbox=(4.22, 1.075), figsize=(18, 5.25), table_fontsize=13,
+                    y_labelsize=18, pos_arrow=None, w_bag=None, w_const=None,
+                    w_cond=None, colors=None, hline_pos=None, ref_vline=None):
         if not isinstance(filepath, pd.DataFrame):
             scores = pd.read_csv(filepath, index_col=0)
         else:
             scores = filepath
 
-        fig, axes = PlotHelper._plot(scores, 'score', how='no-norm',
-                                       method_order=method_order,
-                                       db_order=db_order, rename=rename,
-                                       reference_method=reference_method,
-                                       figsize=(18, 5.25),
-                                       legend_bbox=(4.22, 1.075))
+        fig, axes, _, _ = PlotHelper._plot(scores, 'score', how='no-norm',
+                                           method_order=method_order,
+                                           db_order=db_order, rename=rename,
+                                           reference_method=reference_method,
+                                           figsize=figsize,
+                                           legend_bbox=legend_bbox,
+                                           symbols=symbols,
+                                           comments=comments,
+                                           only_full_samples=only_full_samples,
+                                           y_labelsize=y_labelsize,
+                                           colors=colors,
+                                           ref_vline=ref_vline,
+                                           )
 
         df_ranks = get_ranks_tab(scores, method_order=method_order, db_order=db_order, average_sizes=True)
 
@@ -986,45 +1240,113 @@ class PlotHelper(object):
         cellText = np.transpose([list(global_avg_ranks.astype(str))])
         rowLabels = list(global_avg_ranks.index)
         rowLabels = [PlotHelper.rename_str(rename, s) for s in rowLabels]
+        n_methods = cellText.shape[0]
+        cellColours = [['white']]*n_methods
+        for i in range(0, n_methods, 2):
+            cellColours[i] = ['.93']
 
         table = axes[-1].table(cellText=cellText, loc='right',
-                       rowLabels=rowLabels,
-                       colLabels=['Mean\nrank'],
-                       bbox=[1.32, -0.11, .19, .87],
-                    #    bbox=[1.3, 0, .2, .735],
-                       colWidths=[0.2],
-                       )
-        table.set_fontsize(13)
+                               rowLabels=None,
+                               colLabels=['Mean\nrank'],
+                            #    bbox=[1.32, -0.11, .19, .87],
+                               bbox=[1.02, 0, .14, (n_methods+1)/n_methods],
+                               #    bbox=[1.3, 0, .2, .735],
+                               colWidths=[0.14],
+                               cellColours=cellColours,
+                               )
+        table.set_fontsize(table_fontsize)
+
+        n_methods = 9 if method_order is None else len(method_order)
 
         # Add brackets
         ax = axes[0]
-        fs = 18
-        lw = 1.3
-        dh = 1./9
-        l_tail = 0.03
-        pos_arrow = -0.3
-        # Here is the label and arrow code of interest
-        ax.annotate('Constant\nimputation\n\n', xy=(pos_arrow, 6*dh), xytext=(pos_arrow-l_tail, 6*dh), xycoords='axes fraction',
-                    fontsize=fs, ha='center', va='center',
-                    bbox=None,#dict(boxstyle='square', fc='white'),
-                    arrowprops=dict(arrowstyle=f'-[, widthB={70/fs}, lengthB=0.5', lw=lw),
-                    rotation=90,
-                    )
 
-        ax.annotate('Conditional\nimputation\n\n', xy=(pos_arrow, 2*dh), xytext=(pos_arrow-l_tail, 2*dh), xycoords='axes fraction',
-                    fontsize=fs, ha='center', va='center',
-                    bbox=None,#dict(boxstyle='square', fc='white'),
-                    arrowprops=dict(arrowstyle=f'-[, widthB={70/fs}, lengthB=0.5', lw=lw),
-                    rotation=90,
-                    )
+        w_bag = 45 if w_bag is None else w_bag
+        n_bag = 1.5
+        bag_subsize = 'small'
+
+        l_tail = 0.03
+        dh = 1./n_methods
+        lw = 1.3
+        fs = 18
+
+        if n_methods <= 8:
+            w_const = 70 if w_const is None else w_const
+            w_cond = 70 if w_cond is None else w_cond
+            w_bag = 110 if w_bag is None else w_bag
+            pos_arrow = -0.94 if pos_arrow is None else pos_arrow
+            n_cond = None
+            n_const = None
+            n_bag = 1.5
+            bag_subsize = 'Large'
+        if n_methods == 9:
+            w_const = 70 if w_const is None else w_const
+            w_cond = 70 if w_cond is None else w_cond
+            pos_arrow = -0.3 if pos_arrow is None else pos_arrow
+            n_cond = 2
+            n_const = 6
+        elif n_methods == 10:
+            w_const = 55 if w_const is None else w_const
+            w_cond = 70 if w_cond is None else w_cond
+            pos_arrow = -0.3 if pos_arrow is None else pos_arrow
+            n_cond = 3
+            n_const = 7
+        elif n_methods == 11:
+            w_const = 55 if w_const is None else w_const
+            w_cond = 86 if w_cond is None else w_cond
+            pos_arrow = -0.3 if pos_arrow is None else pos_arrow
+            n_cond = 3
+            n_const = 8
+        elif n_methods == 12:
+            w_const = 60 if w_const is None else w_const
+            w_cond = 60 if w_cond is None else w_cond
+            w_bag = 45 if w_bag is None else w_bag
+            pos_arrow = -0.74 if pos_arrow is None else pos_arrow
+            n_cond = 5
+            n_const = 9
+            n_bag = 1.5
+
+        # Here is the label and arrow code of interest
+        if n_const is not None:
+            ax.annotate('Constant\nimputation\n\n', xy=(pos_arrow, n_const*dh), xytext=(pos_arrow-l_tail, n_const*dh), xycoords='axes fraction',
+                        fontsize=fs, ha='center', va='center',
+                        bbox=None,#dict(boxstyle='square', fc='white'),
+                        arrowprops=dict(arrowstyle=f'-[, widthB={w_const/fs}, lengthB=0.5', lw=lw),
+                        rotation=90,
+                        )
+
+        if n_cond is not None:
+            ax.annotate('Conditional\nimputation\n\n', xy=(pos_arrow, n_cond*dh), xytext=(pos_arrow-l_tail, n_cond*dh), xycoords='axes fraction',
+                        fontsize=fs, ha='center', va='center',
+                        bbox=None,#dict(boxstyle='square', fc='white'),
+                        arrowprops=dict(arrowstyle=f'-[, widthB={w_cond/fs}, lengthB=0.5', lw=lw),
+                        rotation=90,
+                        )
+
+        if w_bag != 0:
+            ax.annotate(f'Bagging\n\\{bag_subsize}{{(multiple imputation)}}\n\n', xy=(pos_arrow, n_bag*dh), xytext=(pos_arrow-l_tail, n_bag*dh), xycoords='axes fraction',
+                        fontsize=fs, ha='center', va='center',
+                        bbox=None,#dict(boxstyle='square', fc='white'),
+                        arrowprops=dict(arrowstyle=f'-[, widthB={w_bag/fs}, lengthB=0.5', lw=lw),
+                        rotation=90,
+                        )
 
         plt.subplots_adjust(right=.88)
+
+        if hline_pos is not None:
+            for ax in axes:
+                for pos in hline_pos:
+                    ax.axhline(pos-0.5, color='black', lw=1)
 
         return fig
 
     @staticmethod
     def plot_times(filepath, which, xticks_dict=None, xlims=None, db_order=None,
-                   method_order=None, rename=dict(), reference_method=None, linear=False):
+                   method_order=None, rename=dict(), reference_method=None,
+                   linear=False, only_full_samples=True, y_labelsize=18, comments=None, figsize=(18, 5.25),
+                   legend_bbox=(4.22, 1.075), broken_axis=None, comments_align=None, comments_spacing=0.025,
+                   table_fontsize=13, pos_arrow=None, w_bag=None, w_const=None,
+                   w_cond=None, colors=None, hline_pos=None, non_ref_vline=False):
         if not isinstance(filepath, pd.DataFrame):
             scores = pd.read_csv(filepath, index_col=0)
         else:
@@ -1038,40 +1360,167 @@ class PlotHelper(object):
             value = 'total_WCT'
         else:
             raise ValueError(f'Unknown argument {which}')
-        fig, axes = PlotHelper._plot(scores, value, how='log',
-                                    xticks_dict=xticks_dict,
-                                    xlims=xlims,
-                                    method_order=method_order,
-                                    db_order=db_order, rename=rename,
-                                    reference_method=reference_method,
-                                    figsize=(18, 5.25))
+        fig, axes_bg, axes_left, axes_right = PlotHelper._plot(scores, value, how='log',
+                                     xticks_dict=xticks_dict,
+                                     xlims=xlims,
+                                     method_order=method_order,
+                                     db_order=db_order, rename=rename,
+                                     reference_method=reference_method,
+                                     figsize=figsize,
+                                     only_full_samples=only_full_samples,
+                                     y_labelsize=y_labelsize,
+                                     comments=comments,
+                                     legend_bbox=legend_bbox,
+                                     broken_axis=broken_axis,
+                                     comments_align=comments_align,
+                                     comments_spacing=comments_spacing,
+                                     colors=colors,
+                                     non_ref_vline=non_ref_vline,
+                                     )
+
+        # df_ranks = get_ranks_tab(scores, method_order=method_order, db_order=db_order, average_sizes=True)
+
+        # global_avg_ranks = df_ranks[('Average', 'All')].loc['Average']
+        # argmin = global_avg_ranks.argmin()
+        # global_avg_ranks.iloc[argmin] = f"\\textbf{{{global_avg_ranks.iloc[argmin]}}}"
+
+        times = scores.groupby(['method']).aggregate({'tuning_PT': 'sum'})
+        # print(times)
+        cellText = [f'{int(times.loc[m]/3600/24):,d}'.replace(',', '\,') for m in method_order]
+        # print(cellText)
+        # exit()
+
+        cellText = np.transpose([cellText])
+        # cellText = np.transpose([list(global_avg_ranks.astype(str))])
+        rowLabels = method_order
+        rowLabels = [PlotHelper.rename_str(rename, s) for s in rowLabels]
+        n_methods = len(cellText)
+        cellColours = [['white']]*n_methods
+        for i in range(0, n_methods, 2):
+            cellColours[i] = ['.93']
+
+        axes_table = axes_bg if broken_axis is None else axes_right
+
+        if broken_axis:
+            bbox = [1.042, 0, .28, (n_methods+1)/n_methods]
+            colWidths = [0.28]
+
+        else:
+            bbox = [1.02, 0, .14, (n_methods+1)/n_methods]
+            colWidths = [0.14]
+
+        table = axes_table[-1].table(cellText=cellText, loc='right',
+                               rowLabels=None,
+                               colLabels=['CPU\ndays'],
+                               bbox=bbox,
+                               colWidths=colWidths,
+                               cellColours=cellColours,
+                               )
+        table.set_fontsize(table_fontsize)
 
         # Add brackets
-        ax = axes[0]
-        fs = 18
-        lw = 1.3
-        dh = 1./9
+        # fs = 18
+        # lw = 1.3
+        # dh = 1./9
+        # l_tail = 0.03
+        n_methods = 9 if method_order is None else len(method_order)
+
+        w_bag = 45 if w_bag is None else w_bag
+        n_bag = 1.5
+        bag_subsize = 'small'
+
         l_tail = 0.03
-        pos_arrow = -0.4 if linear else -0.26
+        dh = 1./n_methods
+        lw = 1.3
+        fs = 18
+
+        if n_methods <= 8:
+            w_const = 70 if w_const is None else w_const
+            w_cond = 70 if w_cond is None else w_cond
+            w_bag = 110 if w_bag is None else w_bag
+            n_cond = 2
+            n_const = 6
+            pos_arrow = -1.84 if pos_arrow is None else pos_arrow
+            n_cond = None
+            n_const = None
+            n_bag = 1.5
+            bag_subsize = 'Large'
+        if n_methods == 9:
+            w_const = 70 if w_const is None else w_const
+            w_cond = 70 if w_cond is None else w_cond
+            pos_arrow = -0.3 if pos_arrow is None else pos_arrow
+            n_cond = 2
+            n_const = 6
+        elif n_methods == 10:
+            w_const = 55 if w_const is None else w_const
+            w_cond = 70 if w_cond is None else w_cond
+            pos_arrow = -0.3 if pos_arrow is None else pos_arrow
+            n_cond = 3
+            n_const = 7
+        elif n_methods == 11:
+            w_const = 55 if w_const is None else w_const
+            w_cond = 86 if w_cond is None else w_cond
+            pos_arrow = -0.3 if pos_arrow is None else pos_arrow
+            n_cond = 3
+            n_const = 8
+        elif n_methods == 12:
+            w_const = 60 if w_const is None else w_const
+            w_cond = 60 if w_cond is None else w_cond
+            w_bag = 45 if w_bag is None else w_bag
+            pos_arrow = -1.575 if pos_arrow is None else pos_arrow
+            n_cond = 5
+            n_const = 9
+            n_bag = 1.5
+
+        ax = axes_bg[0] if broken_axis is None else axes_left[0]
+
         # Here is the label and arrow code of interest
-        ax.annotate('Constant\nimputation\n\n', xy=(pos_arrow, 6*dh), xytext=(pos_arrow-l_tail, 6*dh), xycoords='axes fraction',
-                    fontsize=fs, ha='center', va='center',
-                    bbox=None,#dict(boxstyle='square', fc='white'),
-                    arrowprops=dict(arrowstyle=f'-[, widthB={70/fs}, lengthB=0.5', lw=lw),
-                    rotation=90,
+        if n_const is not None:
+            ax.annotate('Constant\nimputation\n\n', xy=(pos_arrow, n_const*dh), xytext=(pos_arrow-l_tail, n_const*dh), xycoords='axes fraction',
+                        fontsize=fs, ha='center', va='center',
+                        bbox=None,#dict(boxstyle='square', fc='white'),
+                        arrowprops=dict(arrowstyle=f'-[, widthB={w_const/fs}, lengthB=0.5', lw=lw),
+                        rotation=90,
+                        )
+
+        if n_cond is not None:
+            ax.annotate('Conditional\nimputation\n\n', xy=(pos_arrow, n_cond*dh), xytext=(pos_arrow-l_tail, n_cond*dh), xycoords='axes fraction',
+                        fontsize=fs, ha='center', va='center',
+                        bbox=None,#dict(boxstyle='square', fc='white'),
+                        arrowprops=dict(arrowstyle=f'-[, widthB={w_cond/fs}, lengthB=0.5', lw=lw),
+                        rotation=90,
+                        )
+
+        if w_bag != 0:
+            ax.annotate(f'Bagging\n\\{bag_subsize}{{(multiple imputation)}}\n\n', xy=(pos_arrow, n_bag*dh), xytext=(pos_arrow-l_tail, n_bag*dh), xycoords='axes fraction',
+                        fontsize=fs, ha='center', va='center',
+                        bbox=None,#dict(boxstyle='square', fc='white'),
+                        arrowprops=dict(arrowstyle=f'-[, widthB={w_bag/fs}, lengthB=0.5', lw=lw),
+                        rotation=90,
+                        )
+
+        # Add arrow on top right comment
+        ax = axes_bg[-1] if broken_axis is None else axes_right[-1]
+        xpos = 0.7 if broken_axis is not None else 0.85
+        ypos = 0.94 if n_methods < 7 else 0.964
+        ax.annotate('Mean time\nper task', xy=(xpos, ypos), xytext=(xpos, 1.1),
+                    xycoords='axes fraction', ha='center', va='center',
+                    fontsize=fs,
+                    arrowprops=dict(arrowstyle=f'->', lw=1, color='gray'),
                     )
 
-        ax.annotate('Conditional\nimputation\n\n', xy=(pos_arrow, 2*dh), xytext=(pos_arrow-l_tail, 2*dh), xycoords='axes fraction',
-                    fontsize=fs, ha='center', va='center',
-                    bbox=None,#dict(boxstyle='square', fc='white'),
-                    arrowprops=dict(arrowstyle=f'-[, widthB={70/fs}, lengthB=0.5', lw=lw),
-                    rotation=90,
-                    )
+        if hline_pos is not None:
+            for axes in [axes_bg, axes_left, axes_right]:
+                if axes is None:
+                    continue
+                for ax in axes:
+                    for pos in hline_pos:
+                        ax.axhline(pos-0.5, color='black', lw=1)
 
         return fig
 
     @staticmethod
-    def plot_MIA_linear(filepath, db_order, method_order, rename=dict()):
+    def plot_MIA_linear(filepath, db_order, method_order, rename=dict(), symbols=None):
         if not isinstance(filepath, pd.DataFrame):
             scores = pd.read_csv(filepath, index_col=0)
         else:
@@ -1100,6 +1549,7 @@ class PlotHelper(object):
                                        #    figsize=(17, 3.25),
                                        figsize=(18, 5.25),
                                        legend_bbox=(4.30, 1.075),
+                                       symbols=symbols,
                                        )
 
         df_ranks = get_ranks_tab(scores, method_order=method_order, db_order=db_order, average_sizes=True)

@@ -4,7 +4,7 @@ from prediction.strategies import strategies
 
 
 def strategies_available():
-    print('\nStrategies available:')
+    print('\nModels available:')
     for i, name in enumerate(strategies.keys()):
         print(f'\t{i}: '+name)
     print()

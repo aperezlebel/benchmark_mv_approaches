@@ -2,10 +2,11 @@ pandas
 numpy
 matplotlib
 joblib==0.14.1
-sklearn
+scikit-learn
 pyyaml
 cython
-dask
+dask==2021.6.0
 sqlalchemy
 seaborn
 tqdm
+statsmodels

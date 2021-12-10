@@ -15,6 +15,7 @@ from joblib import Memory
 from prediction.tasks import tasks
 from tqdm import tqdm
 
+from .common import filepaths
 from .plot_statistics import (figure1, figure2, figure2bis, figure3,
                               plot_feature_types, plot_feature_wise_v2)
 from .tests import tasks_to_drop
@@ -320,10 +321,10 @@ def every_mv_distribution():
     L1 = ['TB/death_pvals', 'TB/hemo', 'TB/hemo_pvals']
     L2 = ['TB/platelet_pvals', 'TB/septic_pvals', None]
     # L2 = [None, None, None]
-    L3 = [None, None, None]
-    L4 = [None, None, None]
-    L5 = [None, None, None]
-    L6 = [None, None, None]
+    # L3 = [None, None, None]
+    # L4 = [None, None, None]
+    # L5 = [None, None, None]
+    # L6 = [None, None, None]
     L3 = ['UKBB/breast_25', 'UKBB/breast_pvals', 'UKBB/fluid_pvals']
     L4 = ['UKBB/parkinson_pvals', 'UKBB/skin_pvals', None]
     L5 = ['MIMIC/hemo_pvals', 'MIMIC/septic_pvals', None]
@@ -415,13 +416,15 @@ def every_mv_distribution():
     # for i in range(0,7):
     for i in [1.05, 2.02, 3.96]:
         y = i*dh
-        line = matplotlib.lines.Line2D([0, 1], [y, y], lw=0.5, ls='-', color='black',
+        line = matplotlib.lines.Line2D([0, 1], [y, y], lw=1, ls='-', color='silver',
             alpha=1, transform=fig.transFigure)
     # axes[1, 0].add_line(line)
         fig.add_artist(line)
 
     axes[-1, 0].set_xlabel('Features')
-    axes[-1, 0].set_ylabel('Proportion')
+    for ax in axes[:, 0]:
+        ax.set_ylabel('Proportion')
+    # axes[-1, 0].set_ylabel('Proportion')
 
     return fig, axes
 
@@ -741,8 +744,25 @@ def run_cor(args, graphics_folder, absolute=False, csv=False, prop_only=True):
 
 
 def run_time():
-    path = os.path.abspath('scores/scores.csv')
-    df = pd.read_csv(path, index_col=0)
+    # path = os.path.abspath('scores/scores.csv')
+    # df = pd.read_csv(path, index_col=0)
+    # filepaths = [
+    #     'scores/scores.csv',
+    #     'scores/scores_mi_2500.csv',
+    #     'scores/scores_mi_10000.csv',
+    #     'scores/scores_mi_25000.csv',
+    #     'scores/scores_mi_100000.csv',
+    #     'scores/scores_mia_2500.csv',
+    #     'scores/scores_mia_10000.csv',
+    #     'scores/scores_mia_25000.csv',
+    #     'scores/scores_mia_100000.csv',
+    #     'scores/scores_mean+mask+bagging_2500.csv',
+    #     'scores/scores_mean+mask+bagging_10000.csv',
+    #     'scores/scores_mean+mask+bagging_25000.csv',
+    #     'scores/scores_mean+mask+bagging_100000.csv',
+    # ]
+    dfs = [pd.read_csv(path, index_col=0) for path in filepaths]
+    df = pd.concat(dfs, axis=0)
 
     # Drop tasks
     for db, task in tasks_to_drop.items():
@@ -758,7 +778,53 @@ def run_time():
     total_wct = df['total_WCT'].sum()
 
     print(
-        f'Total number of training time:\n'
+        f'Total training time:\n'
         f'\tCPU time: {int(total_pt/3600)} hours\n'
         f'\tWall-clock time: {int(total_wct/3600)} hours'
     )
+    method = 'MIA'
+
+    df = df.query('method == @method')
+
+    # Sum times
+    df['total_PT'] = df['imputation_PT'].fillna(0) + df['tuning_PT']
+    df['total_WCT'] = df['imputation_WCT'].fillna(0) + df['tuning_WCT']
+
+    total_pt = df['total_PT'].sum()
+    total_wct = df['total_WCT'].sum()
+
+    print(
+        f'{method} training time:\n'
+        f'\tCPU time: {int(total_pt/3600)} hours\n'
+        f'\tWall-clock time: {int(total_wct/3600)} hours'
+    )
+
+
+def run_score_check():
+     for path in filepaths:
+        df = pd.read_csv(path, index_col=0)
+        # print(df)
+
+        dfgb = df.groupby(['size', 'db', 'task', 'method'])
+        print(f'\n{path}', len(dfgb))
+        for index, subdf in dfgb:
+            print(index, subdf.shape[0])
+
+
+
+# 150 000 heures CPU, noeuds de 40 CPU, 3750 heures noeuds, 156 jours noeuds, 20 noeuds : 8 jours
+
+# iter : 1486 CPU hours
+# + mask: 1836 CPU hours
+
+# Les deux : 3322 CPU hours
+# 332 200 heures CPU
+# noeuds de 40 CPU
+# 8305 heures noeuds
+# 350 jours
+# 40 noeuds : 9 jours
+
+
+# MIA : 950 hours CPU
+# 95 000 hours
+

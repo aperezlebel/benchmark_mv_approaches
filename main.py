@@ -65,18 +65,25 @@ if __name__ == '__main__':
                    nargs='?', help='The trial #.')
     p.add_argument('--idx', dest='dump_idx_only', default=False, const=True,
                    nargs='?', help='Dump only the idx (no prediction).')
+    p.add_argument('--nbagging', type=int, default=None, dest='n_bagging')
+    p.add_argument('--n', type=int, default=None, dest='train_size')
+    p.add_argument('--npermutation', type=int, default=None, dest='n_permutation')
+    p.add_argument('--fold', type=int, default=None, dest='asked_fold')
+    p.add_argument('--out', type=str, default=None, dest='results_folder')
 
     # Script 4: Aggregate results
     p = subparsers.add_parser('aggregate', description='Aggregate results.')
     p.set_defaults(func=prediction.aggregate_results)
-    p.add_argument('root_folder', type=str, help='The root folder where the '
-                   'results are stored.')
+    p.add_argument('--root', type=str, help='The root folder where the '
+                   'results are stored.', default='results/', dest='root_folder')
+    p.add_argument('-n', type=int, default=None, dest='n')
+    p.add_argument('--out', type=str, default='test_scores', dest='out')
 
     # Script 5: Figures and tables of the paper
     p = subparsers.add_parser('figs', description='Build figure and tables '
                               'of the paper.')
     p.set_defaults(func=statistics.run)
-    subp = p.add_subparsers(dest='action', required=True)
+    subp = p.add_subparsers(dest='action')
     parent_l = argparse.ArgumentParser(add_help=False)
     parent_l.add_argument('--linear', dest='linear', default=False, const=True,
                           nargs='?', help='Whether to use linear methods')
@@ -84,30 +91,54 @@ if __name__ == '__main__':
     parent_csv.add_argument('--csv', dest='csv', default=False, const=True,
                             nargs='?',
                             help='Whether to dump into csv as well.')
+    parent_a = argparse.ArgumentParser(add_help=False)
+    parent_a.add_argument('-a', dest='article', default=False, const=True,
+                          nargs='?',
+                          help='Whether to dump in article folder.')
 
-    p = subp.add_parser('wilcoxon', parents=[parent_l, parent_csv],
+    p = subp.add_parser('wilcoxon', parents=[parent_l, parent_csv, parent_a],
                         description='Wilcoxon test.')
     p.add_argument('--less', type=bool, default=False, const=True, nargs='?',
                    help='Whether to use greater or less one sided wilcoxon.')
 
-    subp.add_parser('friedman', parents=[parent_l, parent_csv],
+    p = subp.add_parser('friedman', parents=[parent_l, parent_csv, parent_a],
                     description='Friedman & Nemenyi tests + crit. difference.')
+    p.add_argument('--ref', type=str, default=None, dest='ref')
 
-    subp.add_parser('scores', parents=[parent_l, parent_csv],
+    subp.add_parser('scores', parents=[parent_l, parent_csv, parent_a],
                     description='Compute scores and ranks.')
 
-    p = subp.add_parser('boxplot', parents=[parent_l],
+    p = subp.add_parser('boxplot', parents=[parent_l, parent_a],
                         description='Plot boxplots scores & times.')
 
-    p = subp.add_parser('desc', description='Overview table.')
+    p = subp.add_parser('desc', parents=[parent_a], description='Overview table.')
 
-    p = subp.add_parser('time', description='Total time of fit.')
+    p = subp.add_parser('time', parents=[parent_a], description='Total time of fit.')
+
+    p = subp.add_parser('check', parents=[parent_a], description='Check score files.')
+
+    p = subp.add_parser('difficulty', parents=[parent_a], description='Plot rank vs difficulty.')
+    p.add_argument('--no-avg', type=bool, nargs='?', const=False, default=True, dest='avg')
+
+    p = subp.add_parser('breakout', parents=[parent_l, parent_a],
+                        description='Plot broken out boxplots scores & times.')
+
+    p = subp.add_parser('mi', parents=[parent_l, parent_a], description='Plot multiple imputation results.')
+    p.add_argument('-n', type=int, default=None)
+    p.add_argument('--bagging', type=bool, nargs='?', default=False, const=True, dest='bagging_only')
+
+    p = subp.add_parser('imp', parents=[parent_a], description='Plot feature importance results.')
+    p.add_argument('-n', type=int, default=None)
+    p.add_argument('--root', type=str)
+    p.add_argument('--no-avg', type=bool, nargs='?', default=True, const=False, dest='average_folds')
+    p.add_argument('--mode', type=str, choices=['abs', 'rel', 'percent', 'ratio'], default='abs', dest='mode')
+    p.add_argument('--task', type=bool, nargs='?', default=False, const=True, dest='hue_by_task')
 
     # Script 6: Data statistics
     p = subparsers.add_parser('datastats', description='Build figures and '
                               'tables of the paper on data statistics.')
     p.set_defaults(func=statistics.run)
-    subp = p.add_subparsers(dest='action', required=True)
+    subp = p.add_subparsers(dest='action')
 
     p = subp.add_parser('mv', help='Missing values distributions.')
     p.add_argument('tag', default=None, nargs='?', help='The task tag')
@@ -133,7 +164,7 @@ if __name__ == '__main__':
 
     # Script 7: Get information
     p = subparsers.add_parser('info', description='Get informations.')
-    subp = p.add_subparsers(dest='action', required=True)
+    subp = p.add_subparsers(dest='action')
     p = subp.add_parser('available',
                         description='What task/method is available.')
     p.add_argument('-t', dest='task', type=bool, default=False, const=True,

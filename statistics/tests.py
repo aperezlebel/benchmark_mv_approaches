@@ -1,15 +1,16 @@
 """Run some statistical tests on the results."""
 import os
 from os.path import join
+
+import matplotlib.pyplot as plt
 import numpy as np
 import pandas as pd
-from scipy.stats import f, chi2, wilcoxon
-import matplotlib.pyplot as plt
-
-from prediction.PlotHelper import PlotHelper
-from prediction.df_utils import get_scores_tab, get_ranks_tab
 from custom.const import get_fig_folder, get_tab_folder
+from prediction.df_utils import get_ranks_tab, get_scores_tab
+from prediction.PlotHelper import PlotHelper
+from scipy.stats import chi2, f, wilcoxon
 
+from .common import filepaths
 
 tasks_to_drop = {
     'TB': 'platelet',
@@ -83,8 +84,29 @@ def critical_distance(k, N):
             Critical difference
 
     """
-    assert 2 <= k <= 10
-    q_05 = [1.960, 2.343, 2.569, 2.728, 2.850, 2.949, 3.031, 3.102, 3.164]
+    # q_05 = [1.960, 2.343, 2.569, 2.728, 2.850, 2.949, 3.031, 3.102, 3.164]
+    q_05 = [
+        1.959964233,
+        2.343700476,
+        2.569032073,
+        2.727774717,
+        2.849705382,
+        2.948319908,
+        3.030878867,
+        3.10173026,
+        3.16368342,
+        3.218653901,
+        3.268003591,
+        3.312738701,
+        3.353617959,
+        3.391230382,
+        3.426041249,
+        3.458424619,
+        3.488684546,
+        3.517072762,
+        3.543799277,
+    ]  # Values taken on https://kourentzes.com/forecasting/2014/05/01/critical-values-for-the-nemenyi-test/
+    assert 2 <= k < len(q_05)+2
     CD = q_05[k-2]*np.sqrt(k*(k+1)/(6*N))
 
     return CD
@@ -224,11 +246,31 @@ def run_wilcoxon_():
     # W_test2 = W_test.loc[half2]
 
 
-def run_wilcoxon_mia(graphics_folder, csv=False, greater=True):
-    path = os.path.abspath('scores/scores.csv')
-    df = pd.read_csv(path, index_col=0)
+def run_wilcoxon_mia(graphics_folder, csv=False, greater=True, spacing=True, no_rename=False):
+    """Wilcoxon test between MIA and every other methods (including linear)."""
+    # path = os.path.abspath('scores/scores.csv')
+    # df = pd.read_csv(path, index_col=0)
+
+    # filepaths = [
+    #     'scores/scores.csv',
+    #     'scores/scores_mi_2500.csv',
+    #     'scores/scores_mi_10000.csv',
+    #     'scores/scores_mi_25000.csv',
+    #     'scores/scores_mi_100000.csv',
+    #     'scores/scores_mia_2500.csv',
+    #     'scores/scores_mia_10000.csv',
+    #     'scores/scores_mia_25000.csv',
+    #     'scores/scores_mia_100000.csv',
+    #     'scores/scores_mean+mask+bagging_2500.csv',
+    #     'scores/scores_mean+mask+bagging_10000.csv',
+    #     'scores/scores_mean+mask+bagging_25000.csv',
+    #     'scores/scores_mean+mask+bagging_100000.csv',
+    # ]
+    dfs = [pd.read_csv(os.path.abspath(path), index_col=0) for path in filepaths]
+    df = pd.concat(dfs, axis=0)
 
     which = 'greater' if greater else 'less'
+    other = 'less' if greater else 'greater'
 
     # # Drop tasks
     # df = df.set_index(['db', 'task'])
@@ -253,6 +295,9 @@ def run_wilcoxon_mia(graphics_folder, csv=False, greater=True):
         'Iter+mask',
         'KNN',
         'KNN+mask',
+        'MI',
+        'MI+mask',
+        'MIA+bagging',
     ]
 
     method_order2 = [
@@ -276,7 +321,7 @@ def run_wilcoxon_mia(graphics_folder, csv=False, greater=True):
     ]
 
     df = get_scores_tab(df, method_order=method_order, db_order=db_order,
-                        average_sizes=False, formatting=False)
+                        average_sizes=False, formatting=False, add_empty_methods=False)
     sizes = df.index.get_level_values(0).unique()
 
     rows = []
@@ -298,24 +343,23 @@ def run_wilcoxon_mia(graphics_folder, csv=False, greater=True):
             assert not y.isnull().any()
 
             w_double = wilcoxon(x=x, y=y, alternative='two-sided')
-            w_onesided = wilcoxon(x=x, y=y, alternative=which)
+            w_greater = wilcoxon(x=x, y=y, alternative='greater')
+            w_less = wilcoxon(x=x, y=y, alternative='less')
 
-            rows.append([size, method, w_double[0], w_double[1], w_onesided[0], w_onesided[1]])
+            rows.append([size, method, w_double[0], w_double[1], w_greater[0], w_greater[1], w_less[0], w_less[1]])
 
     W_test = pd.DataFrame(rows, columns=[
         'size',
         'method',
         'two-sided_stat',
         'two-sided_pval',
-        f'{which}_stat',
-        f'{which}_pval',
+        'greater_stat',
+        'greater_pval',
+        'less_stat',
+        'less_pval',
         ]).set_index(['size', 'method'])
 
-    # W_test = W_test.reindex(method_order)
-
-    # W_test['two-sided_pval'] = [f'{w:.1g}' for w in W_test['two-sided_pval']]
-    # W_test['greater_pval'] = [f'{w:.1g}' for w in W_test['greater_pval']]
-
+    W_other = W_test[[f'{other}_stat', f'{other}_pval']]
 
     W_test.drop(['two-sided_pval', 'two-sided_stat'], axis=1, inplace=True)
 
@@ -323,51 +367,87 @@ def run_wilcoxon_mia(graphics_folder, csv=False, greater=True):
         f'{which}_pval': 'p-value',
         f'{which}_stat': 'Statistic',
     }, axis=1, inplace=True)
+    W_other.rename({
+        f'{other}_pval': 'p-value',
+        f'{other}_stat': 'Statistic',
+    }, axis=1, inplace=True)
 
     W_test.index.rename('Size', level=0, inplace=True)
+    W_other.index.rename('Size', level=0, inplace=True)
     W_test.index.rename('Method', level=1, inplace=True)
+    W_other.index.rename('Method', level=1, inplace=True)
 
     W_test.drop(['Statistic'], axis=1, inplace=True)
+    W_other.drop(['Statistic'], axis=1, inplace=True)
 
     W_test = pd.pivot_table(W_test, values='p-value', index='Method', columns='Size')
+    W_other = pd.pivot_table(W_other, values='p-value', index='Method', columns='Size')
 
     W_test = W_test.reindex(method_order1 + method_order2)
+    W_other = W_other.reindex(method_order1 + method_order2)
 
-    skip = '0.2in'
 
-    W_test.rename({
-        'Med': 'Median',
-        'Med+mask': 'Median+mask',
-        'Iter': 'Iterative',
-        'Iter+mask': 'Iterative+mask',
-        'Linear+Mean': f'\\rule{{0pt}}{{{skip}}}Linear+Mean'
-    }, axis=0, inplace=True)
+    if graphics_folder is not None:
+        tab_folder = get_tab_folder(graphics_folder)
 
-    def pvalue_formatter(x, alpha, n_bonferroni):
-        if np.isnan(x):
-            return x
+        if csv:
+            W_test.to_csv(join(tab_folder, f'wilcoxon_{which}.csv'))
+
+        symbols = {}
+
+        def pvalue_to_symbol(pvalue, alpha, n_bonferroni, greater=True):
+            c = '' if greater else '(>)'
+            if pvalue < alpha/n_bonferroni:
+                return f'\\star\\star{c}'
+            if pvalue < alpha:
+                return f'\\star{c}'
+            return None
+
+        alpha = 0.05
+        n_bonferroni = W_test.shape[0]
+
+        for size in W_test:
+            symbols[size] = {}
+            for k, v in W_test[size].iteritems():
+                symbols[size][k] = pvalue_to_symbol(v, alpha, n_bonferroni, greater=greater)
+            for k, v in W_other[size].iteritems():
+                if symbols[size][k] is None:
+                    symbols[size][k] = pvalue_to_symbol(v, alpha, n_bonferroni, greater=not greater)
+
+        for index, row in W_test.iterrows():
+            for col, value in row.iteritems():
+                print(index, col, value)
+                symbol = symbols[col][index]
+                if symbol is not None:
+                    W_test.loc[index, col] = f'$\\text{{{value:.1e}}}^{{{symbol}}}$'
+                elif not pd.isna(value):
+                    W_test.loc[index, col] = f'{value:.1e}'
+
+        skip = '0.15in'
+
+        if no_rename:
+            rename = {}
         else:
-            if x < alpha/n_bonferroni:  # below bonferroni corrected alpha level
-                return f'$\\text{{{x:.1e}}}^{{\\star\\star}}$'
+            rename = {
+                'Med': 'Median',
+                'Med+mask': 'Median+mask',
+                'Iter': 'Iterative',
+                'Iter+mask': 'Iterative+mask',
+            }
+        if spacing:
+            rename['Linear+Mean'] = f'\\midrule Linear+Mean'
+            rename['MI'] = f'\\midrule MI'
+        W_test.rename(rename, axis=0, inplace=True)
 
-            if x < alpha:  # below alpha level but above bonferroni
-                return f'$\\text{{{x:.1e}}}^{{\\star}}$'
+        print(W_test)
 
-            return f'{x:.1e}'
+        W_test.to_latex(join(tab_folder, f'wilcoxon_{which}.tex'), na_rep='', escape=False)#, table_env='tabularx')
 
-    print(W_test)
-
-    tab_folder = get_tab_folder(graphics_folder)
-
-    if csv:
-        W_test.to_csv(join(tab_folder, f'wilcoxon_{which}.csv'))
-
-    print(f'Apply Bonferroni correction with {W_test.shape[0]} values.')
-    W_test = W_test.applymap(lambda x: pvalue_formatter(x, alpha=0.05, n_bonferroni=W_test.shape[0]))
-    W_test.to_latex(join(tab_folder, f'wilcoxon_{which}.tex'), na_rep='', escape=False, table_env='tabularx')
+    return W_test
 
 
 def run_wilcoxon_linear(graphics_folder, csv=False, greater=True):
+    """Wilcoxon test between trees and linear methods, pairwise."""
     path = os.path.abspath('scores/scores.csv')
     df = pd.read_csv(path, index_col=0)
 
@@ -411,7 +491,7 @@ def run_wilcoxon_linear(graphics_folder, csv=False, greater=True):
     ]
 
     df = get_scores_tab(df, method_order=method_order, db_order=db_order,
-                        average_sizes=False, formatting=False)
+                        average_sizes=False, formatting=False, add_empty_methods=False)
     sizes = df.index.get_level_values(0).unique()
 
     rows = []
@@ -479,41 +559,60 @@ def run_wilcoxon_linear(graphics_folder, csv=False, greater=True):
         'Iter+mask': 'Iterative+mask',
     }, axis=0, inplace=True)
 
-    def pvalue_formatter(x, alpha, n_bonferroni):
+    def pvalue_formatter(x, alpha, n_bonferroni, greater=True):
+        c = '' if greater else '(>)'
         if np.isnan(x):
             return x
         else:
             if x < alpha/n_bonferroni:  # below bonferroni corrected alpha level
-                return f'$\\text{{{x:.1e}}}^{{\\star\\star}}$'
+                return f'$\\text{{{x:.1e}}}^{{\\star\\star{c}}}$'
 
             if x < alpha:  # below alpha level but above bonferroni
-                return f'$\\text{{{x:.1e}}}^{{\\star}}$'
+                return f'$\\text{{{x:.1e}}}^{{\\star{c}}}$'
 
             return f'{x:.1e}'
 
     print(W_test)
 
-    tab_folder = get_tab_folder(graphics_folder)
+    if graphics_folder is not None:
+        tab_folder = get_tab_folder(graphics_folder)
 
-    if csv:
-        W_test.to_csv(join(tab_folder, f'wilcoxon_linear_{which}.csv'))
+        if csv:
+            W_test.to_csv(join(tab_folder, f'wilcoxon_linear_{which}.csv'))
 
-    print(f'Apply Bonferroni correction with {W_test.shape[0]} values.')
-    W_test = W_test.applymap(lambda x: pvalue_formatter(x, alpha=0.05, n_bonferroni=W_test.shape[0]))
-    W_test.to_latex(join(tab_folder, f'wilcoxon_linear_{which}.tex'), na_rep='', escape=False, table_env='tabularx')
+        print(f'Apply Bonferroni correction with {W_test.shape[0]} values.')
+        # print(W_test)
+        # exit()
+        W_test = W_test.applymap(lambda x: pvalue_formatter(x, alpha=0.05, n_bonferroni=W_test.shape[0]))
+        W_test.to_latex(join(tab_folder, f'wilcoxon_linear_{which}.tex'), na_rep='', escape=False)#, table_env='tabularx')
+
+    return W_test
 
 
-def run_wilcoxon(graphics_folder, linear=False, csv=False, greater=True):
+def run_wilcoxon(graphics_folder, linear=False, csv=False, greater=True, spacing=True, no_rename=False):
     if linear:
-        run_wilcoxon_linear(graphics_folder, csv=csv, greater=greater)
-    else:
-        run_wilcoxon_mia(graphics_folder, csv=csv, greater=greater)
+        return run_wilcoxon_linear(graphics_folder, csv=csv, greater=greater)
+    return run_wilcoxon_mia(graphics_folder, csv=csv, greater=greater, spacing=spacing, no_rename=no_rename)
 
 
-def run_friedman(graphics_folder, linear=False, csv=False):
+def run_friedman(graphics_folder, linear=False, csv=False, ref=None):
     fontsize_subtitle = 13
-    path = os.path.abspath('scores/scores.csv')
-    df = pd.read_csv(path, index_col=0)
+    # path = os.path.abspath('scores/scores.csv')
+    # df = pd.read_csv(path, index_col=0)
+
+    # filepaths = [
+    #     'scores/scores.csv',
+    #     'scores/scores_mi_2500.csv',
+    #     'scores/scores_mia_2500.csv',
+    #     'scores/scores_mi_10000.csv',
+    #     'scores/scores_mia_10000.csv',
+    #     'scores/scores_mia_25000.csv',
+    #     'scores/scores_mi_25000.csv',
+    #     'scores/scores_mia_100000.csv',
+    #     'scores/scores_mean+mask+bagging_2500.csv',
+    # ]
+    dfs = [pd.read_csv(path, index_col=0) for path in filepaths]
+    df = pd.concat(dfs, axis=0)
 
     # Drop tasks
     for db, task in tasks_to_drop.items():
@@ -545,6 +644,9 @@ def run_friedman(graphics_folder, linear=False, csv=False):
             'Iter+mask',
             'KNN',
             'KNN+mask',
+            'MI',
+            'MI+mask',
+            'MIA+bagging',
         ]
 
     db_order = [
@@ -554,7 +656,8 @@ def run_friedman(graphics_folder, linear=False, csv=False):
         'NHIS',
     ]
 
-    df = get_ranks_tab(df, method_order=method_order, db_order=db_order, average_sizes=False)
+    df = get_ranks_tab(df, method_order=method_order, db_order=db_order,
+                       average_sizes=False, add_empty_methods=False)
     sizes = df.index.get_level_values(0).unique()
 
     ranks_by_db = df.drop('Average', level=0, axis=1)
@@ -592,6 +695,9 @@ def run_friedman(graphics_folder, linear=False, csv=False):
             'Med+mask': 'Median+mask',
             'Iter': 'Iterative',
             'Iter+mask': 'Iterative+mask',
+            'MIA+bagging': 'MIA+Bagging',
+            'MI': 'Iterative+Bagging',
+            'MI+mask': 'Iterative+mask+Bagging',
         }
         df.rename(rename, axis=0, level=1, inplace=True)
 
@@ -600,7 +706,7 @@ def run_friedman(graphics_folder, linear=False, csv=False):
         ranks = df.loc[size, ('Average', 'All')]
         critical_distances = df_statistic['CD'].astype(float)
 
-        plot_ranks(ranks, critical_distances[size], ax)
+        plot_ranks(ranks, critical_distances[size], ax, ref=ref)
         N = df_statistic.loc[size, 'N']
         ax.set_title(f'Size={size}, N={N}', {'fontsize': fontsize_subtitle})
 
@@ -637,19 +743,28 @@ def run_friedman(graphics_folder, linear=False, csv=False):
         {v: f'\hphantom{{-}}{v}' for v in df_statistic.columns}, axis=1, inplace=True)
 
     df_statistic.to_latex(join(
-        tab_folder, f'{tab_name}.tex'), na_rep='', escape=False, table_env='tabularx')
+        tab_folder, f'{tab_name}.tex'), na_rep='', escape=False)#, table_env='tabularx')
 
     return df_statistic
 
 
-def plot_ranks(average_ranks, critical_distance, ax):
+def plot_ranks(average_ranks, critical_distance, ax, ref=None):
     fontsize_method = 13
 
     average_ranks = average_ranks.sort_values()
-    min_rank = np.min(average_ranks)
+
+    if ref is None:
+        ref_rank = np.min(average_ranks)
+    else:
+        ref_rank = average_ranks[ref]
+
+    ref_rank_colors = ref_rank
+    ref_rank_difference = np.min(average_ranks)
 
     # Move left y-axis and bottim x-axis to centre, passing through (0,0)
-    ax.spines['left'].set_position('center')
+    xmin = -.11
+    xmax = .5
+    ax.spines['left'].set_position(('axes', abs(xmin)/(xmax-xmin)))
     ax.spines['bottom'].set_color('none')
 
     # Eliminate upper and right axes
@@ -659,22 +774,20 @@ def plot_ranks(average_ranks, critical_distance, ax):
     # Show ticks in the left and lower axes only
     ax.xaxis.set_visible(False)#.set_ticks_position('none')
     ax.yaxis.set_ticks_position('left')
-    ax.set_ylim(1, 9)
-    ax.set_xlim(-.3, .3)
+    ax.set_ylim(1, len(average_ranks))
+    ax.set_xlim(xmin, xmax)
     ax.invert_yaxis()
 
-    cd1 = min_rank
-    cd2 = min_rank + critical_distance
-    colors = ['red' if r < cd2 else 'black' for r in average_ranks]
+    colors = ['red' if abs(r - ref_rank_colors) < critical_distance else 'black' for r in average_ranks]
     ax.scatter(np.zeros_like(average_ranks), average_ranks,
                color=colors, marker='.', clip_on=False, zorder=10)
-    ax.plot(-.1*np.ones(2), [cd1, cd2], color='red',
+    ax.plot(-.06*np.ones(2), [ref_rank_difference, ref_rank_difference+critical_distance], color='red',
             marker='_', markeredgewidth=1.5)
-    ax.text(-.12, (cd1+cd2)/2, 'critical distance', rotation=90,
+    ax.text(-.08, ref_rank_difference+critical_distance/2, 'critical difference', rotation=90,
             ha='center', va='center', color='red', fontsize=12)
 
     texts = []
-    y_pos = np.linspace(1.5, 8.5, len(average_ranks))
+    y_pos = np.linspace(1.5, len(average_ranks)-.5, len(average_ranks))
     for i, (method, rank) in enumerate(average_ranks.iteritems()):
         t = ax.text(.12, y_pos[i], method, va='center',
                     fontsize=fontsize_method)

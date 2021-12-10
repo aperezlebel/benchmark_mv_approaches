@@ -3,9 +3,13 @@ import matplotlib.pyplot as plt
 
 from custom.const import local_graphics_folder, remote_graphics_folder
 from .tests import run_friedman, run_wilcoxon
-from .statistics import run_mv, run_prop, run_cor, run_time
+from .statistics import run_mv, run_prop, run_cor, run_time, run_score_check
 from .boxplots import run_boxplot
 from .tabs import run_desc, run_scores
+from .difficulty import run_difficulty
+from .breakout import run_breakout
+from .mi import run_multiple_imputation
+from .importance import run_feature_importance
 
 
 plt.rcParams.update({
@@ -31,7 +35,7 @@ def run(args):
                      csv=args.csv, greater=not args.less)
 
     elif args.action == 'friedman':
-        run_friedman(graphics_folder, linear=args.linear, csv=args.csv)
+        run_friedman(graphics_folder, linear=args.linear, csv=args.csv, ref=args.ref)
 
     elif args.action == 'scores':
         run_scores(graphics_folder, linear=args.linear, csv=args.csv)
@@ -53,6 +57,22 @@ def run(args):
 
     elif args.action == 'time':
         run_time()
+
+    elif args.action == 'check':
+        run_score_check()
+
+    elif args.action == 'difficulty':
+        run_difficulty(graphics_folder, args.avg)
+
+    elif args.action == 'breakout':
+        run_breakout(graphics_folder, linear=args.linear)
+
+    elif args.action == 'mi':
+        run_multiple_imputation(graphics_folder, args.n, args.bagging_only, args.linear)
+
+    elif args.action == 'imp':
+        run_feature_importance(graphics_folder, args.root, args.n,
+                               args.average_folds, args.mode, args.hue_by_task)
 
     else:
         raise ValueError(f'Not known action {args.action}.')

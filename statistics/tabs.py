@@ -7,11 +7,29 @@ from prediction.PlotHelper import PlotHelper
 from .tests import tasks_to_drop, db_rename, db_order
 from prediction.df_utils import get_scores_tab, get_ranks_tab
 from custom.const import get_tab_folder
+from .common import filepaths
 
 
-def run_scores(graphics_folder, linear, csv=False):
-    path = os.path.abspath('scores/scores.csv')
-    df = pd.read_csv(path, index_col=0)
+def run_scores(graphics_folder, linear, csv=False, relative=True):
+    # path = os.path.abspath('scores/scores.csv')
+    # df = pd.read_csv(path, index_col=0)
+
+    # filepaths = [
+    #     'scores/scores.csv',
+    #     'scores/scores_mi_2500.csv',
+    #     'scores/scores_mia_2500.csv',
+    #     'scores/scores_mi_10000.csv',
+    #     'scores/scores_mia_10000.csv',
+    #     'scores/scores_mia_25000.csv',
+    #     'scores/scores_mi_25000.csv',
+    #     'scores/scores_mia_100000.csv',
+    #     'scores/scores_mi_100000.csv',
+    #     'scores/scores_mean+mask+bagging_2500.csv',
+    #     'scores/scores_mean+mask+bagging_10000.csv',
+    #     'scores/scores_mean+mask+bagging_25000.csv',
+    # ]
+    dfs = [pd.read_csv(path, index_col=0) for path in filepaths]
+    df = pd.concat(dfs, axis=0)
 
     # Drop tasks
     for db, task in tasks_to_drop.items():
@@ -43,6 +61,9 @@ def run_scores(graphics_folder, linear, csv=False):
             'Iter+mask',
             'KNN',
             'KNN+mask',
+            'MI',
+            'MI+mask',
+            'MIA+bagging',
         ]
 
     db_order = [
@@ -52,7 +73,7 @@ def run_scores(graphics_folder, linear, csv=False):
         'NHIS',
     ]
 
-    scores = get_scores_tab(df, method_order=method_order, db_order=db_order, relative=True)
+    scores = get_scores_tab(df, method_order=method_order, db_order=db_order, relative=relative)
     ranks = get_ranks_tab(df, method_order=method_order, db_order=db_order)
 
     rename = {
@@ -60,6 +81,9 @@ def run_scores(graphics_folder, linear, csv=False):
         'Med+mask': 'Median+mask',
         'Iter': 'Iterative',
         'Iter+mask': 'Iterative+mask',
+        'MIA+bagging': 'MIA+Bagging',
+        'MI': 'Iterative+Bagging',
+        'MI+mask': 'Iterative+mask+Bagging',
     }
 
     if linear:
@@ -106,30 +130,36 @@ def run_scores(graphics_folder, linear, csv=False):
             return f'\\textbf{{{x}}}'
 
     smallskip = '0.15in'
-    bigskip = '0.3in'
-    medskip = '0.23in'
+    bigskip = '0.23in'
+    medskip = '0.20in'
+    # smallskip = '0.15in'
+    # bigskip = '0.3in'
+    # medskip = '0.23in'
     index_rename = {}
 
     for size in [2500, 10000, 25000, 100000, 'Average']:
         scores.loc[(size, 'Reference score')] = scores.loc[(size, 'Reference score')].apply(boldify)
         if size == 2500:
             continue
-        skip = bigskip if size == 'Average' else smallskip
+        skip = bigskip if size == 'Average' else medskip
         index_rename[size] = f'\\rule{{0pt}}{{{skip}}}{size}'
 
     scores.rename(index_rename, axis=0, level=0, inplace=True)
+    scores.rename({'Reference score': f'\\rule{{0pt}}{{{smallskip}}}Reference score'}, axis=0, level=1, inplace=True)
     ranks.rename(index_rename, axis=0, level=0, inplace=True)
 
     n_latex_columns = len(ranks.columns)+2
     column_format = 'l'*(n_latex_columns-5)+f'@{{\\hskip {smallskip}}}'+'l'*4+f'@{{\\hskip {medskip}}}'+'l'
 
     tab_folder = get_tab_folder(graphics_folder)
-    tab1_name = 'scores_linear' if linear else 'scores'
-    tab2_name = 'ranks_linear' if linear else 'ranks'
+    abs = '_absolute' if not relative else ''
+    tab1_name = f'scores_linear{abs}' if linear else f'scores{abs}'
+    tab2_name = f'ranks_linear{abs}' if linear else f'ranks{abs}'
 
-    scores.to_latex(join(tab_folder, f'{tab1_name}.tex'), na_rep='', escape=False, table_env='tabularx') #, column_format='L'*scores.shape[1])
+    scores.to_latex(join(tab_folder, f'{tab1_name}.tex'), na_rep='', escape=False)#, table_env='tabularx') #, column_format='L'*scores.shape[1])
     ranks.to_latex(join(tab_folder, f'{tab2_name}.tex'), na_rep='', escape=False,
-    table_env='tabularx', column_format=column_format)
+    #table_env='tabularx',
+    column_format=column_format)
 
     if csv:
         scores.to_csv(join(tab_folder, f'{tab1_name}.csv'))
@@ -152,7 +182,8 @@ def run_desc(graphics_folder):
         'Total time (s)': 'Time - Total (s)',
     }
 
-    df.rename(columns=time_columns, inplace=True)
+    df.drop(time_columns.keys(), inplace=True, axis=1)
+    # df.rename(columns=time_columns, inplace=True)
 
     for db, task in tasks_to_drop.items():
         df = df.drop((db, task), axis=0)
@@ -209,7 +240,7 @@ def run_desc(graphics_folder):
 
     with pd.option_context("max_colwidth", None):
         df.to_latex(join(tab_folder, 'task_description.tex'),
-                    table_env='tabularx',
+                    # table_env='tabularx',
                     bold_rows=False, na_rep=None, escape=False,
                     column_format=column_format,
                     multirow=False)

@@ -37,9 +37,44 @@ def run(args):
     if RS:
         RS = int(RS)
 
-    train(task, strategy, RS=RS, T=T, dump_idx_only=dump_idx_only)
+    train(task, strategy, RS=RS, T=T, dump_idx_only=dump_idx_only,
+          n_bagging=args.n_bagging, train_size=args.train_size,
+          n_permutation=args.n_permutation, asked_fold=args.asked_fold,
+          results_folder=args.results_folder)
+
+
+rename = {
+    '': 'MIA',
+    '_Bagged100': 'MIA+bagging',
+    '_imputed_Mean': 'Mean',
+    '_imputed_Mean+mask': 'Mean+mask',
+    '_imputed_Med': 'Med',
+    '_imputed_Med+mask': 'Med+mask',
+    '_imputed_Iterative': 'Iter',
+    '_imputed_Iterative+mask': 'Iter+mask',
+    '_imputed_KNN': 'KNN',
+    '_imputed_KNN+mask': 'KNN+mask',
+    '_imputed_Iterative_Bagged100': 'MI',
+    '_imputed_Iterative+mask_Bagged100': 'MI+mask',
+    '_Logit_imputed_Mean': 'Linear+Mean',
+    '_Logit_imputed_Mean+mask': 'Linear+Mean+mask',
+    '_Logit_imputed_Med': 'Linear+Med',
+    '_Logit_imputed_Med+mask': 'Linear+Med+mask',
+    '_Logit_imputed_Iterative': 'Linear+Iter',
+    '_Logit_imputed_Iterative+mask': 'Linear+Iter+mask',
+    '_Logit_imputed_KNN': 'Linear+KNN',
+    '_Logit_imputed_KNN+mask': 'Linear+KNN+mask',
+    '_Ridge_imputed_Mean': 'Linear+Mean',
+    '_Ridge_imputed_Mean+mask': 'Linear+Mean+mask',
+    '_Ridge_imputed_Med': 'Linear+Med',
+    '_Ridge_imputed_Med+mask': 'Linear+Med+mask',
+    '_Ridge_imputed_Iterative': 'Linear+Iter',
+    '_Ridge_imputed_Iterative+mask': 'Linear+Iter+mask',
+    '_Ridge_imputed_KNN': 'Linear+KNN',
+    '_Ridge_imputed_KNN+mask': 'Linear+KNN+mask',
+}
 
 
 def aggregate_results(args):
-    ph = PlotHelper(root_folder='results')
-    ph.dump('scores/test_scores.csv')
+    ph = PlotHelper(root_folder=args.root_folder, rename=rename)
+    ph.dump(f'scores/{args.out}.csv', n=args.n)
