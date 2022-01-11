@@ -50,7 +50,7 @@ def run(args):
         run_cor(args, graphics_folder, csv=args.csv, absolute=args.abs)
 
     elif args.action == 'boxplot':
-        run_boxplot(graphics_folder, linear=args.linear)
+        run_multiple_imputation(graphics_folder, linear=args.linear)
 
     elif args.action == 'desc':
         run_desc(graphics_folder)
