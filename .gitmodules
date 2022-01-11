@@ -1,6 +1,3 @@
 [submodule "database/metadata"]
 	path = database/metadata
 	url = https://github.com/alexprz/missing_values_analysis_metadata
-[submodule "article"]
-	path = article
-	url = git@github.com:alexprz/MIA-with-GigaScience-template.git
