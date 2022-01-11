@@ -181,7 +181,6 @@ if __name__ == '__main__':
 
     # Start run
     logger.info('Started run')
-    print(f'Dumping logs into {log_filepath}')
 
     args = parser.parse_args()
     args.func(args)
