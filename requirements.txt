@@ -1,7 +1,7 @@
 pandas
 numpy
 matplotlib
-joblib==0.14.1
+joblib==1.2.0
 scikit-learn
 pyyaml
 cython
